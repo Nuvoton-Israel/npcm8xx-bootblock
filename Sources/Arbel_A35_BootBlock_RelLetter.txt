@@ -7,7 +7,7 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.01
+Version: 00.03.02
 Date:    May 2023
 
 
@@ -23,10 +23,17 @@ This package contains the following files/folders:
 - Sources\HowToBuild.txt                              - How to build description
 
 Output Files:
-- Images\arbel_a35_bootblock.elf                      - Output image elf
-- Images\arbel_a35_bootblock.dat                      - Output image dat
-- Images\arbel_a35_bootblock.bin                      - Output image bin
-- Images\arbel_a35_bootblock.map                      - Output image map
+For Arbel device with TIP only:
+- Images\tip\arbel_a35_bootblock .elf                 - Output image elf
+- Images\tip\arbel_a35_bootblock .dat                 - Output image dat
+- Images\tip\arbel_a35_bootblock .bin                 - Output image bin
+- Images\tip\arbel_a35_bootblock .map                 - Output image map
+
+For Arbel device without TIP only:
+- Images\no_tip\arbel_a35_bootblock_no_tip.elf        - Output image elf
+- Images\no_tip\arbel_a35_bootblock_no_tip.dat        - Output image dat
+- Images\no_tip\arbel_a35_bootblock_no_tip.bin        - Output image bin
+- Images\no_tip\arbel_a35_bootblock_no_tip.map        - Output image map
 
 
 # DESCRIPTION
@@ -43,11 +50,20 @@ Hardware:
 
 # INSTALLATION PROCEDURE
 ----------------------
-After compilation (see HowToBuild.txt) program   deliverables\arbel_a35_bootblock.bin
+After compilation (see HowToBuild.txt) program   deliverables\tip\arbel_a35_bootblock.bin
 to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 
 # ENHANCEMENTS
+----------------
+version 0.3.2     - May 18 2023
+=============
+- skip clearing INTCR2
+- SCRPAD 10 is now reset counter.
+- split CRC file (tip\notip).
+- Clear SCRPAD10-19.
+
+# HISTORY
 ----------------
 version 0.3.1     - May 10 2023 
 =============
@@ -56,9 +72,6 @@ version 0.3.1     - May 10 2023
   change according to header. Now setting of 50MHz is only done if header field is zero or 0xFF.
 - Bug fix: CLK call CLK_Verify_and_update_dividers once (instead of twice).
 
-
-# HISTORY
-----------------
 version 0.3.0     - May 3 2023
 =============
 - Added support for no tip mode (NOTIP); regular TIP mode stayed the same.

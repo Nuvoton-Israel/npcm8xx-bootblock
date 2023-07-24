@@ -7,8 +7,8 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.04
-Date:    Jun 2023
+Version: 00.03.05
+Date:    Jul 2023
 
 
 # PACKAGE CONTENTS
@@ -56,12 +56,27 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.3.5     - Jul 13th 2023
+=============
+- Call CLK_ConfigureFIUClock only in PORST (update SPI dividers from header).
+- re-enable HOST_IF field in header. Supported values:
+			0xFF: do nothing
+			0x00: LPC. 
+			0x01: eSPI
+			0x02: GPIOs TRIS.
+			0x03: release host wait, disable eSPI
+ configuration is done only in PORST.
+- add baud rate field to header:
+ Supported values: 9600,14400,19200,38400,57600,115200,230400,380400,460800
+		default is 115200.
+
+
+# HISTORY
+----------------
 version 0.3.4     - Jun 26th 2023 
 =============
 - bug fix: support NO_TIP mode + updated memory map. all images are loaded to DRAM. 
 
-# HISTORY
-----------------
 version 0.3.3     - Jun 18th 2023
 =============
 - Add header field GMMAP at offset 0x152 which is copied to INTCR4.GMMAP0 and 1.

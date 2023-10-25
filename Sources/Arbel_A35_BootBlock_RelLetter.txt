@@ -7,8 +7,8 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.05
-Date:    Jul 2023
+Version: 00.03.06
+Date:    Oct 2023
 
 
 # PACKAGE CONTENTS
@@ -56,6 +56,14 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.3.6     - Oct 19th 2023 
+=============
+- Fix SPIX settings. SPIX should be below 33MHz. It was calculated according to SPI0 and not SPIX, and then set to SPIX.
+- Read the DIE information from OTP and place it in SCRACHPAD 72 and 73, for the OPTEE to read it 
+- Bug fix: return pass status to TIP in secondary reset if training is skipped.
+
+# HISTORY
+----------------
 version 0.3.5     - Jul 13th 2023
 =============
 - Call CLK_ConfigureFIUClock only in PORST (update SPI dividers from header).
@@ -70,9 +78,6 @@ version 0.3.5     - Jul 13th 2023
  Supported values: 9600,14400,19200,38400,57600,115200,230400,380400,460800
 		default is 115200.
 
-
-# HISTORY
-----------------
 version 0.3.4     - Jun 26th 2023 
 =============
 - bug fix: support NO_TIP mode + updated memory map. all images are loaded to DRAM. 

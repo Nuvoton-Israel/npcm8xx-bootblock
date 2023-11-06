@@ -7,7 +7,7 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.07
+Version: 00.03.08
 Date:    Nov 2023
 
 
@@ -56,6 +56,16 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.3.8     - Nov 6th 2023 
+=============
+- bootblock output file rename back to arbel_a35_bootblock.bin.
+- unused fuse data moved under ifdef
+- Add 3 fields to header (FIU_DRD_CFG for fiu 0, 1, 3). User can change these values in IGPS. bootblock does not check 
+  value is legal.
+- Cleanup makefile.
+
+# HISTORY
+----------------
 version 0.3.7     - Nov 2nd 2023 
 =============
 - Modify the Makefile to ensure compatibility with Linux compilation and incorporate a build.sh script.
@@ -66,8 +76,6 @@ version 0.3.7     - Nov 2nd 2023
 - Update FIU divider on every reset, according to header.
 - Set RDLEN to 0 on AHB6 and AHB13.
 
-# HISTORY
-----------------
 version 0.3.6     - Oct 19th 2023 
 =============
 - Fix SPIX settings. SPIX should be below 33MHz. It was calculated according to SPI0 and not SPIX, and then set to SPIX.

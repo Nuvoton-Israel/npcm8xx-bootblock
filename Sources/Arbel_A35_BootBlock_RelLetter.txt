@@ -7,7 +7,7 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.08
+Version: 00.03.09
 Date:    Nov 2023
 
 
@@ -56,6 +56,15 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.3.9     - Nov 29th 2023 
+=============
+- block PLL reseting in secondary boot. PLLs are set only after PORST.
+  (PLLs only, other dividers like FIU are set on any reset, as requested by customers.
+- Change print of DRAM type.
+- Print all values in MHz (instead of Hz).
+
+# HISTORY
+----------------
 version 0.3.8     - Nov 6th 2023 
 =============
 - bootblock output file rename back to arbel_a35_bootblock.bin.
@@ -64,8 +73,6 @@ version 0.3.8     - Nov 6th 2023
   value is legal.
 - Cleanup makefile.
 
-# HISTORY
-----------------
 version 0.3.7     - Nov 2nd 2023 
 =============
 - Modify the Makefile to ensure compatibility with Linux compilation and incorporate a build.sh script.

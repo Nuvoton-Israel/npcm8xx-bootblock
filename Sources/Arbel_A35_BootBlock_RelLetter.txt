@@ -1,14 +1,14 @@
 ----------------------------------------------------------------------
  SPDX-License-Identifier: GPL-2.0                                     
- Copyright (c) 2010-2023 by Nuvoton Technology Corporation   
+ Copyright (c) 2010-2024 by Nuvoton Technology Corporation   
  All rights reserved       
 
  NPCM8XX (Arbel) A35 BootBlock Release Letter 
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.03.09
-Date:    Nov 2023
+Version: 00.04.01
+Date:    Feb 2024
 
 
 # PACKAGE CONTENTS
@@ -56,6 +56,19 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.4.1     - Feb 5th 2024 
+=============
+- Set PCI and GFX core clock to PLL1.
+
+# HISTORY
+----------------
+version 0.4.0     - Feb 1st 2024 
+=============
+- Bug fix: GMAC frequency always set to 125MHz.
+- PCI always 125MHZ, RC always 100MHz.
+- If ECC enabled, force both CPU and MC to be the same frequency.
+- Add two optional GPIO set after mtest, declared in the IGPS header.
+
 version 0.3.9     - Nov 29th 2023 
 =============
 - block PLL reseting in secondary boot. PLLs are set only after PORST.
@@ -63,8 +76,6 @@ version 0.3.9     - Nov 29th 2023
 - Change print of DRAM type.
 - Print all values in MHz (instead of Hz).
 
-# HISTORY
-----------------
 version 0.3.8     - Nov 6th 2023 
 =============
 - bootblock output file rename back to arbel_a35_bootblock.bin.

@@ -7,7 +7,7 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.04.01
+Version: 00.04.02
 Date:    Feb 2024
 
 
@@ -56,12 +56,19 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.4.2     - Feb 28th 2024
+=============
+- MC: modified default priority setting.
+- Bug fix: PIXEL clock always connected to PLLG.
+- Change CLK_750MHZ_PLLCON0_2_REG_CFG 0x003C2201
+- Set DENALI_CTL_91_INLINE_ECC_BANK_OFFSET to 1.
+
+# HISTORY
+----------------
 version 0.4.1     - Feb 5th 2024 
 =============
 - Set PCI and GFX core clock to PLL1.
 
-# HISTORY
-----------------
 version 0.4.0     - Feb 1st 2024 
 =============
 - Bug fix: GMAC frequency always set to 125MHz.

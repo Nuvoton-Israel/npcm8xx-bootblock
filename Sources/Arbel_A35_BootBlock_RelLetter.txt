@@ -7,8 +7,8 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.04.02
-Date:    Feb 2024
+Version: 00.04.03
+Date:    Mar 2024
 
 
 # PACKAGE CONTENTS
@@ -56,6 +56,12 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.4.3     - Mar 4th 2024
+=============
+- Bug fix: set cntfrq_el0 according to CPU frequancy. Previously it was hard-coded to 250000000.
+
+# HISTORY
+----------------
 version 0.4.2     - Feb 28th 2024
 =============
 - MC: modified default priority setting.
@@ -63,8 +69,6 @@ version 0.4.2     - Feb 28th 2024
 - Change CLK_750MHZ_PLLCON0_2_REG_CFG 0x003C2201
 - Set DENALI_CTL_91_INLINE_ECC_BANK_OFFSET to 1.
 
-# HISTORY
-----------------
 version 0.4.1     - Feb 5th 2024 
 =============
 - Set PCI and GFX core clock to PLL1.

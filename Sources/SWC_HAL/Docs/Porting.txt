@@ -1,0 +1,100 @@
+The following document describes the SWC HAL and common procedures
+for porting it into new C/C++ project.
+
+
+SWC HAL Introduction
+--------------------
+SWC HAL is a source code library for Nuvoton CR16C/ARM based chips. SWC HAL is
+written in pure ANSI C and designed to be platform/compiler/OS/chip independent.
+SWC HAL designed for simple integration into new C/C++ based project.
+
+
+SWC HAL Structure
+------------------
+SWC HAL contains the following folders and files:
+
+    - Chips             - Folder that contain all supported chip description
+                          files
+    - Common            - Folder that contain common HAL definitions
+    - Docs              - Folder that contain HAL documentation
+    - ModuleDrivers     - Folder that contain all hardware module drivers
+    - LogicalDrivers    - Folder that contain all logical drivers that are
+                          written on top of hardware drivers
+    - hal.c             - Main HAL source file that includes all modules
+                          defined by chip description file
+    - hal.h             - Main HAL header file that includes all interfaces
+                          defined by chip description file
+    - hal_regs.h        - Main HAL header file that includes all registers
+                          defined by chip description file
+
+For proper SWC HAL operation, the structure of SWC HAL must remain unchanged.
+
+
+Adding SWC HAL into new project
+---------------------------------
+- Add hal.c to target project makefile
+- Add hal.h to target project inlcude path
+- Pass CHIP_NAME definition with name of target chip to hal.c compilation line
+  (for example -DCHIP_NAME=npce79nx)
+- Add more definitions if needed according to "Defines.txt" file
+- Add SWC_DEFS\defs.h file to target project include path
+
+
+Removing unused modules from SWC HAL compilation
+-------------------------------------------------
+- Create new H header file "unused.h" (or any other name)
+- Review all [MODULE]_MODULE_TYPE definitions in Chip/[chip]/[chip].h
+  and add "#undef [MODULE]_MODULE_TYPE" definitions to "unused.h" file for
+  each module that need to be removed from compilation
+- Add -DEXTERNAL_INCLUDE_FILE=unused.h definition to hal.c compilation line
+
+
+
+SWC HAL Internals
+------------------
+To compile SWC HAL it is enough to compile hal.c file with appropriate
+CHIP_NAME definition. The compiled hal.o contains the correct versions of
+module drivers that are defined for a given [CHIP_NAME] chip by [CHIP_NAME].h
+header file.
+
+To implement this functionality SWC HAL implements 3 layers:
+    hal.c    <->    [MODULE]_if.c    <->    [MODULE]_drv.c
+
+The following precompilation sequence happens when compiling hal.c with appropriate
+CHIP_NAME definition:
+
+1. Start compilation of hal.c with CHIP_NAME definition
+
+2. hal.c includes hal.h
+
+3. hal.h includes Chips\[CHIP_NAME]\[CHIP_NAME].h
+
+4. [CHIP_NAME].h contain definitions in form of:
+        #define [MODULE]_MODULE_TYPE     [MODULE_VERSION]
+
+5. hal.h includes module interfaces defined by [CHIP_NAME].h:
+    #ifdef [MODULE]_MODULE_TYPE
+    #include ModuleDrivers\[MODULE]\[MODULE]_if.h
+    #endif
+
+    Now hal.h contain all module driver interfaces.
+    For using SWC HAL it is enough to include hal.h only.
+
+6. hal.c includes module interface sources defined by [CHIP_NAME].h:
+    #ifdef [MODULE]_MODULE_TYPE
+    #include ModuleDrivers\[MODULE]\[MODULE]_if.c
+    #endif
+
+7. [MODULE]_if.c includes the correct version of the driver
+    defined in [CHIP_NAME].h (See step 4):
+
+    #ifdef [MODULE]_MODULE_TYPE
+    #include [MODULE]\[MODULE_VERSION]\[MODULE]_drv.c
+    #endif
+
+8. For each supported module, correct versions of [MODULE]_drv.c files are
+   inserted into hal.c
+
+9. hal.c contains all driver sources for the [CHIP_NAME] chip and compiled as
+   signle object file. For using SWC HAL it is enough to compile hal.c object
+   and link it with rest of the project code.

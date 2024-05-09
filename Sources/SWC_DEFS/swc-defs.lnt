@@ -1,0 +1,62 @@
+//    swc-defs.lnt
+//    PC-Lint Options for the SWC_DEFS Software Component
+
+//    This file contains options to allow PC-Lint to process header
+//    files for the Software Definitions (SWC_DEFS).
+//
+//    lint-nt  swc-defs.lnt
+//
+
+-emacro(*,DISABLE_INTERRUPTS,ENABLE_INTERRUPTS)
+-emacro(*,INTERRUPTS_SAVE_DISABLE,INTERRUPTS_RESTORE)
+-emacro(*,ATOMIC_OP)
+-emacro(*,ASSERT)
+-emacro(*,CPU_IDLE)
+
+-emacro(747,REG_WRITE)  // Significant prototype coercion (long to unsigned char/short)
+                        // warning is generated when register size is 8/16 bits, value is casted to unsigned char/short
+
+-emacro(732,REG_WRITE)  // Loss of sign (short to unsigned short)
+                        // warning is generated when value is declared as short (INT16) but casted to unsigned short (UINT16)
+
+-emacro(506,SET_VAR_FIELD,SET_REG_FIELD,SET_VAR_BIT,CLEAR_VAR_BIT,READ_VAR_FIELD)   // These macros use a constant Boolean expression which is
+                                                                                    // evaluated the same way each time (sizeof(var) == 2)
+
+-emacro(712,SET_VAR_FIELD,SET_VAR_BIT,CLEAR_VAR_BIT)    // Loss of precision (assignment) (unsigned long to unsigned short/char)
+                                                        // This is due to UINT32 casting used in these macros
+
+-emacro(737,SET_VAR_FIELD,SET_REG_FIELD)                // Loss of sign in promotion from int to unsigned int (using enums in field macros)
+
+-emacro(648,SET_VAR_FIELD,SET_REG_FIELD)                // Overflow in computing constant for operation: 'shift left'
+
+-emacro(734,SET_VAR_FIELD,SET_VAR_BIT,CLEAR_VAR_BIT)    // Loss of precision (assignment) (32 bits to 8 bits)
+                                                        // This is due to the UINT32 casting used in these macros, regardless of the
+                                                        // actual variable size used.
+
+-emacro(734,SET_REG_FIELD,SET_REG_BIT)                  // Loss of precision (15 bits to 8 bits)
+                                                        // The fixed '0x1' expression used in these macros ignores the UINT8 casting and uses INT (short)
+
+-emacro(502,CLEAR_VAR_BIT,CLEAR_REG_BIT,SET_REG_FIELD)  // Expected unsigned type (Unary ~ applied to signed quantities).
+                                                        // The case where sizeof(var) == 1 does not use casting, hence is regarded as signed.
+                                                        // Casting to 'UINT8' does not remove the warning.
+                                                        // Casting to 'unsigned' removes the warning.
+
+-emacro(774,SET_REG_FIELD,DEFS_SEC_COND_CHECK)          // Boolean within 'if' always evaluates to True
+
+-emacro(778,SET_REG_FIELD,SET_VAR_FIELD,ASSERT)         // Constant expression evaluates to 0 in operation ...
+                                                        // When the 'value' parameter always evaluates to 0 following a mathematical operation.
+                                                        // e.g., (FLASH_DIVIDER - 1), where FLASH_DIVIDER always evaluates to 1.
+
+-emacro(647,SET_VAR_BIT)                                // Suspicious truncation when using UINT64
+
+-emacro(578,DEFS_FLOW_MONITOR_DECLARE)                  // Declaration of symbol 'flowCounterOffset' hides symbol 'flowCounterOffset'
+
+//+fpm  // Used to suppress Loss of Precision messages (#734).
+        // These messages are derived from using the BITS AND FIELDS OPERATIONS in defs.h.
+        // User is responsible to make sure there is no unwanted truncation.
+        // Examples:
+        // 1. UINT8 a, b;
+        // a = (b << 4);    // Info 734: Loss of precision (12 bits to 8 bits)
+        //
+        // 2. #define   FIELD_P    8
+        // SET_VAR_FIELD(reg, FIELD, value);    // Info 734: Loss of precision (24 bits to 16 bits)

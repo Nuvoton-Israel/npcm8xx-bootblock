@@ -1,0 +1,45 @@
+----------------------------------------------------------------------
+ SPDX-License-Identifier: GPL-2.0
+ Copyright (c) 2010-2024 by Nuvoton Technology Corporation
+ All rights reserved
+
+ NPCM8XX (Arbel) A35 BootBlock Build instructions
+----------------------------------------------------------------------
+
+Prerequisites
+-------------
+      Windows build:
+      =============
+      - MinGW for Windows.
+      - GCC toolchain  arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-aarch64-none-elf
+        insalled at: 
+           C:\cross-compiler\arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-aarch64-none-elf
+        or edit GCC path at build.bat
+        
+      set MAKE_PATH=C:\MinGW\bin;C:\MinGW\msys\1.0\bin
+      set PATH=%CROSS_COMPILER_PATH%;%MAKE_PATH%;%PATH%
+
+      
+      Linux build:
+      ===========
+      - make: GNU Make 4.3. built for x86_64-pc-linux-gnu
+      - toolchain: arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-elf
+        edit GCC location at build.sh
+
+
+Build process
+--------------
+Windows:
+    1. Run  clean.bat
+    2. Run  build.bat [tip\no_tip]
+    (or call: make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH%)
+Linux:
+    1. Run  clean.sh
+    2. Run  build.sh [tip\no_tip]
+ 
+Deliverables
+------------
+Files:
+    - .\Images\tip\Arbel_a35_bootblock.bin
+    - .\Images\no_tip\Arbel_a35_bootblock.bin
+

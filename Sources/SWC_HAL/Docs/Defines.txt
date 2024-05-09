@@ -1,0 +1,148 @@
+REQUIRED DEFINITIONS
+--------------------
+--------------------
+CHIP_NAME=<chip>                     - This define's value contains the name of the target chip of the compilation
+                                       The chip name should match to one of the directory names in the Chips folder
+
+
+OPTIONAL DEFINITIONS
+--------------------
+--------------------
+GENERAL
+-------
+EXTERNAL_INCLUDE_FILE=<file>         - The value of this define specifies an external file that will be included
+                                       into the chip.c compilation
+
+SWC_HAL_FLAT                         - Assume SWC_HAL is flat, i.e., all chip-specific source code is available in
+                                       a single directory
+
+INTERRUPTS (NVIC/ICU/GIC)
+-------------------------
+EXTERNAL_DISPATCH_TABLE              - The existence of this define specifies that an external dispatch table is
+                                       provided by the user (the driver-defined dispatch table is not used)
+
+STATIC_HW_DISPATCH_TABLE
+STATIC_SW_DISPATCH_TABLE             - The existence of this define specifies that the HW/SW dispatch table is
+                                       fixed and does not reside in RAM (handler installation is ignored)
+
+DYNAMIC_HW_DISPATCH_TABLE
+DYNAMIC_SW_DISPATCH_TABLE             - The existence of this define specifies that the HW/SW dispatch table is
+                                       dynamic and resides in RAM (handler installation is valid)
+
+SW_DISPATCH_TABLE                    - The existence of this define specifies that ICU driver manages a
+                                       software dispatch table only. Loading the dispatch table is done
+                                       by some external entity, for example, booter
+
+SMB
+---
+SMB_SLAVE_ONLY                       - Include only SMB Slave-specific code in SMB driver
+
+SMB_MASTER_ONLY                      - Include only SMB Master-specific code in SMB driver
+
+SMB_SW_PEC                           - Use SW PEC instead of HW PEC
+
+SMB_WRAP_AROUND_BUFFER               - Use this for EEPROM emulation, where the buffer is wrapped around on slave write
+
+SMB_SW_BYPASS_HW_ISSUE_SMB_STOP      - SMB stall on stop issue is a HW issue on SMB verison 6. It is noticeable only
+                                       where the core frequency is high
+
+SMB_TEST_MODE                        - Support driver validation
+
+SMB_HOOK_ADD_HOLD_TIME_BEFORE_REPEATED_START - Add a delay before repeated start
+
+SMB_DISABLE_TO_CLEAR_T_OUTST         - Disable SMB module in order to clear T_OUTST when enabling Timeout
+
+I2C
+---
+I2C_SLAVE_ONLY                       - Include only I2C Slave-specific code in I2C driver
+
+I2C_MASTER_ONLY                      - Include only I2C Master-specific code in I2C driver
+
+I2C_HANDLE_TIMEOUT                   - Automatically handle (enable/disable/config) SMB driver HW timeout
+
+FLASH_DEV
+---------
+FLASH_DEV_WRITE_WITH_ERASE_EN        - Include write with erase option
+
+FLASH_DEV_CONTROL_INTERRUPTS         - Save and disable interrupts at the beginning
+                                       of UMA commands, restore at the end
+
+FLASH_DEV_WRITE_ENC_EN               - Include write encrypted and/or authenticated flash option
+                                       (e.g. support alignment and granularity limitations of specific flash)
+
+FLASH_DEV_WRITE_VERIFY               - Perform verification of written data
+
+FLASH_DEV_ERASE_SLICED               - Perform erase in incremental abortable chunks
+
+FLASH_DEV_SUPPORT_NAND               - Support both NOR and NAND flash
+
+ACPI
+----
+ACPI_DATA_TYPE=<PM_CHAN_DATA_TYPE_T> - ACPI data buffer type
+
+ACPI_INT_TYPE=<PM_CHAN_INT_TYPE_T>   - ACPI interrupt type
+
+ACPI_DELAY_SCI                       - Delay SCI generation (from low-level driver
+                                       to firmware level)
+
+CR_UART
+-------
+CR_UART_TX_BUF_LENGTH=<num>          - Change size of CORE UART transmit buffer
+
+CR_UART_RX_BUF_LENGTH=<num>          - Change size of CORE UART receive buffer
+
+CR_UART_EXTERNAL_BUFF                - Use external transmit/receive buffers
+
+CR_UART_9BIT_DATA_FORMAT_SUPPORT     - Use 9-bit data format
+
+CR_UART_NO_MDMA                      - Remove MDMA capability
+
+CR_UART_NO_HALF_DUPLEX               - Remove HALF_DUPLEX capability
+
+OTPI
+----
+OTPI_BYTE_SIZE=<size>                - OTPI device byte size, default is 1024B
+
+KBSCAN
+------
+KBSCAN_LINES=<num>                   - Must be defined when keyboard scan (KBSCAN) driver is in-use.
+                                       Defines the actual number of Keyboard Scan Out signals
+
+ESPI
+----
+BOOT_LOAD_FROM_ESPI                  - Must be defined when loading firmware from eSPI
+
+ESPI_VW_MIWU_INTERRUPT_SUPPORT       - Encapsulate the MIWU interrupt handling into the eSPI driver
+
+RSA
+----
+RSA_KEY_SIZE_MAX=<RSA_KEY_SIZE_T>    - Define if using specific key size, to reduce stack usage
+
+ECC
+----
+ECC_MAX_KEY_SIZE_DWORD = <ECC_KEY_SIZE_DWORD_T> - Define if using specific key size, to reduce stack usage
+ECC_ECSDSA_SUPPORT                   - Define if using ECSDSA (EC Schnorr Digital Signature Algorithm) verification
+
+GPIO
+----
+GPIO_MIWU_INTERRUPT_SUPPORT          - Encapsulate the MIWU interrupt handling into the GPIO driver
+GPIO_ATOMIC_WRITE                    - Perform GPIO write operations as atomic
+
+RNG
+---
+RNG_SW_EMULATION                     - Use SW emulation instead of real HW (can be used if FPGA/Palladium can't
+                                       generate RNG)
+RNG_1BIT_PER_RNGD                    - Takes bit 6 from the RNGD 8 times and create a byte from it
+RNG_NUM_OF_CLK_PRESCALE              - CLKP (clock prescalar) number of legal values, from 14-16
+
+TACHO
+-----
+TACHO_PINS_MUX_TABLE                 - Configures MFT pin muxing as part of TACHO_ConfigModule
+
+TWD
+---
+TWD_NO_INTERRUPT                     - Remove TWD_INTERRUPT_EN capability
+
+PS2
+----
+PS2_SUPPORT_1MS_START_STOP_FUNC      – Enable the FW to supply a start/stop functions for the PS2 1ms periodic timer.

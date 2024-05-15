@@ -49,11 +49,11 @@ ifeq ($(OS),Windows_NT)
    OBJCOPY = $(CROSS_COMPILE)\aarch64-none-elf-objcopy.exe
    OBJDUMP = $(CROSS_COMPILE)\aarch64-none-elf-objdump.exe
 else
-   CC = $(CROSS_COMPILE)/aarch64-none-elf-gcc
-   AR = $(CROSS_COMPILE)/aarch64-none-elf-ar
-   LD = $(CROSS_COMPILE)/aarch64-none-elf-ld
-   OBJCOPY = $(CROSS_COMPILE)/aarch64-none-elf-objcopy
-   OBJDUMP = $(CROSS_COMPILE)/aarch64-none-elf-objdump
+   CC = $(CROSS_COMPILE)gcc
+   AR = $(CROSS_COMPILE)ar
+   LD = $(CROSS_COMPILE)ld
+   OBJCOPY = $(CROSS_COMPILE)objcopy
+   OBJDUMP = $(CROSS_COMPILE)objdump
 endif  
 
 

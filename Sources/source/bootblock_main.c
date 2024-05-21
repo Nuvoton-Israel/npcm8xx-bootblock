@@ -233,15 +233,15 @@ static UINT32 TIP_ROM_StrapCKFRQ (void)
 /*----------------------------------------------------------------------------*/
 static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 {
-	UINT32 cpuFreq = BOOTBLOCK_Get_CPU_freq();
-	UINT32 mcFreq = BOOTBLOCK_Get_MC_freq();
+	volatile UINT32 cpuFreq = BOOTBLOCK_Get_CPU_freq();
+	volatile UINT32 mcFreq = BOOTBLOCK_Get_MC_freq();
 	BOOLEAN bUpdate = FALSE;
 	DEFS_STATUS status;
 	UINT32 straps = 0;
 	UINT32 clk4Freq;
 	UINT8 div_50MHz;
 	UINT8 div;
-	UINT cntfrq_val;
+	volatile UINT cntfrq_val;
 
 	straps = TIP_ROM_StrapCKFRQ();
 
@@ -307,16 +307,6 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 
 	cpuFreq = CLK_GetCPUFreq();
 
-	// update cntfrq_el0
-	if (cpuFreq != 1000000000)
-	{
-		cntfrq_val = cpuFreq / 4;
-
-		serial_printf("Set cntfrq_val to %d cpufreq %d\n", cntfrq_val, cpuFreq);
-
-		__asm__ __volatile__("msr cntfrq_el0, %0\n" :: "r"(cntfrq_val));
-	}
-
 	// in PORST only, update dividers without changing the PLLs:
 	if (READ_REG_FIELD(INTCR2, INTCR2_MC_INIT) == 0)
 	{
@@ -344,6 +334,16 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 		}
 		serial_printf("Set FIU%d divider to %d (%d.%d MHz)\n", fiu, div, PRINT_FLOAT((clk4Freq / div)));
 		CLK_ConfigureFIUClock(fiu, div);
+	}
+
+	// update cntfrq_el0
+	if (cpuFreq != 1000000000)
+	{
+		cntfrq_val = DIV_ROUND(cpuFreq, 4);
+
+		serial_printf("Set cntfrq_val to %d cpufreq %d\n", cntfrq_val, cpuFreq);
+		__asm__ __volatile__("ISB\n");
+		__asm__ __volatile__("msr cntfrq_el0, %0\n" :: "r"(cntfrq_val));
 	}
 
 	return;

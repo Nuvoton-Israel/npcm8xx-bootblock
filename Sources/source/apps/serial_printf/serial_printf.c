@@ -67,6 +67,7 @@ static char buf[SERIAL_PRINTF_BUFFER_SIZE] = {0};
 /*---------------------------------------------------------------------------------------------------------*/
 static void serial_puts (const char *s)
 {
+	int max_len = SERIAL_PRINTF_BUFFER_SIZE - 1;
 	while (*s)
 	{
 		// Puting the char to serial
@@ -77,6 +78,11 @@ static void serial_puts (const char *s)
 		}
 
 		s++;
+		max_len--;
+		if (max_len == 0)
+		{
+			return;
+		}
 	}
 }
 
@@ -539,7 +545,7 @@ int serial_printf(const char *fmt, ...)
 	/*-----------------------------------------------------------------------------------------------------*/
 	/* Parse format string into buffer                                                                     */
 	/*-----------------------------------------------------------------------------------------------------*/
-	i = serial_vsprintf(buf,fmt,args);
+	i = serial_vsprintf(buf, fmt, args);
 	va_end(args);
 
 	/*-----------------------------------------------------------------------------------------------------*/

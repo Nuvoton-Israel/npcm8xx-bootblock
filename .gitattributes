@@ -1,6 +1,0 @@
-# Set the default behavior
-* text eol=lf
-
-# always be normalized and converted:
-*.c text
-*.h text

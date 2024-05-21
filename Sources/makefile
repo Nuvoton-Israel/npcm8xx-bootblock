@@ -49,11 +49,11 @@ ifeq ($(OS),Windows_NT)
    OBJCOPY = $(CROSS_COMPILE)\aarch64-none-elf-objcopy.exe
    OBJDUMP = $(CROSS_COMPILE)\aarch64-none-elf-objdump.exe
 else
-   CC = $(CROSS_COMPILE)gcc
-   AR = $(CROSS_COMPILE)ar
-   LD = $(CROSS_COMPILE)ld
-   OBJCOPY = $(CROSS_COMPILE)objcopy
-   OBJDUMP = $(CROSS_COMPILE)objdump
+   CC = $(CROSS_COMPILE)/aarch64-none-elf-gcc
+   AR = $(CROSS_COMPILE)/aarch64-none-elf-ar
+   LD = $(CROSS_COMPILE)/aarch64-none-elf-ld
+   OBJCOPY = $(CROSS_COMPILE)/aarch64-none-elf-objcopy
+   OBJDUMP = $(CROSS_COMPILE)/aarch64-none-elf-objdump
 endif  
 
 
@@ -61,10 +61,10 @@ CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -
 CFLAGS += -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h
 CFLAGS += -mcpu=Cortex-A35 -march=armv8-a -mcmodel=large -D__AARCH64__ -D__LP64__
 CFLAGS += -Wno-empty-body -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -lm  -mstrict-align
-CFLAGS += -fno-PIC
+
 
 #
-# make serial_printf compile. Select DEBUG_LOG (really detailed) DEV_LOG (lite logging) or none of them (no logging)
+# make serial_printf compile. Select DEBUG_LOG ( really detailed) DEV_LOG (lite logging) or none of them ( no logging)
 #
 DBG = -DDEBUG_LOG
 # DBG += -DDEV_LOG
@@ -73,6 +73,7 @@ CFLAGS += $(DBG)
 
 export CFLAGS
 ASFLAGS = -mcpu=Cortex-A35 -march=armv8-a -gdwarf-3
+# ASFLAGS +=  -nostdlib
 DEPEND_FLAGS = -MD -MF $@.d
 export $(ASFLAGS)
 
@@ -99,6 +100,11 @@ all:
 	make -f $(THIS_MAKEFILE) clean_obj
 	make -f $(THIS_MAKEFILE) arbel_a35_bootblock_no_tip
 	make -f $(THIS_MAKEFILE) clean_obj
+#	make -f $(THIS_MAKEFILE) palladium
+#	make -f $(THIS_MAKEFILE) clean
+#	make -f $(THIS_MAKEFILE) flash
+#	make -f $(THIS_MAKEFILE) clean
+
 
 all_bl31:
 	make -f $(THIS_MAKEFILE) clean-all
@@ -179,11 +185,13 @@ Map_File =  $(OUTDIR_Release)/$(TARGET)_$(TargetType).map
 Release: $(OUTFILE_Release)
 
 arbel_a35_bootblock:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)"
+	make -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" CFLAGS+="-DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h $(DBG)"
+	
 arbel_a35_bootblock_no_tip:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_"
+	make -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_ -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h $(DBG)"
 arbel_a35_bootblock_tfa:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" ASFLAGS+="-DTFA_BL31_RESET" CFLAGS+="-DTFA_BL31_RESET -D_BOOTBLOCK_"
+	make -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" ASFLAGS+="-DTFA_BL31_RESET" CFLAGS+="-DTFA_BL31_RESET -D_BOOTBLOCK_ -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h $(DBG)"
+#	ONLY_SECTIONS=$(Sections_arbel_a35_bootblock) 
 
 #
 # Clean

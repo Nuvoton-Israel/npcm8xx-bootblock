@@ -171,6 +171,7 @@ TargetType = a35_bootblock_$(ENCLAVE)
 OUTDIR_Release = $(PROJ_DIR)/Images/$(ENCLAVE)
 OUTFILE_Release = $(OUTDIR_Release)/$(TARGET)_$(TargetType).elf
 Map_File =  $(OUTDIR_Release)/$(TARGET)_$(TargetType).map
+BUILD_DIR ?= $(OUTDIR_Release)/objects
 
 
 #
@@ -203,12 +204,12 @@ clean-all: clean
 clean_Release:
 	@echo .
 	@echo clean_Release
-	$(RM) *.o
-	$(RM) *.d
+	$(RM) -v $(BUILD_DIR)/$(FW_DIR)/*.o $(BUILD_DIR)/$(FW_DIR)/*.d
 
+BUILD_OBJ_DIRS := $(BUILD_DIR)/$(FW_DIR) $(BUILD_DIR)/$(HAL_DIR)
 clean_obj:
-	cd  src && $(RM) *.o *.d
-	cd  SWC_HAL && $(RM) *.o *.d
+	@echo $(BUILD_OBJ_DIRS)
+	$(RM) -v $(addsuffix /*.o,$(BUILD_OBJ_DIRS))
 
 #
 # Source files
@@ -221,7 +222,7 @@ SRCS_Release := $(SourceGroup_1)
 #
 OBJS_Release_c := $(subst .c,.o,$(filter %.c,$(SourceGroup_1)))
 OBJS_Release_s := $(subst .S,.o,$(filter %.S,$(SourceGroup_1)))
-OBJS_Release := $(OBJS_Release_s) $(OBJS_Release_c) 
+OBJS_Release := $(addprefix $(BUILD_DIR)/, $(OBJS_Release_s) $(OBJS_Release_c))
 
 #
 # Dependency Files
@@ -235,6 +236,7 @@ LINKER_FILE := $(PROJ_DIR)/$(FW_DIR)/bootblock.ld
 ifeq ($(ENCLAVE),no_tip)
 	LINKER_FILE := $(PROJ_DIR)/$(FW_DIR)/bootblock_NOTIP.ld
 endif
+LINKER_TMP = $(BUILD_DIR)/bootblock.ld
 
 LINKER_FLAGS := --entry=start64 --gc-sections --build-id=none --print-memory-usage -Map=$(Map_File)
 
@@ -262,7 +264,8 @@ $(OUTDIR_Release):
 $(OUTFILE_Release): $(OUTDIR_Release) $(OBJS_Release)
 	@echo .
 	@echo Linking: Create elf file
-	$(LD)   $(OBJS_Release) -T$(LINKER_FILE) $(LINKER_FLAGS) $(USRINCS_Release) $(LDFLAGS) -o $(OUTFILE_Release)
+	sed 's,./source,$(BUILD_DIR)/./source,g' $(LINKER_FILE) > $(LINKER_TMP)
+	$(LD) $(OBJS_Release) -T$(LINKER_TMP) $(LINKER_FLAGS) $(USRINCS_Release) $(LDFLAGS) -o $(OUTFILE_Release)
 	@echo .
 	@echo Linking: Create bin file
 	@echo $(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)  $(subst .elf,.bin,$(OUTFILE_Release)) 
@@ -283,13 +286,11 @@ $(OUTFILE_Release): $(OUTDIR_Release) $(OBJS_Release)
 #
 BUILD_Release_c = $(CC) -static -ffunction-sections -fdata-sections $(USRINCS_Release) -c $(CFLAGS) -O2 -o $@ $<
 
-.c.o:
+$(BUILD_DIR)/%.o: %.c
 	@echo .
+	@$(MD) $(dir $@)
 	@echo Compiling C $*.o
 	$(BUILD_Release_c)
-	@echo Copy $*.o
-	@$(MD) $(OUTDIR_Release)/objects/$(@D)
-	@$(CP) $*.o $(OUTDIR_Release)/objects/$(@D)/
 
 
 
@@ -298,14 +299,13 @@ BUILD_Release_c = $(CC) -static -ffunction-sections -fdata-sections $(USRINCS_Re
 #
 BUILD_Release_s = $(CC) -c $(ASFLAGS) $(DEPEND_FLAGS) -DCORTEXA $(USRINCS_Release) -O2 -o $@ $<
 
-.S.o:
+$(BUILD_DIR)/%.o: %.S
 	@echo .
+	@$(MD) $(dir $@)
 	@echo Compiling S $*.o
 	@echo $(BUILD_Release_s)
 	@$(BUILD_Release_s)
-	@echo Copy $*.o
-	@$(MD) $(OUTDIR_Release)/objects/$(@D)
-	@$(CP) $*.o $(OUTDIR_Release)/objects/$(@D)/
+
 
 .s.o:
 	@echo .

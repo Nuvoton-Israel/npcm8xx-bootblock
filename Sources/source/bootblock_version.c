@@ -40,7 +40,7 @@ const BOOTBLOCK_Version_T bb_version = {
 
     #define BOOT_DEBUG_VAL 0x00000000
 
-	.BootblockVersion = (BOOT_DEBUG_VAL | 0x000408)     //ver 00.04.08
+	.BootblockVersion = (BOOT_DEBUG_VAL | 0x000409)     //ver 00.04.09
 };
 
 #undef BOOTBLOCK_VERSION_C

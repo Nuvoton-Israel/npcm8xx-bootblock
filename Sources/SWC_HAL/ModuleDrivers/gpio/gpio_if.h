@@ -116,11 +116,7 @@ typedef enum
 /* The GPIO number is expected to be hexadecimal                                                           */
 /*---------------------------------------------------------------------------------------------------------*/
 #define GPIO_GET_BIT_NUM(gpio)      LSN(gpio)
-#if (GPIO_NUM_OF_PORTS > 16)
-#define GPIO_GET_PORT_NUM(gpio)     LSB((gpio) >> 4)
-#else
 #define GPIO_GET_PORT_NUM(gpio)     MSN(gpio)
-#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Build a GPIO number given its Port and Bit number                                                       */

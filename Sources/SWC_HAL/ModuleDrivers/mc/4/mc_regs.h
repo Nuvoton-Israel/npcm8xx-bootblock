@@ -9756,7 +9756,7 @@
     #define PRTY_GRP_AXI10_ECE              PG_2
     #define PRTY_GRP_AXI3_PCIERC            PG_3
     #define PRTY_GRP_AXI1_BMC               PG_4
-    #define PRTY_GRP_AXI2_GFX0              PG_4
+    #define PRTY_GRP_AXI2_GFX0              PG_2
     #define PRTY_GRP_AXI6_COP               PG_4
     #define PRTY_GRP_AXI13_TIP              PG_4
     #define PRTY_GRP_AXI0_GFX1              PG_6
@@ -9811,8 +9811,8 @@ P4
 #elif A2_PRIORITY_SETTINGS
 
     #define PRTY_REL_AXI6_COP         2
-    #define PRTY_REL_AXI7_GMAC1       1
-    #define PRTY_REL_AXI8_GMAC2       1
+    #define PRTY_REL_AXI7_GMAC1       2
+    #define PRTY_REL_AXI8_GMAC2       2
     #define PRTY_REL_AXI9_GMAC34_GDMA_VDMA    8
     #define PRTY_REL_AXI13_TIP        2
     #define PRTY_REL_AXI14_FLM        1

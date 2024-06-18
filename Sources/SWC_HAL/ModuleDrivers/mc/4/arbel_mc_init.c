@@ -1074,7 +1074,7 @@ static void mc_init_1600 (DDR_Setup *ddr_setup)
 	// DENALI_CTL_175 [31:0] Offset: 0x02bc
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 7. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
@@ -1111,7 +1111,7 @@ static void mc_init_1600 (DDR_Setup *ddr_setup)
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 12. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB12_RDLEN, 0x3 );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 
@@ -9469,7 +9469,7 @@ static void mc_init_2133 (DDR_Setup *ddr_setup)
 	// DENALI_CTL_175 [31:0] Offset: 0x02bc
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 7. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
@@ -9506,7 +9506,7 @@ static void mc_init_2133 (DDR_Setup *ddr_setup)
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 12. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB12_RDLEN, 0x3 );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 
@@ -16966,7 +16966,7 @@ static void mc_setup_AXI_parameters (void)
 	// DENALI_CTL_175 [31:0] Offset: 0x02bc
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 6. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_175, DENALI_CTL_175_AHB6_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 7. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
@@ -17003,7 +17003,7 @@ static void mc_setup_AXI_parameters (void)
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 12. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB12_RDLEN, 0x3 );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR write command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
-	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, 0xf );  /* UPDATED */
+	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_WRLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 	// Type: RW ; Reset: 0x0 ; Desc: Number of beats minus one for an INCR read command on AHB port 13. Clear to 0 for 1 beat, program to 1 for 2 beats, etc.
 	   SET_REG_FIELD( DENALI_CTL_178, DENALI_CTL_178_AHB13_RDLEN, MC_AHB_TIP_CP_RDLEN );  /* UPDATED */
 

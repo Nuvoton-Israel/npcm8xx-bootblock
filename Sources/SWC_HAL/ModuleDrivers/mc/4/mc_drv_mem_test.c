@@ -212,13 +212,13 @@ static int MC_mem_test_long (UINT32 itr, UINT32 mem_start, UINT32 mem_stop, BOOL
 	UINT32 g_CPU0_MemTest_Completed = 0;
 	UINT32 error = 0;
 
-	serial_printf("\n\n");
+	HAL_PRINT("\n");
 	
 	while (counter++ < itr)
 	{
 		TmpAddr = 0;
 		if (print)
-			serial_printf("\rStart Mem test %d", counter);
+			HAL_PRINT_DBG("Start Mem test %d", counter);
 
 
 		//--------------------------------------
@@ -256,7 +256,7 @@ static int MC_mem_test_long (UINT32 itr, UINT32 mem_start, UINT32 mem_stop, BOOL
 				g_CPU0_MemTest_Data_Read = TmpDataRd;
 
 				if (print)
-					serial_printf("\nMemtest failed index %d address %#010lx Expected %#010lx read %#010lx ", g_CPU0_MemTest_Loop, index, TmpDataWr, TmpDataRd);
+					HAL_PRINT("Memtest failed index %d address %#010lx Expected %#010lx read %#010lx ", g_CPU0_MemTest_Loop, index, TmpDataWr, TmpDataRd);
 				error++;
 				if (error > 100)	return error;
 
@@ -301,7 +301,7 @@ static int MC_mem_test_long (UINT32 itr, UINT32 mem_start, UINT32 mem_stop, BOOL
 				g_CPU0_MemTest_Data_Read = TmpDataRd;
 
 				if (print)
-					serial_printf("\nMemtest failed index %d address %#010lx Expected %#010lx read %#010lx ", g_CPU0_MemTest_Loop, index, TmpDataRd, TmpDataWr);
+					HAL_PRINT("Memtest failed index %d address %#010lx Expected %#010lx read %#010lx ", g_CPU0_MemTest_Loop, index, TmpDataRd, TmpDataWr);
 				error++;
 
 				if (error > 100)	return error;
@@ -320,14 +320,14 @@ static int MC_mem_test_long (UINT32 itr, UINT32 mem_start, UINT32 mem_stop, BOOL
 	if (g_CPU0_MemTest_Completed == TRUE)
 	{
 		g_CPU0_MemTest_Data_Read = (mem_stop - mem_start);
-		serial_printf("\nMemtest completed 0x%X wr bytes\n", g_CPU0_MemTest_Data_Read);
+		HAL_PRINT_DBG("Memtest completed 0x%X bytes\n", g_CPU0_MemTest_Data_Read);
 		if (print)
-			serial_printf("\nTest Completed\n");
+			HAL_PRINT("Test pass\n");
 	}
 	else
 	{
 		if (print)
-			serial_printf("\nTest Did not complete\n");
+			HAL_PRINT("Test fail\n");
 
 	}
 

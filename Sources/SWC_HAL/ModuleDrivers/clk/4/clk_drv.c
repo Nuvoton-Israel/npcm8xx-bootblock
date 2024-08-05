@@ -1126,9 +1126,20 @@ UINT64 CLK_GetUpTimeMiliseconds (void)
 
     return (UINT64)((UINT32)time_quad[1]*1000 + (UINT32)DIV_ROUND(time_quad[0], 25000) );
 
-
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_GetUpTimeSeconds                                                                   */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         Uptime in seconds                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT32 CLK_GetUpTimeSeconds (void)
+{
+    return (UINT32) REG_READ(SECCNT);
+}
 
 #if defined (FIU_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
@@ -1222,12 +1233,12 @@ void CLK_ResetAES (void)
 /*---------------------------------------------------------------------------------------------------------*/
 void CLK_ResetMC (void)
 {
-    HAL_PRINT("\n>MC reset \n");
+    HAL_PRINT("MC reset\n");
 
     SET_REG_FIELD(IPSRST1, IPSRST1_MC, 1);
-    CLK_Delay_MicroSec(10000);
+    CLK_Delay_MicroSec(100);
     SET_REG_FIELD(IPSRST1, IPSRST1_MC, 0);
-    CLK_Delay_MicroSec(10000);
+    CLK_Delay_MicroSec(100);
 
     /* Force re-training of DDR (because DDR module is reinitialized*/
     SET_REG_FIELD(INTCR2, INTCR2_MC_INIT, 0);

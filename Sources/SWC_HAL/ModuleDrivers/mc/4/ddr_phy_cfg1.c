@@ -594,7 +594,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 		//REG_WRITE( PHY_DLL_RECALIB		, 0xac001000 );
 	}
 
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 
 
 	dlls_trim_adrctrl_incr = dlls_trim_clk_incr = dll_recalib_trim_increment_ma = TRUE;
@@ -714,7 +714,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 
 	HAL_PRINT_DBG(">ZQ calib rx\n");
 	REG_WRITE( UNIQUIFY_IO_1, (0x00000002 | UNQ_IO_1_MASK)); /* UNIQUIFY_IO_1_start_rx = 1 */
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 
 	// TaliP : added wait for calibration complition.Increase TO?
 	timeout = 60000;
@@ -732,7 +732,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	}
 
 	REG_WRITE( UNIQUIFY_IO_1, (0x00000000 | UNQ_IO_1_MASK));
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 
 	// Updated flow from UNQ
 	SET_REG_FIELD(UNIQUIFY_IO_1, UNIQUIFY_IO_1_update, 1);
@@ -743,7 +743,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	HAL_PRINT_DBG(">ZQ calib tx\n");
 	REG_WRITE( UNIQUIFY_IO_3, 0x08081300 );
 	REG_WRITE( UNIQUIFY_IO_1, (0x00000001 |  UNQ_IO_1_MASK)); /* UNIQUIFY_IO_1_start_tx = 1 */
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 	timeout = 60000;
 	while(1)
 	{
@@ -841,36 +841,35 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 
 
 	REG_WRITE( UNIQUIFY_IO_1 ,  UNQ_IO_1_MASK);
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 
 	// Do update Set to force the calibrated settings to  be pushed to all the other I / O’s.If  not set, PHY periodically performs  updates every recalib_cnt interval,
 	//   when dfi_phyupd_req is asserted    with dfi_phyupd_type set to 1.
 	SET_REG_BIT( UNIQUIFY_IO_1   , 4 );
 	CLEAR_REG_BIT( UNIQUIFY_IO_1 , 4 );
-	CLK_Delay_MicroSec( 100000 );
+	CLK_Delay_MicroSec( 100 );
 
 
 	// This bit disable_recalib Prevents the digital DLL from recalibrating after the 1st time.
 	// Clear it to enable re-claibration according to interval
 	CLEAR_REG_BIT( PHY_DLL_RECALIB , 26); // PHY_DLL_RECALIB_disable_recalib
 
-	CLK_Delay_MicroSec( 10000 );
+	CLK_Delay_MicroSec( 100 );
 
-		// TaliP : added wait for calibration complition.Increase TO?
-		timeout = 60000;
-		while(1)
+	timeout = 600000;
+	while(1)
+	{
+		if ( READ_REG_FIELD(UNQ_ANALOG_DLL_2, UNQ_ANALOG_DLL_2_analog_dll_lock)  == 0x3 )
+			break;
+
+		if (!timeout)
 		{
-			if ( READ_REG_FIELD(UNQ_ANALOG_DLL_2, UNQ_ANALOG_DLL_2_analog_dll_lock)  == 0x3 )
-				break;
+			HAL_PRINT(KRED "\t>UNQ_ANALOG_DLL_2 ZQ calib to. UNQ_ANALOG_DLL_2  %#010lx\n" KNRM, REG_READ(UNQ_ANALOG_DLL_2));
+			break;
 
-			if (!timeout)
-			{
-				HAL_PRINT(KRED "\t>UNQ_ANALOG_DLL_2 ZQ calib to. UNQ_ANALOG_DLL_2  %#010lx\n" KNRM, REG_READ(UNQ_ANALOG_DLL_2));
-				break;
-
-			}
-			timeout--;
 		}
+		timeout--;
+	}
 
 
 

@@ -260,16 +260,18 @@ void update_reset_indication (void)
 
 	print_reset_indication ();
 
-	/* in PORTST only: init RCR registers. PORST and CFGDONE are set */
+	/* in PORST only: init RCR registers. PORST and CFGDONE are set */
 	if (READ_VAR_FIELD(intcr2, INTCR2_PORST)) {
 		/* configure warm reset handling */
 		rcr1 = 0xFFFFFFFF;
 		rcr2 = 0xFFFFFFFF;
 
+		/* All host related modules are not reset in case of warm boot */
+		/* same for shared resources like flash */
 		SET_VAR_FIELD (rcr1, WD0RCR_BMCDBG, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_MC, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_CLKS, 0);
-		//SET_VAR_FIELD (rcr1, WD0RCR_TIP_Reset, 0);
+		//SET_VAR_FIELD (rcr1, WD0RCR_TIP_Reset, 0); // NO_TIP only: reset TIP on WD reset.
 		SET_VAR_FIELD (rcr1, WD0RCR_GPIOM0, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_GPIOM1, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_GPIOM2, 0);
@@ -279,11 +281,13 @@ void update_reset_indication (void)
 		SET_VAR_FIELD (rcr1, WD0RCR_GPIOM6, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_GPIOM7, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_SPIBMC, 0);
-		SET_VAR_FIELD (rcr1, WD0RCR_SPER, 0);
+		SET_VAR_FIELD (rcr1, WD0RCR_SPER, 1);
 		SET_VAR_FIELD (rcr1, WD0RCR_PWM, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_SHM, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_PCIERC, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_ESPI, 0);
+		SET_VAR_FIELD (rcr1, WD0RCR_PCIMBX, 0);
+		SET_VAR_FIELD (rcr1, WD0RCR_CP1, 0);
 
 		if (CHIP_Get_Version() >= 0x04 ) {
 			SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST_A1, 0);
@@ -296,6 +300,7 @@ void update_reset_indication (void)
 		SET_VAR_FIELD (rcr2, WD0RCRB_FLM, 0);
 		SET_VAR_FIELD (rcr2, WD0RCRB_PCIGFX, 0);
 		SET_VAR_FIELD (rcr2, WD0RCRB_HOSTPER, 1);
+		SET_VAR_FIELD (rcr2, WD0RCRB_BMCBUS, 0);
 
 		REG_WRITE (WD0RCR, rcr1);
 		REG_WRITE (WD1RCR, rcr1);
@@ -314,14 +319,15 @@ void update_reset_indication (void)
 		REG_WRITE (SWRSTC2B, rcr2);
 		REG_WRITE (SWRSTC3B, rcr2);
 
-
 		REG_WRITE (CORSTC, rcr1);
 		REG_WRITE (CORSTCB, rcr2);
 
 		serial_printf ("Init reset control regs: WD0RCR = %#010lx WD0RCRB = %#010lx" NEWLINE,
 						 rcr1, rcr2);
 
+		/* Init TIP reset settings: same, except for FIU and TIP security */
 		SET_VAR_FIELD (rcr1, WD0RCR_SPIBMC, 1);
+		SET_VAR_FIELD (rcr1, WD0RCR_CP1, 1);
 
 		if (CHIP_Get_Version () >= 0x04 ) { 
 			SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST_A1, 1);

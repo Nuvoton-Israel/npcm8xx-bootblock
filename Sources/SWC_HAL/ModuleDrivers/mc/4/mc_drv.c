@@ -254,11 +254,11 @@ DEFS_STATUS MC_ConfigureDDR(DDR_Setup *ddr_setup)
 
 	if (status == DEFS_STATUS_OK) // ddr_setup->ddr_size != 0)
 	{
-		HAL_PRINT("size detected OK, stop re-training\n");
+		HAL_PRINT("size detected OK\n");
 
 
-		error = MC_mem_test_long(1, 0, _128KB_, TRUE);
-		HAL_PRINT("short mem_test = 0x%x\n", error);
+		error = MC_mem_test_long(1, 0, _128KB_, TRUE);	
+		HAL_PRINT("mem_test1=0x%x\n", error);
 
 		if (error == 0)
 		{
@@ -268,7 +268,7 @@ DEFS_STATUS MC_ConfigureDDR(DDR_Setup *ddr_setup)
 	}
 	else
 	{
-		HAL_PRINT(KRED "training failed\n" KNRM);
+		HAL_PRINT(KRED "training fail\n" KNRM);
 		MC_PrintRegs();
 		MC_PrintPhy();
 		return status;
@@ -292,7 +292,7 @@ done:
 
 		error = MC_mem_test_long(2, 0, _128KB_, TRUE);
 
-		HAL_PRINT("long mem_test = 0x%x\n", error);
+		HAL_PRINT("mem_test2=0x%x\n", error);
 		if ((error == 0) && ddr_setup->b_gpio_test_pass)
 		{
 			GPIO_Write(ddr_setup->mc_gpio_test_pass, ddr_setup->mc_gpio_test_pass_active_low);
@@ -305,7 +305,10 @@ done:
 			HAL_PRINT("set gpio complete %d val %d\n", ddr_setup->mc_gpio_test_complete, ddr_setup->mc_gpio_test_complete_active_low);
 		}
 
-		MC_BIST_Init_DRAM_mem(0x0, ddr_setup->ddr_size, 0x14000000);
+		if (ddr_setup->ECC_enable == FALSE)
+		{
+			MC_BIST_Init_DRAM_mem(0x0, ddr_setup->ddr_size, 0x14000000);
+		}
 	}
 	else
 	{
@@ -358,7 +361,7 @@ static void MC_SetBankRowCol(int bank_diff, int row_diff, int col_diff)
 	SET_REG_FIELD(DENALI_CTL_124, DENALI_CTL_124_ROW_DIFF, row_diff);
 	SET_REG_FIELD(DENALI_CTL_125, DENALI_CTL_125_COL_DIFF, col_diff);
 
-	HAL_PRINT("* bank%d row%d col%d\n", bank_diff, row_diff, col_diff);
+	HAL_PRINT_DBG("* bank%d row%d col%d\n", bank_diff, row_diff, col_diff);
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -427,13 +430,13 @@ UINT64 MC_CheckWrapAround(DDR_Setup *ddr_setup, int bank_diff, int row_diff, int
 	// check if the data is mirrored at address
 	if (MEMR64(address) == MEM_CHECK_DATA)
 	{
-		HAL_PRINT("data is mirrored at address %#010lx\n", address);
+		HAL_PRINT_DBG("data is mirrored at address %#010lx\n", address);
 		MEMW64(0x10, ~MEM_CHECK_DATA); // write the reversed data
 
 		// check if the reversed data is mirrored at address
 		if (MEMR64(address) == ~MEM_CHECK_DATA)
 		{
-			HAL_PRINT("DDP Wrap around shift %u BANK %d, ROW %d, COL %d address %#010lx\n",
+			HAL_PRINT_DBG("DDP Wrap around shift %u BANK %d, ROW %d, COL %d address %#010lx\n",
 					  shift, bank_diff, row_diff, col_diff, address);
 			MC_ClearOutOfRangeInt();
 			ddr_setup->ddr_ddp = TRUE;
@@ -465,7 +468,7 @@ UINT64 MC_CheckWrapAround(DDR_Setup *ddr_setup, int bank_diff, int row_diff, int
 			// check if the reversed data is mirrored at address
 			if (MEMR64(address) == ~MEM_CHECK_DATA)
 			{
-				HAL_PRINT("Wrap around shift %u BANK %d, ROW %d, COL %d data is mirrored at address %#010lx\n",
+				HAL_PRINT_DBG("Wrap around shift %u BANK %d, ROW %d, COL %d data is mirrored at address %#010lx\n",
 						  shift, bank_diff, row_diff, col_diff, address);
 				bFoundWrap = TRUE;
 				MC_ClearOutOfRangeInt();
@@ -479,7 +482,7 @@ UINT64 MC_CheckWrapAround(DDR_Setup *ddr_setup, int bank_diff, int row_diff, int
 	MC_ClearInterrupts();
 	if (bFoundWrap == TRUE)
 	{
-		HAL_PRINT("wrap found size is  %#010lx BANK %d, ROW %d, COL %d:\n", (_128MB_ << shift), bank_diff, row_diff, col_diff);
+		HAL_PRINT_DBG("wrap found size is  %#010lx BANK %d, ROW %d, COL %d:\n", (_128MB_ << shift), bank_diff, row_diff, col_diff);
 		return (_128MB_ << shift);
 	}
 	HAL_PRINT(KRED "Size is greater then %#010lx  BANK %d, ROW %d, COL %d: \n" KNRM, (_128MB_ << shift_limit), bank_diff, row_diff, col_diff);
@@ -514,7 +517,7 @@ UINT64 MC_CheckDramSize(DDR_Setup *ddr_setup)
 	ddr_size_00 = MC_CheckWrapAround(ddr_setup, 0, 0, 2);
 	ddr_size_11 = MC_CheckWrapAround(ddr_setup, 1, 1, 2);
 
-	HAL_PRINT(KMAG "\n\n[bank,row,size] 10 %#010lx; 01 %#010lx; 00 %#010lx; 11 %#010lx\n" KNRM, ddr_size_10, ddr_size_01, ddr_size_00, ddr_size_11);
+	HAL_PRINT_DBG(KMAG "\n\n[bank,row,size] 10 %#010lx; 01 %#010lx; 00 %#010lx; 11 %#010lx\n" KNRM, ddr_size_10, ddr_size_01, ddr_size_00, ddr_size_11);
 
 	if (ddr_size_00 == _4GB_)
 	{
@@ -548,7 +551,7 @@ UINT64 MC_CheckDramSize(DDR_Setup *ddr_setup)
 
 	HAL_PRINT(KGRN ">DRAM measured size is: %#010lx. max size from header %#010lx\n" KNRM,
 			  ddr_size, ddr_setup->max_ddr_size);
-	HAL_PRINT(KGRN ">bank diff %d. row diff %d    (%#010lx)\n" KNRM,
+	HAL_PRINT_DBG(KGRN ">bank diff %d. row diff %d    (%#010lx)\n" KNRM,
 			  READ_REG_FIELD(DENALI_CTL_124, DENALI_CTL_124_BANK_DIFF),
 			  READ_REG_FIELD(DENALI_CTL_124, DENALI_CTL_124_ROW_DIFF),
 			  REG_READ(DENALI_CTL_124));
@@ -1198,8 +1201,8 @@ static void MC_BIST_Init_DRAM_mem(UINT32 start_address, UINT64 size, UINT32 data
 		}
 	}
 
-	HAL_PRINT("\nMC: BIST init mem start = %#010lx size = %#010lx pattern = %#010lx log(size) = %#010lx\n",
-			  start_address, size, dataPattern, AddressSpace);
+	HAL_PRINT("\nMC: BIST init start=%#010lx size=%#010lx pattern=%#010lx\n",
+			  start_address, size, dataPattern);
 
 	// Clear status register to verify no BIST interrup is pending
 	SET_REG_FIELD(DENALI_CTL_148, DENALI_CTL_148_INT_ACK_BIST, 0xFF);
@@ -1227,7 +1230,8 @@ static void MC_BIST_Init_DRAM_mem(UINT32 start_address, UINT64 size, UINT32 data
 		HAL_PRINT(".");
 		CLK_Delay_MicroSec(10000);
 	}
-	HAL_PRINT_DBG("\nMC: BIST Completed, status = %#010lx\n\n", READ_REG_FIELD(DENALI_CTL_141, DENALI_CTL_141_INT_STATUS_BIST));
+	HAL_PRINT("\n");
+	HAL_PRINT_DBG("MC: BIST Completed, status = %#010lx\n\n", READ_REG_FIELD(DENALI_CTL_141, DENALI_CTL_141_INT_STATUS_BIST));
 
 	// BIST GO clear
 	SET_REG_FIELD(DENALI_CTL_82, DENALI_CTL_82_BIST_GO, 0);
@@ -1240,7 +1244,7 @@ static void MC_BIST_Init_DRAM_mem(UINT32 start_address, UINT64 size, UINT32 data
 	// Read status register to verify interrup is not pending
 	if (READ_REG_FIELD(DENALI_CTL_141, DENALI_CTL_141_INT_STATUS_BIST) != 0)
 	{
-		HAL_PRINT("Failed to clear BIST interrupt bit\n");
+		HAL_PRINT("\nFailed to clear BIST interrupt bit\n");
 	}
 
 	MC_ClearInterrupts();
@@ -1259,7 +1263,7 @@ static void MC_BIST_Init_DRAM_mem(UINT32 start_address, UINT64 size, UINT32 data
 /*---------------------------------------------------------------------------------------------------------*/
 static void MC_ECC_Enable_l(BOOLEAN bEn)
 {
-	HAL_PRINT("\n> MC: %s ECC\n", bEn ? "enable" : "disable");
+	HAL_PRINT("\nMC: %s ECC\n", bEn ? "enable" : "disable");
 
 	SET_REG_FIELD(DENALI_CTL_128, DENALI_CTL_128_SWAP_EN, ~bEn);
 
@@ -1340,9 +1344,7 @@ static void MC_ECC_Init_l(DDR_Setup *ddr_setup)
 {
 	DEFS_STATUS status;
 	UINT32 enable = 0;
-
-	HAL_PRINT("\n>MC: Init ECC\n");
-
+	
 	MC_ECC_Enable_l(TRUE);
 
 	MC_BIST_Init_DRAM_mem(0x0, ddr_setup->ddr_size, 0x14000000);
@@ -1422,7 +1424,7 @@ void MC_manual_issue_DRAM_ZQ(void)
 /* Description:                                                                                            */
 /*                  Set default configuration for the DDR Memory Controller                                */
 /*---------------------------------------------------------------------------------------------------------*/
-static DEFS_STATUS MC_ConfigureDDR_l(DDR_Setup *ddr_setup, unsigned int try)
+static DEFS_STATUS MC_ConfigureDDR_l (DDR_Setup *ddr_setup, unsigned int try)
 {
 	DEFS_STATUS status = DEFS_STATUS_OK;
 	DEFS_STATUS status_out_sweep = DEFS_STATUS_OK;
@@ -1437,7 +1439,7 @@ static DEFS_STATUS MC_ConfigureDDR_l(DDR_Setup *ddr_setup, unsigned int try)
 
 	MC_ClearInterrupts();
 
-	CLK_Delay_Cycles(0x100000);
+	CLK_Delay_Cycles(0x100);
 
 	status = ddr_phy_cfg1(ddr_setup);
 	if (status != DEFS_STATUS_OK)
@@ -1516,48 +1518,18 @@ static DEFS_STATUS MC_ConfigureDDR_l(DDR_Setup *ddr_setup, unsigned int try)
 
 	if (status != DEFS_STATUS_OK)
 		return status;
-	
-#if 0 // old sweeps
-	/*-----------------------------------------------------------------------------------------------------*/
-	/* Run output and input delay sweep                                                                    */
-	/*-----------------------------------------------------------------------------------------------------*/
-	if (status == DEFS_STATUS_OK)
-	{
-		status = Sweep_DQs_Trim_l(TRUE); // Run Parametric Sweep on READ side and find the center for each DQn.
 
-		status_out_sweep = Sweep_DQs_Trim_l(FALSE); // Run Parametric Sweep on WRITE side (both Output DQn and DM) and find the center for each DQn and average for each DM lane. (Note: assume DM length is average of data length)
-		// If output failed but input pass, maybe all we need is a second output sweep for fine tune the output after input was fine tuned.
-
-		status = Sweep_DQs_Trim_l(TRUE);
-
-		status = Sweep_DQs_Trim_l(FALSE);
-
-		/*-----------------------------------------------------------------------------------------*/
-		/*  sweep DQS (final centering) no ecc                                                     */
-		/*-----------------------------------------------------------------------------------------*/
-		//if (status == DEFS_STATUS_OK)
-		//
-		// status = Sweep_Trim_Input_DQS_l(l_BestEyeCenter, l_BestEyeSize, FALSE, FALSE);
-		//
-
-		if (ddr_setup->trim2_init_offset[0] != 0xFF)
-			Sweep_trim2_lane_l(0);
-
-		if (ddr_setup->trim2_init_offset[1] != 0xFF)
-			Sweep_trim2_lane_l(1);
-	}
-
-#else
-	HAL_PRINT(KCYN "====================  \n" KNRM);
-	HAL_PRINT(KCYN "  Main flow Sweeps    \n" KNRM);
-	HAL_PRINT(KCYN "====================  \n" KNRM);
+	/*--------------------------------------------------------------------*/
+	/* Main flow sweeps, accroding to header flag SWEEP_MAIN_FLOW.        */
+	/*--------------------------------------------------------------------*/
+	HAL_PRINT(KCYN "Main flow Sweeps 0x%x\n" KNRM, ddr_setup->sweep_main_flow);
 
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_LANE, TRUE, 0xFF00); // Run Parametric Sweep on WRITE side (TRIM_2.lane0) and find the center for lane0
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DM, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DM) and find the center for each DQn and average for each DM lane.
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DQ, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DQn) and find the center for each DQn
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_IN_DQ, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQn) and find the center for each DQn.
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_IN_DQS, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQS) and find the center for each DQn.
-	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_DQS, TRUE, 0);	   // Run Parametric Sweep on WRITE side (Output DQS) and find the center for each DQn.
+	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_DQS, TRUE, 0);	   // Run Parametric Sweep on WRITE side (Output DQS) and find the center for each DQn.	
 
 	// MC_DSCL_Enable(FALSE);
 	// NTIL TBD: seems code crash when this section moved up. need to check if this is some limit memory size issue or a real DDR ECC issue
@@ -1569,6 +1541,10 @@ static DEFS_STATUS MC_ConfigureDDR_l(DDR_Setup *ddr_setup, unsigned int try)
 		HAL_PRINT(KCYN "====================  \n" KNRM);
 		HAL_PRINT(KCYN "   Debug Sweeps       \n" KNRM);
 		HAL_PRINT(KCYN "====================  \n" KNRM);
+
+		TMC_StopWatchDog(0);
+		TMC_StopWatchDog(1);
+		TMC_StopWatchDog(2);
 
 		// NTIL: just for debug, run two round of sweeps
 		//---------------------------------
@@ -1593,8 +1569,6 @@ static DEFS_STATUS MC_ConfigureDDR_l(DDR_Setup *ddr_setup, unsigned int try)
 	}
 
 	Run_Memory_SI_Test(ddr_setup);
-
-#endif // old
 
 #endif
 
@@ -1651,9 +1625,9 @@ void MC_UpdateDramSize(DDR_Setup *ddr_setup, UINT64 iDramSize)
 	REG_WRITE(SCRPAD_03, (UINT32)(ddr_setup->ddr_size / _1MB_));
 
 	// tell uboot what is the DRAM size.
-	HAL_PRINT(KGRN "\n\n>MC: DRAM active size is %#010lx,   ECC %s\n\t size in 1MB unit is written to SCRPAD2 (%#010lx = %#010lx 1MB)\n" KNRM,
+	HAL_PRINT(KGRN "\nMC: DRAM active size %#010lx, ECC %s\nsize in 1MB unit is written to SCRPAD2 (%#010lx = %#010lx 1MB)\n" KNRM,
 			  ddr_setup->ddr_size, ddr_setup->ECC_enable ? "enabled" : "disabled", REG_ADDR(SCRPAD_02), REG_READ(SCRPAD_02));
-	HAL_PRINT(KGRN "\n\n>SCRPAD3 (%#010lx = %#010lx 1MB)\n" KNRM, REG_ADDR(SCRPAD_03), REG_READ(SCRPAD_03));
+	HAL_PRINT_DBG(KGRN "\n>SCRPAD3 (%#010lx=%#010lx 1MB)\n" KNRM, REG_ADDR(SCRPAD_03), REG_READ(SCRPAD_03));
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

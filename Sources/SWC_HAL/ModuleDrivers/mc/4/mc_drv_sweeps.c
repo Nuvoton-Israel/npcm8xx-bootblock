@@ -102,33 +102,33 @@ DEFS_STATUS Sweep_DQn_Trim_l (DDR_Setup *ddr_setup, int SweepType, BOOLEAN DoCen
 
 	DEFS_STATUS status = DEFS_STATUS_OK;
 
-	switch (SweepType)
-	{
-	case SWEEP_OUT_DQ:
-		HAL_PRINT_DBG("\n>Sweep Output DQn:");
-		break;
-
-	case SWEEP_IN_DQ:
-		HAL_PRINT_DBG("\n>Sweep Input DQn:");
-		break;
-
-	case SWEEP_OUT_DM:
-		HAL_PRINT_DBG("\n>Sweep Output DM:");
-		break;
-
-	default:
-		HAL_PRINT_DBG(KRED "\n>Sweep_DQn_Trim_l ERROR: invalid sweep type. 0x%X\n" KNRM, SweepType);
-		return DEFS_STATUS_FAIL;
-	}
-
 	if (ddr_setup != NULL)
 	{
 		if (!(ddr_setup->sweep_main_flow & (1 << SweepType)))
 		{
-			HAL_PRINT_DBG("\tSkip sweep\n");
+			HAL_PRINT_DBG("\tSkip sweep %d\n", SweepType);
 			return DEFS_STATUS_OK;
 		}
 		mc_init_sweep_arrays();
+	}
+
+	switch (SweepType)
+	{
+	case SWEEP_OUT_DQ:
+		HAL_PRINT("Sweep Out DQn\n");
+		break;
+
+	case SWEEP_IN_DQ:
+		HAL_PRINT("Sweep In DQn\n");
+		break;
+
+	case SWEEP_OUT_DM:
+		HAL_PRINT("Sweep Out DM\n");
+		break;
+
+	default:
+		HAL_PRINT_DBG(KRED "Sweep_DQn_Trim_l ERROR: invalid sweep type. 0x%X\n" KNRM, SweepType);
+		return DEFS_STATUS_FAIL;
 	}
 
 	HAL_PRINT_DBG(" (SweepBitMask=0x%04X)\n", SweepBitMask);
@@ -390,35 +390,35 @@ DEFS_STATUS Sweep_DQS_Trim_l (DDR_Setup *ddr_setup, int SweepType, BOOLEAN DoCen
 
 	DEFS_STATUS status = DEFS_STATUS_OK;
 
-	switch (SweepType)
-	{
-	case SWEEP_OUT_DQS:
-		HAL_PRINT_DBG("\n>Sweep Output DQS:");
-		break;
-
-	case SWEEP_IN_DQS:
-		HAL_PRINT_DBG("\n>Sweep Input DQS:");
-		break;
-
-	case SWEEP_OUT_LANE:
-		HAL_PRINT_DBG("\n>Sweep Output TRIM_2:");
-		break;
-
-	default:
-		HAL_PRINT_DBG(KRED "\n>ERROR: invalid sweep type.\n" KNRM);
-		return DEFS_STATUS_FAIL;
-	}
-
 	if (ddr_setup != NULL)
 	{
 		if (!(ddr_setup->sweep_main_flow & (1 << SweepType)))
 		{
-			HAL_PRINT_DBG("\tSkip sweep\n");
+			HAL_PRINT_DBG("Skip sweep %d\n", SweepType);
 			return DEFS_STATUS_OK;
 		}
 	}
 
-	HAL_PRINT_DBG(" (SweepBitMask = 0x%04X) \n", SweepBitMask);
+	switch (SweepType)
+	{
+		case SWEEP_OUT_DQS:
+			HAL_PRINT("Sweep Out DQS\n");
+			break;
+
+		case SWEEP_IN_DQS:
+			HAL_PRINT("Sweep In DQS\n");
+			break;
+
+		case SWEEP_OUT_LANE:
+			HAL_PRINT("Sweep Out TRIM_2\n");
+			break;
+
+		default:
+			HAL_PRINT_DBG(KRED "ERROR: invalid sweep type\n" KNRM);
+			return DEFS_STATUS_FAIL;
+	}
+
+	HAL_PRINT_DBG("(SweepBitMask=0x%04X)\n", SweepBitMask);
 
 	mc_init_sweep_arrays();
 

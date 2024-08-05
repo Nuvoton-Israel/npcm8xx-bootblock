@@ -61,6 +61,8 @@ int             serial_printf(const char *fmt, ...);
 
 void serial_printf_init (void);
 
+void serial_printf_stop ();
+void serial_printf_start ();
 
 int str_printf (char *buf, const char *fmt, ...);
 #endif //__SERIAL_PRINTF_H

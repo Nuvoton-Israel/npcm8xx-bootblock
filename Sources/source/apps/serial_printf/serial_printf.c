@@ -70,12 +70,13 @@ static void serial_puts (const char *s)
 	int max_len = SERIAL_PRINTF_BUFFER_SIZE - 1;
 	while (*s)
 	{
-		// Puting the char to serial
-		UART_PutC(gUartLog, *s );
 		if (*s == '\n')
 		{
 			UART_PutC(gUartLog, '\r');
 		}
+
+		// Puting the char to serial
+		UART_PutC(gUartLog, *s );
 
 		s++;
 		max_len--;
@@ -518,6 +519,17 @@ int str_printf (char *buf, const char *fmt, ...)
 
 
 #if   defined(DEBUG_LOG) || defined(DEV_LOG)
+
+void serial_printf_stop ()
+{
+	gUartLog = UART_MAX_DEV;
+}
+
+void serial_printf_start ()
+{
+	gUartLog = UART0_DEV;
+}
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        serial_printf                                                                          */
 /*                                                                                                         */
@@ -536,7 +548,7 @@ int serial_printf(const char *fmt, ...)
 
 	if(gUartLog == UART_MAX_DEV)
 	{
-		serial_printf_init();
+		return 0;
 	}
 
 
@@ -566,8 +578,6 @@ void serial_printf_init (void)
 
 	gUartLog = dev;
 
-	CLK_Delay_MicroSec(20000);
-
 	CHIP_Mux_Uart(gUartLog, TRUE, FALSE, TRUE); // don't touch SPMOD.
 
 	if (READ_REG_FIELD(PWRON, PWRON_BSPA) == 0)
@@ -587,11 +597,10 @@ void serial_printf_init (void)
 	baud = BOOTBLOCK_GetUartBaud();
 	UART_Init(gUartLog, UART_SKIP_MUX , baud);
 
-	CLK_Delay_MicroSec(20000);
+	CLK_Delay_MicroSec(1000);
 
-	serial_printf("\n\n\nbootblock prints to UART%d baud %d\n", dev, (int)baud);
+	serial_printf("\nbootblock use UART%d baud %d\n", dev, (int)baud);
 
-	CLK_Delay_MicroSec(20000);
 }
 
 

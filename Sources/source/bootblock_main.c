@@ -50,8 +50,6 @@ extern const BOOTBLOCK_Version_T bb_version;
 
 static DDR_Setup ddr_setup;
 
-#define PRINT_FLOAT(x) (x) / 1000000, (((x) % 1000000) / 1000)
-
 
 typedef __attribute__((noreturn)) void (*jumpFunction)();
 
@@ -398,46 +396,46 @@ static void bootblock_PrintLogo (void)
 /*---------------------------------------------------------------------------------------------------------*/
 static void bootblock_PrintClocks (void)
 {
-	serial_printf("\n\n>PWRON = %#010lx\n\nFinal clk settings:\n", REG_READ(PWRON));
+	serial_printf("\n\nPWRON = %#010lx\n\nFinal clk settings:\n", REG_READ(PWRON));
 
-	serial_printf(">PLL0 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll0Freq()));
-	serial_printf(">PLL1 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll1Freq()));
-	serial_printf(">PLL2/2 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll2Freq()));
+	serial_printf("PLL0 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll0Freq()));
+	serial_printf("PLL1 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll1Freq()));
+	serial_printf("PLL2/2 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPll2Freq()));
 
-	serial_printf(">PLLCON0  = %#010lx\n", REG_READ(PLLCON0));
-	serial_printf(">PLLCON1  = %#010lx\n", REG_READ(PLLCON1));
-	serial_printf(">PLLCON2  = %#010lx\n", REG_READ(PLLCON2));
-	serial_printf(">CLKSEL   = %#010lx\n", REG_READ(CLKSEL));
-	serial_printf(">CLKDIV1  = %#010lx\n", REG_READ(CLKDIV1));
-	serial_printf(">CLKDIV2  = %#010lx\n", REG_READ(CLKDIV2));
-	serial_printf(">CLKDIV3  = %#010lx\n", REG_READ(CLKDIV3));
-	serial_printf(">CLKDIV4  = %#010lx\n", REG_READ(CLKDIV4));
+	serial_printf("PLLCON0  = %#010lx\n", REG_READ(PLLCON0));
+	serial_printf("PLLCON1  = %#010lx\n", REG_READ(PLLCON1));
+	serial_printf("PLLCON2  = %#010lx\n", REG_READ(PLLCON2));
+	serial_printf("CLKSEL   = %#010lx\n", REG_READ(CLKSEL));
+	serial_printf("CLKDIV1  = %#010lx\n", REG_READ(CLKDIV1));
+	serial_printf("CLKDIV2  = %#010lx\n", REG_READ(CLKDIV2));
+	serial_printf("CLKDIV3  = %#010lx\n", REG_READ(CLKDIV3));
+	serial_printf("CLKDIV4  = %#010lx\n", REG_READ(CLKDIV4));
 
-	serial_printf("\n>CPU CLK = %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPUFreq()));
-	serial_printf(">MC CLK = %d.%d MHz\n", PRINT_FLOAT(CLK_GetMCFreq()));
+	serial_printf("n>CPU CLK = %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPUFreq()));
+	serial_printf("MC CLK = %d.%d MHz\n", PRINT_FLOAT(CLK_GetMCFreq()));
 
-	serial_printf(">APB1 = %d.%d MHz  \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB1)));
-	serial_printf(">APB2 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB2)));
-	serial_printf(">APB3 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB3)));
-	serial_printf(">APB4 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB4)));
-	serial_printf(">APB5 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB5)));
-	serial_printf(">SPI0 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI0)));
-	serial_printf(">SPI1 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI1)));
-	serial_printf(">SPI3 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI3_AHB3)));
-	serial_printf(">SPIX = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPIX)));
-	serial_printf(">ADC  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetADCClock()));
-	serial_printf(">CP/TIP= %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPFreq()));
-	serial_printf(">GFX  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetGFXClock()));
-	serial_printf(">PCI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPCIClock()));
-	serial_printf(">MMC  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetSDClock(0)));
-	serial_printf(">SD   = %d.%d MHz \n", PRINT_FLOAT(CLK_GetSDClock(1)));
-	serial_printf(">CLKOUT= %d.%d MHz \n", PRINT_FLOAT(CLK_GetClkoutFreq()));
-	serial_printf(">PIXEL = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPixelClock()));
-	serial_printf(">OHCI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_OHCI_Clock()));
-	serial_printf(">UTMI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_UTMI_Clock()));
-	serial_printf(">RC,I3C= %d.%d MHz \n", PRINT_FLOAT(CLK_Get_RC_Phy_and_I3C_Clock()));
-	serial_printf(">UART  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUartClock()));
-	serial_printf(">GMAC  = %d.%d MHz \n\n", PRINT_FLOAT(CLK_GetGMACClock()));
+	serial_printf("APB1 = %d.%d MHz  \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB1)));
+	serial_printf("APB2 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB2)));
+	serial_printf("APB3 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB3)));
+	serial_printf("APB4 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB4)));
+	serial_printf("APB5 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB5)));
+	serial_printf("SPI0 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI0)));
+	serial_printf("SPI1 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI1)));
+	serial_printf("SPI3 = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPI3_AHB3)));
+	serial_printf("SPIX = %d.%d MHz \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_SPIX)));
+	serial_printf("ADC  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetADCClock()));
+	serial_printf("CP/TIP= %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPFreq()));
+	serial_printf("GFX  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetGFXClock()));
+	serial_printf("PCI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPCIClock()));
+	serial_printf("MMC  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetSDClock(0)));
+	serial_printf("SD   = %d.%d MHz \n", PRINT_FLOAT(CLK_GetSDClock(1)));
+	serial_printf("CLKOUT= %d.%d MHz \n", PRINT_FLOAT(CLK_GetClkoutFreq()));
+	serial_printf("PIXEL = %d.%d MHz \n", PRINT_FLOAT(CLK_GetPixelClock()));
+	serial_printf("OHCI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_OHCI_Clock()));
+	serial_printf("UTMI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_UTMI_Clock()));
+	serial_printf("RC,I3C= %d.%d MHz \n", PRINT_FLOAT(CLK_Get_RC_Phy_and_I3C_Clock()));
+	serial_printf("UART  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUartClock()));
+	serial_printf("GMAC  = %d.%d MHz \n\n", PRINT_FLOAT(CLK_GetGMACClock()));
 
 	if (CLK_GetGMACClock() != 125000000) {
 		serial_printf(KRED "ERROR GMAC value not 125MHz\n" KNRM);
@@ -528,7 +526,16 @@ __attribute__((noreturn)) void bootblock_main (void)
 
 	REG_WRITE(SCRPAD_10_41(0), 0xAAAAAAAA);
 
+	for (int i = 4; i <= 9; i++)
+		REG_WRITE(SCRPAD_10_41(i), 0);
+
 	bootblock_PrintLogo();
+
+	serial_printf ("uptime %d.%d \n", PRINT_FLOAT2(CLK_GetUpTimeMiliseconds()));
+
+	TMC_StopWatchDog(0);
+	TMC_StopWatchDog(1);
+	TMC_StopWatchDog(2);
 
 	*(UINT32 *)buff = 0;
 	*(UINT32 *)(buff + 4) = 0;
@@ -693,6 +700,8 @@ __attribute__((noreturn)) void bootblock_main (void)
 	}
 
 
+	serial_printf ("uptime %d.%d \n", PRINT_FLOAT2(CLK_GetUpTimeMiliseconds()));
+
 #ifndef _NOTIP_
 	// Signal to TIP that BootBlock is done:
 	if (status == DEFS_STATUS_OK)
@@ -746,6 +755,7 @@ __attribute__((noreturn)) void bootblock_main (void)
 		REG_WRITE(SCRPAD_10_41(i), 0);
 
 #endif
+
 	// Go to BL31
 	((jumpFunction)(uint64_t)addr64)();
 

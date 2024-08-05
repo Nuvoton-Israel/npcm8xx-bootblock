@@ -34,21 +34,20 @@ volatile UINT8 bucket_save_diff_lane[MEM_STRB_WIDTH][MAX_VREF_VAL] __attribute__
 
 #define  NONE_LP4_PHY 0xFFFFF
 
-#define BUSY_WAIT_TIMEOUT_MC(busy_cond, timeout)	            \
+#define BUSY_WAIT_TIMEOUT_MC(busy_cond, timeout)        \
 {			                                            \
-	 UINT32 __time = timeout;		                    \
-	 CLK_Delay_MicroSec(1000);                                  \
-			                                            \
-	 do		                                            \
-	 {		                                            \
+	 UINT32 __time = timeout;                           \
+	 CLK_Delay_MicroSec(100);                           \
+	 do                                                 \
+	 {                                                  \
 			if (__time-- == 0)                          \
 			{                                           \
 			    status =  DEFS_STATUS_RESPONSE_TIMEOUT; \
-			    HAL_PRINT("\ttimeout\n");           \
+			    HAL_PRINT("\ttimeout\n");               \
 			    break;                                  \
 			}                                           \
-	 } while (busy_cond);		                            \
-	 CLK_Delay_MicroSec(10000);                                 \
+	 } while (busy_cond);                               \
+	 CLK_Delay_MicroSec(100);                           \
 }
 
 
@@ -589,7 +588,7 @@ void vref_dq_training_ddr4 (DDR_Setup *ddr_setup)
 		// Wait for training completion
 		BUSY_WAIT_TIMEOUT_MC(READ_REG_FIELD(SCL_START, SCL_START_set_ddr_scl_go_done) != 0, 10000);
 
-		CLK_Delay_MicroSec(0x10000);
+		CLK_Delay_MicroSec(0x100);
 
 		// Check VREF training windows for each byte lane
 		for (lane = 0; lane < MEM_STRB_WIDTH; lane++)
@@ -682,7 +681,7 @@ void vref_dq_training_ddr4 (DDR_Setup *ddr_setup)
 	// Poll till MPR read bit-leveling is finished
 	BUSY_WAIT_TIMEOUT_MC(READ_REG_FIELD(SCL_START, SCL_START_set_ddr_scl_go_done) != 0, 10000);
 
-	CLK_Delay_MicroSec(0x10000);
+	CLK_Delay_MicroSec(0x100);
 	// Check Failure Status
 	reg_read_val = REG_READ( DYNAMIC_BIT_LVL );
 
@@ -1266,7 +1265,7 @@ DEFS_STATUS ddr_phy_cfg2 (DDR_Setup *ddr_setup)
 	// Once SCL has run gating values will be accurate so turn off x propagation fix
 	REG_WRITE( DISABLE_GATING_FOR_SCL /*0x1A0*/, 0x3);
 #endif
-	HAL_PRINT(KCYN "Bit leveling\n" KNRM);
+	HAL_PRINT("Bit leveling\n");
 
 	// Program dynamic bit leveling
 	// BIT_LVL_WR_DYNAMIC & BIT_LVL_DYNAMIC are mutually EXCLUSIVE

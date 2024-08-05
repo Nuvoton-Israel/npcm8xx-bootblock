@@ -106,6 +106,13 @@ start64:
 	MOV X29, XZR
 	MOV X30, XZR
 
+	// Set LR to a known address.
+	ldr x0, =start64
+	msr elr_el3, x0
+	msr elr_el2, x0
+	msr elr_el1, x0
+
+
 	// clear FPU\NEON regs:
 	MSR  CPTR_EL3, XZR
 	MSR  CPTR_EL2, XZR

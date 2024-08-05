@@ -427,6 +427,16 @@ void CLK_GetTimeStamp (UINT32 time_quad[2]);
 UINT64 CLK_GetUpTimeMiliseconds (void);
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_GetUpTimeSeconds                                                                   */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         Uptime in seconds                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT32 CLK_GetUpTimeSeconds (void);
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_Delay_Cycles                                                                       */
 /*                                                                                                         */
 /* Parameters:                                                                                             */

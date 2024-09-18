@@ -535,14 +535,17 @@
 /*---------------------------------------------------------------------------------------------------------*/
 /* Generic interrupt manager ( GIC)                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
-#define GIC_MODULE_TYPE                 2
+#define GIC_MODULE_TYPE                 3
 #define GIC_ACCESS                      MEM
 
-#ifndef DYNAMIC_BASE_ADDRESS
-#define GIC_BASE_ADDR                   GIC_PHYS_BASE_ADDR
-#else
-#define GIC_BASE_ADDR                   GIC_VIRT_BASE_ADDR
-#endif
+// DFFF_9000h GICD_BA ARM Cortex A35 (BMC CPU) GIC Distributor
+// DFFF_A000h GICC_BA ARM Cortex A35 (BMC CPU) GIC CPU interface
+#define GICD_PHYS_BASE_ADDR 0xDFFF9000
+#define GICC_PHYS_BASE_ADDR 0xDFFFA000
+
+#define GIC_BASE_ADDR                   GICD_PHYS_BASE_ADDR
+#define GICD_BASE_ADDR                  GIC_BASE_ADDR
+#define GICC_BASE_ADDR                  (GIC_BASE_ADDR + 0x1000)
 
 #define GIC_TRAP_NUM                    32
 #define GIC_MAX_PRIORITY                256
@@ -562,6 +565,7 @@
 #define SHM_INTERRUPT_POLARITY          INTERRUPT_POLARITY_LEVEL_HIGH
 #define SHM_INTERRUPT_PRIORITY          0
 #define SHM_INTERRUPT_PROVIDER          CHIP_INTERRUPT_PROVIDER
+#define SHM_INTERRUPT_PRIORITY          0
 #define SHM_NUM_OF_INPUTS               3
 #define SHM_CLK                         2000000
 #define SHM_SOURCE_CLOCK                PLL2
@@ -1107,138 +1111,163 @@
 /*---------------------------------------------------------------------------------------------------------*/
 /* Interrupts                                                                                              */
 /*---------------------------------------------------------------------------------------------------------*/
-typedef enum GIC_INT_SRC_T_tag
+typedef enum GIC_INTERRUPT_SRC_T_tag
 {
-    ADC_INTERRUPT             = 0/*+32*/,      /* ADC Module                                         */
-    COPR_INTERRUPT            = 1/*+32*/,      /* Coprocessor subsystem                              */
-    UART_INTERRUPT_0          = 2/*+32*/,      /* UART 0 Module                                      */
-    UART_INTERRUPT_1          = 3/*+32*/,      /* UART 1 Module                                      */
-    UART_INTERRUPT_2          = 4/*+32*/,      /* UART 2 Module                                      */
-    UART_INTERRUPT_3          = 5/*+32*/,      /* UART 3 Module                                      */
-    PECI_INTERRUPT            = 6/*+32*/,      /* PECI module                                        */
-    VSYNC_INTERRUPT           = 7/*+32*/,      /* Graphics module via System Manager module          */
-    PCIMBX_INTERRUPT          = 8/*+32*/,      /* PCI mailbox module                                 */
-    KCS_HIB_INTERRUPT         = 9/*+32*/,      /* KCS/HIB  (from host interface) modules             */
-    LPC_MBX_INTERRUPT         = 10/*+32*/,     /* LPC or eSPI Mailbox (new, if we do)                */
-    SHM_INTERRUPT             = 11/*+32*/,     /* SHM module                                         */
-    PS2_INTERRUPT             = 12/*+32*/,     /* PS/2 Module ???                                    */
-    BT_INTERRUPT              = 13/*+32*/,     /* Block transfer, If we do                           */
-    GMAC1_INTERRUPT           = 14/*+32*/,     /* GMAC1 module                                       */
-    EMC1RX_INTERRUPT          = 15/*+32*/,     /* EMC1 Rx module                                     */
-    EMC1TX_INTERRUPT          = 16/*+32*/,     /* EMC1 Tx module                                     */
-    GMAC2_INTERRUPT           = 17/*+32*/,     /* GMAC2 module                                       */
-    ESPI_INTERRUPT            = 18/*+32*/,     /* eSPI Module                                        */
-    SIOX_INTERRUPT_1          = 19/*+32*/,     /* SIOX Serial GPIO Expander module 1                 */
-    SIOX_INTERRUPT_2          = 20/*+32*/,     /* SIOX Serial GPIO Expander module 2                 */
-    L2_CACHE_ERR              = 21/*+32*/,     /* A combined interrupt on L2 Cahche errors           */
-    VCD_INTERRUPT             = 22/*+32*/,     /* VCD module                                         */
-    DVC_INTERRUPT             = 23/*+32*/,     /* DVC module                                         */
-    ECE_INTERRUPT             = 24/*+32*/,     /* ECE module                                         */
-    MC_INTERRUPT              = 25/*+32*/,     /* Memory Controller Interrupt                        */
-    MMC_INTERRUPT             = 26/*+32*/,     /* MMC Module (SDHC2)                                 */
-    SDRDR_INTERRUPT           = 27/*+32*/,     /* SDHC1 - SD Card Reader side interface (if required)*/
-    PSPI2_INTERRUPT           = 28/*+32*/,     /* Slow Peripheral SPI2                               */
-    VDMA_INTERRUPT            = 29/*+32*/,     /* VDMA module                                        */
-    MCTP_INTERRUPT            = 30/*+32*/,     /* VDMX module. Not used if VDMA used                 */
-    PSPI1_INTERRUPT           = 31/*+32*/,     /* Slow Peripheral SPI1                               */
-    TMC_INTERRUPT_0           = 32/*+32*/,     /* Timer Module 0 Timer 0                             */
-    TMC_INTERRUPT_1           = 33/*+32*/,     /* Timer Module 0 Timer 1                             */
-    TMC_INTERRUPT_2           = 34/*+32*/,     /* Timer Module 0 Timer 2                             */
-    TMC_INTERRUPT_3           = 35/*+32*/,     /* Timer Module 0 Timer 3                             */
-    TMC_INTERRUPT_4           = 36/*+32*/,     /* Timer Module 0 Timer 4                             */
-    TMC_INTERRUPT_5           = 37/*+32*/,     /* Timer Module 1 Timer 0                             */
-    TMC_INTERRUPT_6           = 38/*+32*/,     /* Timer Module 1 Timer 1                             */
-    TMC_INTERRUPT_7           = 39/*+32*/,     /* Timer Module 1 Timer 2                             */
-    TMC_INTERRUPT_8           = 40/*+32*/,     /* Timer Module 1 Timer 3                             */
-    TMC_INTERRUPT_9           = 41/*+32*/,     /* Timer Module 1 Timer 4                             */
-    TMC_INTERRUPT_10          = 42/*+32*/,     /* Timer Module 2 Timer 0                             */
-    TMC_INTERRUPT_11          = 43/*+32*/,     /* Timer Module 2 Timer 1                             */
-    TMC_INTERRUPT_12          = 44/*+32*/,     /* Timer Module 2 Timer 2                             */
-    TMC_INTERRUPT_13          = 45/*+32*/,     /* Timer Module 2 Timer 3                             */
-    TMC_INTERRUPT_14          = 46/*+32*/,     /* Timer Module 2 Timer 4                             */
-    WDG_INTERRUPT0            = 47/*+32*/,     /* Timer Module 0 watchdog (also on NMI)              */
-    WDG_INTERRUPT1            = 48/*+32*/,     /* Timer Module 1 watchdog (also on NMI)              */
-    WDG_INTERRUPT2            = 49/*+32*/,     /* Timer Module 2 watchdog (also on NMI)              */
-    USB_DEV_INTERRUPT_0       = 51/*+32*/,     /* USB Device 0                                       */
-    USB_DEV_INTERRUPT_1       = 52/*+32*/,     /* USB Device 1                                       */
-    USB_DEV_INTERRUPT_2       = 53/*+32*/,     /* USB Device 2                                       */
-    USB_DEV_INTERRUPT_3       = 54/*+32*/,     /* USB Device 3                                       */
-    USB_DEV_INTERRUPT_4       = 55/*+32*/,     /* USB Device 4                                       */
-    USB_DEV_INTERRUPT_5       = 56/*+32*/,     /* USB Device 5                                       */
-    USB_DEV_INTERRUPT_6       = 57/*+32*/,     /* USB Device 6                                       */
-    USB_DEV_INTERRUPT_7       = 58/*+32*/,     /* USB Device 7                                       */
-    USB_DEV_INTERRUPT_8       = 59/*+32*/,     /* USB Device 8                                       */
-    USB_DEV_INTERRUPT_9       = 60/*+32*/,     /* USB Device 9                                       */
-    USB_HST_INTERRUPT_0       = 61/*+32*/,     /* USB Host 0                                         */
-    USB_HST_INTERRUPT_1       = 62/*+32*/,     /* USB Host 1                                         */
-
-    SMB_INTERRUPT_0           = 64/*+32*/,     /* SMBus and I2C Module 0                             */
-    SMB_INTERRUPT_1           = 65/*+32*/,     /* SMBus and I2C Module 1                             */
-    SMB_INTERRUPT_2           = 66/*+32*/,     /* SMBus and I2C Module 2                             */
-    SMB_INTERRUPT_3           = 67/*+32*/,     /* SMBus and I2C Module 3                             */
-    SMB_INTERRUPT_4           = 68/*+32*/,     /* SMBus and I2C Module 4                             */
-    SMB_INTERRUPT_5           = 69/*+32*/,     /* SMBus and I2C Module 5                             */
-    SMB_INTERRUPT_6           = 70/*+32*/,     /* SMBus and I2C Module 6                             */
-    SMB_INTERRUPT_7           = 71/*+32*/,     /* SMBus and I2C Module 7                             */
-    SMB_INTERRUPT_8           = 72/*+32*/,     /* SMBus and I2C Module 8                             */
-    SMB_INTERRUPT_9           = 73/*+32*/,     /* SMBus and I2C Module 9                             */
-    SMB_INTERRUPT_10          = 74/*+32*/,     /* SMBus and I2C Module 10                            */
-    SMB_INTERRUPT_11          = 75/*+32*/,     /* SMBus and I2C Module 11                            */
-    SMB_INTERRUPT_12          = 76/*+32*/,     /* SMBus and I2C Module 12                            */
-    SMB_INTERRUPT_13          = 77/*+32*/,     /* SMBus and I2C Module 13                            */
-    SMB_INTERRUPT_14          = 78/*+32*/,     /* SMBus and I2C Module 14                            */
-    SMB_INTERRUPT_15          = 79/*+32*/,     /* SMBus and I2C Module 15                            */
-
-    AES_INTERRUPT             = 80/*+32*/,     /* AES Module                                         */
-    DES_INTERRUPT             = 81/*+32*/,     /* 3DES Module                                        */
-    SHA_INTERRUPT             = 82/*+32*/,     /* SHA module                                         */
-    PKA_INTERRUPT             = 83/*+32*/,     /* (SECACC) ECC and RSA accelerator module            */
-    RNG_INTERRUPT             = 84/*+32*/,     /* RNG module                                         */
-
-    SPI_INTERRUPT_0           = 85/*+32*/,     /* FIU module 0 if required                           */
-
-    SPI_INTERRUPT_3           = 87/*+32*/,     /* FIU module 3 if required                           */
-    GDMA_INTERRUPT_0          = 88/*+32*/,     /* GDMA Module 0                                      */
-    GDMA_INTERRUPT_1          = 89/*+32*/,     /* GDMA Module 1                                      */
-    GDMA_INTERRUPT_2          = 90/*+32*/,     /* GDMA Module 2                                      */
-    GDMA_INTERRUPT_3          = 91/*+32*/,     /* GDMA Module 3 If required                          */
-    OTP_INTERRUPT             = 92/*+32*/,     /* Fustraps and Key arrays                            */
-    PWM_INTERRUPT_0_PWM0_3    = 93/*+32*/,     /* PWM Module 0 outputing PWM0-3                      */
-    PWM_INTERRUPT_1_PWM4_7    = 94/*+32*/,     /* PWM Module 1 outputing PWM4-7                      */
-
-    MFT_INTERRUPT_0           = 96/*+32*/,     /* MFT Module 0                                       */
-    MFT_INTERRUPT_1           = 97/*+32*/,     /* MFT Module 1                                       */
-    MFT_INTERRUPT_2           = 98/*+32*/,     /* MFT Module 2                                       */
-    MFT_INTERRUPT_3           = 99/*+32*/,     /* MFT Module 3                                       */
-    MFT_INTERRUPT_4           = 100/*+32*/,    /* MFT Module 4                                       */
-    MFT_INTERRUPT_5           = 101/*+32*/,    /* MFT Module 5                                       */
-    MFT_INTERRUPT_6           = 102/*+32*/,    /* MFT Module 6                                       */
-    MFT_INTERRUPT_7           = 103/*+32*/,    /* MFT Module 7                                       */
-    PWM_INTERRUPT_0           = 104/*+32*/,    /* PWM module 0                                       */
-    PWM_INTERRUPT_1           = 105/*+32*/,    /* PWM module 1                                       */
-    PWM_INTERRUPT_2           = 106/*+32*/,    /* PWM module 2                                       */
-    PWM_INTERRUPT_3           = 107/*+32*/,    /* PWM module 3                                       */
-    PWM_INTERRUPT_4           = 108/*+32*/,    /* PWM module 4                                       */
-    PWM_INTERRUPT_5           = 109/*+32*/,    /* PWM module 5                                       */
-    PWM_INTERRUPT_6           = 110/*+32*/,    /* PWM module 6                                       */
-    PWM_INTERRUPT_7           = 111/*+32*/,    /* PWM module 7                                       */
-
-    EMC2RX_INTERRUPT          = 114/*+32*/,    /* EMC2 Rx module                                     */
-    EMC2TX_INTERRUPT          = 115/*+32*/,    /* EMC2 Tx module                                     */
-    GPIO_INTERRUPT0           = 116/*+32*/,    /* GPIO module outputing GPIO0-31                     */
-    GPIO_INTERRUPT1           = 117/*+32*/,    /* GPIO module outputing GPIO32-63                    */
-    GPIO_INTERRUPT2           = 118/*+32*/,    /* GPIO module outputing GPIO64-95                    */
-    GPIO_INTERRUPT3           = 119/*+32*/,    /* GPIO module outputing GPIO96-127                   */
-    GPIO_INTERRUPT4           = 120/*+32*/,    /* GPIO module outputing GPIO128-159                  */
-    GPIO_INTERRUPT5           = 121/*+32*/,    /* GPIO module outputing GPIO160-191                  */
-    GPIO_INTERRUPT6           = 122/*+32*/,    /* GPIO module outputing GPIO192-223                  */
-    GPIO_INTERRUPT7           = 123/*+32*/,    /* GPIO module outputing GPIO224-255                  */
-
-    PCIe_RC_INTERRUPT         = 127/*+32*/,    /* PCIe Root Complex  (combined A-D and MSI)          */
-
-    GIC_INTERRUPT_NUM
-
+	ADC_INTERRUPT       = 0 + 32,  /* ADC Module                                        */
+	COP1_INTERRUPT      = 1 + 32,  /* Coprocessor subsystem 1                           */
+	TIP_INTERRUPT       = 2 + 32,  /* Coprocessor subsystem 2 - TIP                     */
+	TMPS_INTERRUPT      = 4 + 32,  /* Temperature sensor                                */
+	PECI_INTERRUPT      = 6 + 32,  /* PECI module                                       */
+	VSYNC_INTERRUPT     = 7 + 32,  /* Graphics module via System Manager module         */
+	KCS_HIB_INTERRUPT   = 9 + 32,  /* KCS/HIB (from host interface) modules             */
+	SHM_INTERRUPT       = 11 + 32, /* SHM module                                        */
+	BT_INTERRUPT1       = 12 + 32, /* Block transfer                                    */
+	GMAC1_INTERRUPT     = 14 + 32, /* GMAC1 module                                      */
+	GMAC2_INTERRUPT     = 15 + 32, /* GMAC2 module                                      */
+	GMAC3_INTERRUPT     = 16 + 32, /* GMAC3 module                                      */
+	GMAC4_INTERRUPT     = 17 + 32, /* GMAC4 module                                      */
+	ESPI_INTERRUPT      = 18 + 32, /* eSPI Module                                       */
+	SIOX_INTERRUPT_1    = 19 + 32, /* SIOX Serial GPIO Expander module 1                */
+	SIOX_INTERRUPT_2    = 20 + 32, /* SIOX Serial GPIO Expander module 2                */
+	VCD_INTERRUPT       = 22 + 32, /* VCD module                                       */
+	ECE_INTERRUPT       = 24 + 32, /* ECE module                                       */
+	MC_INTERRUPT        = 25 + 32, /* Memory Controller Interrupt                       */
+	MMC_INTERRUPT       = 26 + 32, /* MMC Module (SDHC2)                                */
+	PSPI_INTERRUPT      = 28 + 32, /* Peripheral SPI                                   */
+	VDMA_INTERRUPT      = 29 + 32, /* VDMA module                                      */
+	MCTP_INTERRUPT      = 30 + 32, /* VDMX module. Not used if VDMA is used            */
+	TMC_INTERRUPT_0     = 32 + 32, /* Timer (peripheral) Module 0 Timer 0              */
+	TMC_INTERRUPT_1     = 33 + 32, /* Timer (peripheral) Module 0 Timer 1              */
+	TMC_INTERRUPT_2     = 34 + 32, /* Timer (peripheral) Module 0 Timer 2              */
+	TMC_INTERRUPT_3     = 35 + 32, /* Timer (peripheral) Module 0 Timer 3              */
+	TMC_INTERRUPT_4     = 36 + 32, /* Timer (peripheral) Module 0 Timer 4              */
+	TMC_INTERRUPT_5     = 37 + 32, /* Timer (peripheral) Module 1 Timer 0              */
+	TMC_INTERRUPT_6     = 38 + 32, /* Timer (peripheral) Module 1 Timer 1              */
+	TMC_INTERRUPT_7     = 39 + 32, /* Timer (peripheral) Module 1 Timer 2              */
+	TMC_INTERRUPT_8     = 40 + 32, /* Timer (peripheral) Module 1 Timer 3              */
+	TMC_INTERRUPT_9     = 41 + 32, /* Timer (peripheral) Module 1 Timer 4              */
+	TMC_INTERRUPT_10    = 42 + 32, /* Timer (peripheral) Module 2 Timer 0              */
+	TMC_INTERRUPT_11    = 43 + 32, /* Timer (peripheral) Module 2 Timer 1              */
+	TMC_INTERRUPT_12    = 44 + 32, /* Timer (peripheral) Module 2 Timer 2              */
+	TMC_INTERRUPT_13    = 45 + 32, /* Timer (peripheral) Module 2 Timer 3              */
+	TMC_INTERRUPT_14    = 46 + 32, /* Timer (peripheral) Module 2 Timer 4              */
+	WDG_INT0            = 47 + 32, /* Timer (peripheral) Module 0 watchdog              */
+	WDG_INT1            = 48 + 32, /* Timer (peripheral) Module 1 watchdog              */
+	WDG_INT2            = 49 + 32, /* Timer (peripheral) Module 2 watchdog              */
+	USB_DEV_INTERRUPT_0 = 51 + 32, /* USB Device 0                                      */
+	USB_DEV_INTERRUPT_1 = 52 + 32, /* USB Device 1                                      */
+	USB_DEV_INTERRUPT_2 = 53 + 32, /* USB Device 2                                      */
+	USB_DEV_INTERRUPT_3 = 54 + 32, /* USB Device 3                                      */
+	USB_DEV_INTERRUPT_4 = 55 + 32, /* USB Device 4                                      */
+	USB_DEV_INTERRUPT_5 = 56 + 32, /* USB Device 5                                      */
+	USB_DEV_INTERRUPT_6 = 57 + 32, /* USB Device 6                                      */
+	USB_DEV_INTERRUPT_7 = 58 + 32, /* USB Device 7                                      */
+	USB_DEV_INTERRUPT_8 = 59 + 32, /* USB Device 8                                      */
+	USB_DEV_INTERRUPT_9 = 60 + 32, /* USB Device 9                                      */
+	USB_HST1_INT0       = 61 + 32,  /* USB Host 1 interrupt for EHCI                      */
+	USB_HST1_INT1       = 62 + 32,  /* USB Host 1 interrupt for OHCI                      */
+	USB_HST2_INTERRUPT_0= 63 + 32,  /* USB Host 2 - interrupt for EHCI                    */
+	USB_HST2_INT1       = 64 + 32,  /* USB Host 2 interrupt for OHCI                      */
+	AES_INTERRUPT       = 80 + 32,  /* AES Module not used and placeholder                */
+	DES_INTERRUPT       = 81 + 32,  /* 3DES Module not used and placeholder               */
+	SPI_INTERRUPT_1     = 82 + 32,  /* FIU module 1                                      */
+	SECACC_INTERRUPT    = 83 + 32,  /* ECC and RSA accelerator module                    */
+	RNG_INTERRUPT       = 84 + 32,  /* Random Number Generator                           */
+	SPI_INTERRUPT_0     = 85 + 32,  /* FIU module 0                                      */
+	SPI_INTERRUPT_X     = 86 + 32,  /* FIU module X                                      */
+	SPI_INTERRUPT_3     = 87 + 32,  /* FIU module 3                                      */
+	GDMA_INTERRUPT_0    = 88 + 32,  /* GDMA Module 0                                     */
+	GDMA_INTERRUPT_1    = 89 + 32,  /* GDMA Module 1                                     */
+	GDMA_INTERRUPT_2    = 90 + 32,  /* GDMA Module 2                                     */
+	PWM_INTERRUPT_2     = 91 + 32,  /* PWM Module 2 outputing PWM8-11                    */
+	OTP_INT             = 92 + 32,  /* Key Storage Array                                */
+	PWM_INTERRUPT_0     = 93 + 32,  /* PWM Module 0 outputing PWM0-3                     */
+	PWM_INTERRUPT_1     = 94 + 32,  /* PWM Module 1 outputing PWM4-7                     */
+	MFT_INTERRUPT_0     = 96 + 32,  /* MFT Module 0                                      */
+	MFT_INTERRUPT_1     = 97 + 32,  /* MFT Module 1                                      */
+	MFT_INTERRUPT_2     = 98 + 32,  /* MFT Module 2                                      */
+	MFT_INTERRUPT_3     = 99 + 32,  /* MFT Module 3                                      */
+	MFT_INTERRUPT_4     = 100 + 32, /* MFT Module 4                                      */
+	MFT_INTERRUPT_5     = 101 + 32, /* MFT Module 5                                      */
+	MFT_INTERRUPT_6     = 102 + 32, /* MFT Module 6                                      */
+	MFT_INTERRUPT_7     = 103 + 32, /* MFT Module 7                                      */
+	PCIMBX1_INTERRUPT   = 105 + 32, /* PCI mailbox 1 module                              */
+	PCIMBX2_INTERRUPT   = 106 + 32, /* PCI mailbox 2 module                              */
+	GPIO231_INTERRUPT   = 140 + 32, /* GPIO input connected directly                     */
+	GPIO233_INTERRUPT   = 141 + 32, /* GPIO input connected directly                     */
+	GPIO234_INTERRUPT   = 142 + 32, /* GPIO input connected directly                     */
+	GPIO93_INTERRUPT    = 143 + 32, /* GPIO input connected directly                     */
+	GPIO94_INTERRUPT    = 144 + 32, /* GPIO input connected directly                     */
+	GPIO_INTERRUPT0     = 148 + 32, /* GPIO module outputing GPIO0-3                     */
+	GPIO_INTERRUPT1     = 149 + 32, /* GPIO module outputing GPIO32-63                   */
+	GPIO_INTERRUPT2     = 150 + 32, /* GPIO module outputing GPIO64-95                   */
+	GPIO_INTERRUPT3     = 151 + 32, /* GPIO module outputing GPIO96-127                  */
+	GPIO_INTERRUPT4     = 152 + 32, /* GPIO module outputing GPIO128-159                 */
+	GPIO_INTERRUPT5     = 153 + 32, /* GPIO module outputing GPIO160-191                 */
+	GPIO_INTERRUPT6     = 154 + 32, /* GPIO module outputing GPIO192-223                 */
+	GPIO_INTERRUPT7     = 155 + 32, /* GPIO module outputing GPIO224-255                 */
+	PCIe_RC_INTERRUPT   = 159 + 32, /* PCIe Root Complex (All interrupts)                */
+	SMB_INTERRUPT_0     = 160 + 32, /* SMBus and I2C Module 0                            */
+	SMB_INTERRUPT_1     = 161 + 32, /* SMBus and I2C Module 1                            */
+	SMB_INTERRUPT_2     = 162 + 32, /* SMBus and I2C Module 2                            */
+	SMB_INTERRUPT_3     = 163 + 32, /* SMBus and I2C Module 3                            */
+	SMB_INTERRUPT_4     = 164 + 32, /* SMBus and I2C Module 4                            */
+	SMB_INTERRUPT_5     = 165 + 32, /* SMBus and I2C Module 5                            */
+	SMB_INTERRUPT_6     = 166 + 32, /* SMBus and I2C Module 6                            */
+	SMB_INTERRUPT_7     = 167 + 32, /* SMBus and I2C Module 7                            */
+	SMB_INTERRUPT_8     = 168 + 32, /* SMBus and I2C Module 8                            */
+	SMB_INTERRUPT_9     = 169 + 32, /* SMBus and I2C Module 9                            */
+	SMB_INTERRUPT_10    = 170 + 32, /* SMBus and I2C Module 10                           */
+	SMB_INTERRUPT_11    = 171 + 32, /* SMBus and I2C Module 11                           */
+	SMB_INTERRUPT_12    = 172 + 32, /* SMBus and I2C Module 12                           */
+	SMB_INTERRUPT_13    = 173 + 32, /* SMBus and I2C Module 13                           */
+	SMB_INTERRUPT_14    = 174 + 32, /* SMBus and I2C Module 14                           */
+	SMB_INTERRUPT_15    = 175 + 32, /* SMBus and I2C Module 15                           */
+	SMB_INTERRUPT_16    = 176 + 32, /* SMBus and I2C Module 16                           */
+	SMB_INTERRUPT_17    = 177 + 32, /* SMBus and I2C Module 17                           */
+	SMB_INTERRUPT_18    = 178 + 32, /* SMBus and I2C Module 18                           */
+	SMB_INTERRUPT_19    = 179 + 32, /* SMBus and I2C Module 19                           */
+	SMB_INTERRUPT_20    = 180 + 32, /* SMBus and I2C Module 20                           */
+	SMB_INTERRUPT_21    = 181 + 32, /* SMBus and I2C Module 21                           */
+	SMB_INTERRUPT_22    = 182 + 32, /* SMBus and I2C Module 22                           */
+	SMB_INTERRUPT_23    = 183 + 32, /* SMBus and I2C Module 23                           */
+	SMB_INTERRUPT_24    = 184 + 32, /* SMBus and I2C Module 24                           */
+	SMB_INTERRUPT_25    = 185 + 32, /* SMBus and I2C Module 25                           */
+	SMB_INTERRUPT_26    = 186 + 32, /* SMBus and I2C Module 26                           */
+	FLM_INTERRUPT_0     = 192 + 32, /* Flash Monitoring 0                                */
+	FLM_INTERRUPT_1     = 193 + 32, /* Flash Monitoring 1                                */
+	FLM_INTERRUPT_2     = 194 + 32, /* Flash Monitoring 2                                */
+	FLM_INTERRUPT_3     = 195 + 32, /* Flash Monitoring 3                                */
+	VIR_UART_INTERRUPT_1= 216 + 32, /* Virtual UART module 1                             */
+	VIR_UART_INTERRUPT_2= 217 + 32, /* Virtual UART module 2                             */
+	JTM_INTERRUPT_1     = 220 + 32, /* JTAG Master Module 1                              */
+	JTM_INTERRUPT_2     = 221 + 32, /* JTAG Master Module 2                              */
+	UART_INTERRUPT_0    = 224 + 32, /* UART Module 0                                    */
+	UART_INTERRUPT_1    = 225 + 32, /* UART Module 1                                    */
+	UART_INTERRUPT_2    = 226 + 32, /* UART Module 2                                    */
+	UART_INTERRUPT_3    = 227 + 32, /* UART Module 3                                    */
+	UART_INTERRUPT_4    = 228 + 32, /* UART Module 4                                    */
+	UART_INTERRUPT_5    = 229 + 32, /* UART Module 5                                    */
+	UART_INTERRUPT_6    = 230 + 32, /* UART Module 6                                    */
+	I3C_INTERRUPT_0     = 256 + 32, /* I3C Module 0                                     */
+	I3C_INTERRUPT_1     = 257 + 32, /* I3C Module 1                                     */
+	I3C_INTERRUPT_2     = 258 + 32, /* I3C Module 2                                     */
+	I3C_INTERRUPT_3     = 259 + 32, /* I3C Module 3                                     */
+	I3C_INTERRUPT_4     = 260 + 32, /* I3C Module 4                                     */
+	I3C_INTERRUPT_5     = 261 + 32, /* I3C Module 5                                     */
+	A35_INTERNAL_ERROR  = 272 + 32, /* A35 internal Error interrupt. L2 RAM double-bit ECC error. */
+	A35_EXTERNAL_ERROR  = 273 + 32, /* A35 external Error interrupt. An error occurred in access to bus that cannot be attributed to a particular core. */
+	A35_PMUIRQ0         = 274 + 32,  /* A35 PMU interrupt 0                               */
+	A35_PMUIRQ1         = 275 + 32,  /* A35 PMU interrupt 1                               */
+	A35_PMUIRQ2         = 276 + 32,  /* A35 PMU interrupt 2                               */
+	A35_PMUIRQ3         = 277 + 32,  /* A35 PMU interrupt 3                               */
+	A35_CTIIRQ0         = 278 + 32,  /* A35 CTI interrupt 0                               */
+	A35_CTIIRQ1         = 279 + 32,  /* A35 CTI interrupt 1                               */
+	A35_CTIIRQ2         = 280 + 32,  /* A35 CTI interrupt 2                               */
+	A35_CTIIRQ3         = 281 + 32,  /* A35 CTI interrupt 3                               */
+	GIC_INTERRUPT_NUM
 } GIC_INT_SRC_T;
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* TIMER Allocation Table                                                                                  */

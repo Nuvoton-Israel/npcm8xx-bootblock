@@ -36,7 +36,10 @@
 /* Module Drivers exclusion                                                                                */
 /*---------------------------------------------------------------------------------------------------------*/
 
-#undef  GIC_MODULE_TYPE
+// #undef  GIC_MODULE_TYPE
+
+#define DYNAMIC_SW_DISPATCH_TABLE
+
 //#undef FUSE_MODULE_TYPE
 #undef  STRP_MODULE_TYPE
 //#undef  FIU_MODULE_TYPE

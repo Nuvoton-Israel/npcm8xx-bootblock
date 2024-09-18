@@ -78,6 +78,9 @@ typedef UINT                BOOLEAN;
 #if defined (__ARMCC_VERSION)
 #define _ISR_                                   __irq
 #define TYPEDEF_ISR_PTR(type_name)              typedef _ISR_ void (* type_name)(void)
+#elif defined (__GNUC__) && defined(__ARM_ARCH_8__) 
+#define _ISR_                                   
+#define TYPEDEF_ISR_PTR(type_name)              typedef void (*type_name)(void)
 #elif defined (__GNUC__)
 #define _ISR_                                   __attribute__((interrupt))
 #define TYPEDEF_ISR_PTR(type_name)              typedef void (* _ISR_ type_name)(void)
@@ -477,28 +480,22 @@ typedef UINT                BOOLEAN;
 
 #elif defined(__ARM_ARCH_8__) // AARCH64
 
-
-//  TODO TaliP finish all the rest
-	#define ENABLE_INTERRUPTS()	  __asm__ __volatile__( 			\
-					"ldr x0, =__gicc     \n\t"		\
-					"ldr w1, [x0, #GICC_CTLR]    \n\t"		\
-					"orr w1, w1, #3  \n\t"                  \
-					"str w1, [x0, #GICC_CTLR]   \n\t")
+	#define ENABLE_INTERRUPTS()	  __asm__ __volatile__("msr DAIFClr, #0x2 ")
 
 
 	#define DISABLE_INTERRUPTS()	  __asm__ __volatile__( 			\
-					"MRS	r6, APSR     \n\t"		\
-					"ORR	r6, r6,#0x80 \n\t"		\
-					"MSR	APSR_nzcvq, r6 " ::: "r6", "cc")
+					"MRS	x9, DAIF     \n\t"		\
+					"ORR	x9, x9, #0xC0 \n\t"		\
+					"MSR	DAIF, x9 " ::: "x9", "cc")
 
 	#define INTERRUPTS_SAVE_DISABLE(var)  __asm__ __volatile__(			\
-					"MRS	%[val], APSR	 \n\t"		\
-					"ORR	r6, %[val],#0x80 \n\t"		\
-					"MSR	APSR_nzcvq,r6  "		\
-					:[val] "+r" (var):: "r6", "cc")
+					"MRS	%[val], DAIF	 \n\t"		\
+					"ORR	x9, %[val], #0xC0 \n\t"		\
+					"MSR	DAIF,x9  "		\
+					:[val] "+r" (var):: "x9", "cc")
 
 	#define INTERRUPTS_RESTORE(var)   __asm__ __volatile__( 			\
-					"MSR	APSR_nzcvq,%[val]  "		\
+					"MSR	DAIF, %[val]  "		\
 					: [val]"+r"(var) )
 
 

@@ -6,21 +6,15 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 /* File Contents:                                                             */
-/*   version.h                                                                */
-/*            This file contains the version number of SWC HAL                */
+/*   gic_if.c                                                                 */
+/*            This file contains GIC module driver selector                   */
 /* Project:                                                                   */
 /*            SWC HAL                                                         */
 /*----------------------------------------------------------------------------*/
-#ifndef _VERSION_H_
-#define _VERSION_H_
 
-#define SWC_HAL_MAJOR   4
-#define SWC_HAL_MINOR   0
-#define SWC_HAL_REV     4
-#define SWC_HAL_PATCH   0
+#include __CHIP_H_FROM_IF()
 
-#define SWC_HAL_VERSION         MAKE32(MAKE16(SWC_HAL_PATCH, SWC_HAL_REV), MAKE16(SWC_HAL_MINOR, SWC_HAL_MAJOR))
-#define SWC_HAL_VERSION_STR     STRINGX(SWC_HAL_MAJOR) "." STRINGX(SWC_HAL_MINOR) "." STRINGX(SWC_HAL_REV) "." STRINGX(SWC_HAL_PATCH)
-
+#if defined(GIC_MODULE_TYPE)
+    #include __MODULE_DRIVER(gic, GIC_MODULE_TYPE)
 #endif
 

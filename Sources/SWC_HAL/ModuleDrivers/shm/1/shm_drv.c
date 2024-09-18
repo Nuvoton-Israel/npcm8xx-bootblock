@@ -65,7 +65,7 @@ static SHM_ESPI_CALLBACK_T SHM_espiCallback;
 /*                                  LOCAL FUNCTIONS FORWARD DECLARATIONS                                   */
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
-void SHM_IntHandler     (UINT16 int_num);
+void SHM_IntHandler     (UINT int_num);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -808,7 +808,7 @@ void SHM_ReleaseHostWait (void)
 /* Description:                                                                                            */
 /*                  This routine is the Shared Memory interrupt handler.                                   */
 /*---------------------------------------------------------------------------------------------------------*/
-void SHM_IntHandler (UINT16 int_num)
+void SHM_IntHandler (UINT int_num)
 {
     UINT8 smc_sts;
     UINT8 hofs_sts  = 0;

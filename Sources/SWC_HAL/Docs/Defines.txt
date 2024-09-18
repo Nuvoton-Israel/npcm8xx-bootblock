@@ -52,6 +52,8 @@ SMB_HOOK_ADD_HOLD_TIME_BEFORE_REPEATED_START - Add a delay before repeated start
 
 SMB_DISABLE_TO_CLEAR_T_OUTST         - Disable SMB module in order to clear T_OUTST when enabling Timeout
 
+SMB_DDR_OPTIMIZATION                 - Optimize reading/writing to buffer in DDR
+
 I2C
 ---
 I2C_SLAVE_ONLY                       - Include only I2C Slave-specific code in I2C driver

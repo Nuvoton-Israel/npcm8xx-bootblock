@@ -6,21 +6,16 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 /* File Contents:                                                             */
-/*   version.h                                                                */
-/*            This file contains the version number of SWC HAL                */
+/*   gic_drv.h                                                                */
+/*            This file contains GIC driver interface                         */
 /* Project:                                                                   */
 /*            SWC HAL                                                         */
 /*----------------------------------------------------------------------------*/
-#ifndef _VERSION_H_
-#define _VERSION_H_
 
-#define SWC_HAL_MAJOR   4
-#define SWC_HAL_MINOR   0
-#define SWC_HAL_REV     4
-#define SWC_HAL_PATCH   0
+#ifndef GIC_DRV_H
+#define GIC_DRV_H
 
-#define SWC_HAL_VERSION         MAKE32(MAKE16(SWC_HAL_PATCH, SWC_HAL_REV), MAKE16(SWC_HAL_MINOR, SWC_HAL_MAJOR))
-#define SWC_HAL_VERSION_STR     STRINGX(SWC_HAL_MAJOR) "." STRINGX(SWC_HAL_MINOR) "." STRINGX(SWC_HAL_REV) "." STRINGX(SWC_HAL_PATCH)
+#include __MODULE_IF_HEADER_FROM_DRV(gic)
 
-#endif
+#endif  /* GIC_DRV_H */
 

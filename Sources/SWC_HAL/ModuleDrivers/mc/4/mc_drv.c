@@ -1912,15 +1912,15 @@ static void MC_PrintOhm(UINT32 val)
 /* Description:                                                                                            */
 /*                  This routine performs...                                                               */
 /*---------------------------------------------------------------------------------------------------------*/
-static void MC_PrintPassFail(UINT32 val)
+static void MC_PrintPassFail (UINT32 val, UINT32 full_reg_val)
 {
 	if (val == 0)
 	{
-		HAL_PRINT_DBG("Passed\n");
+		HAL_PRINT_DBG("Passed %#010lx\n", full_reg_val);
 	}
 	else
 	{
-		HAL_PRINT_DBG(KRED "Failed\n" KNRM);
+		HAL_PRINT_DBG(KRED "Failed %#010lx\n" KNRM, full_reg_val);
 	}
 }
 
@@ -1933,7 +1933,7 @@ static void MC_PrintPassFail(UINT32 val)
 /* Description:                                                                                            */
 /*          This routine prints the module registers                                                       */
 /*---------------------------------------------------------------------------------------------------------*/
-void MC_PrintRegs(void)
+void MC_PrintRegs (void)
 {
 	UINT32 TmpReg32 = 0;
 	UINT32 ilane = 0;
@@ -1946,35 +1946,35 @@ void MC_PrintRegs(void)
 	for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 	{
 		HAL_PRINT_DBG("\t*lane%lx: ", ilane);
-		MC_PrintPassFail((READ_REG_FIELD(SCL_START, SCL_START_cuml_scl_rslt) & (1 << ilane)) == 0);
+		MC_PrintPassFail((READ_REG_FIELD(SCL_START, SCL_START_cuml_scl_rslt) & (1 << ilane)) == 0, REG_READ(SCL_START));
 	}
 
 	HAL_PRINT_DBG("\n>SCL status (WRLVL_CTRL_wrlvl_rslt):\n");
 	for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 	{
 		HAL_PRINT_DBG("\t*lane%lx: ", ilane);
-		MC_PrintPassFail((READ_REG_FIELD(WRLVL_CTRL, WRLVL_CTRL_wrlvl_rslt) & (1 << ilane)) == 0);
+		MC_PrintPassFail((READ_REG_FIELD(WRLVL_CTRL, WRLVL_CTRL_wrlvl_rslt) & (1 << ilane)) == 0, REG_READ(WRLVL_CTRL));
 	}
 
 	HAL_PRINT_DBG("\n>SCL status (DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_failure_status):\n");
 	for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 	{
 		HAL_PRINT_DBG("\t*lane%lx: ", ilane);
-		MC_PrintPassFail((READ_REG_FIELD(DYNAMIC_WRITE_BIT_LVL, DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_failure_status) & (1 << ilane)) == 1);
+		MC_PrintPassFail((READ_REG_FIELD(DYNAMIC_WRITE_BIT_LVL, DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_failure_status) & (1 << ilane)) == 1, REG_READ(DYNAMIC_WRITE_BIT_LVL));
 	}
 
 	HAL_PRINT_DBG("\n>SCL status (IP_DQ_DQS_BITWISE_TRIM_bit_lvl_done_status):\n");
 	for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 	{
 		HAL_PRINT_DBG("\t*lane%lx: ", ilane);
-		MC_PrintPassFail((READ_REG_FIELD(IP_DQ_DQS_BITWISE_TRIM, IP_DQ_DQS_BITWISE_TRIM_bit_lvl_done_status) & (1 << ilane)) == 0);
+		MC_PrintPassFail((READ_REG_FIELD(IP_DQ_DQS_BITWISE_TRIM, IP_DQ_DQS_BITWISE_TRIM_bit_lvl_done_status) & (1 << ilane)) == 0, REG_READ(IP_DQ_DQS_BITWISE_TRIM));
 	}
 
 	HAL_PRINT_DBG("\n>SCL status (DYNAMIC_BIT_LVL_bit_lvl_failure_status):\n");
 	for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 	{
 		HAL_PRINT_DBG("\t*lane%d: ", ilane);
-		MC_PrintPassFail((READ_REG_FIELD(DYNAMIC_BIT_LVL, DYNAMIC_BIT_LVL_bit_lvl_failure_status) & (1 << ilane)) == 1);
+		MC_PrintPassFail((READ_REG_FIELD(DYNAMIC_BIT_LVL, DYNAMIC_BIT_LVL_bit_lvl_failure_status) & (1 << ilane)) == 1, REG_READ(DYNAMIC_BIT_LVL));
 	}
 
 	TmpReg32 = REG_READ(PHY_DLL_ADRCTRL);

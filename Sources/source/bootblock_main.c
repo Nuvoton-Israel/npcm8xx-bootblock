@@ -160,7 +160,19 @@ void errHandler (void)
 
 	serial_printf(KRED "\n ===============   RESTART BOOTBLOCK AFTER PANIC   ================== \n" KNRM);
 
-	CLK_Delay_MicroSec(0x10000);
+	CLK_Delay_Sec(5);
+
+#ifdef _NOTIP_
+	/* NO_TIP: after a TRAP, nothing to do but FSW reset */
+	REG_WRITE(FSWCR, BUILD_FIELD_VAL(FSWCR_WTE, 1) |
+			BUILD_FIELD_VAL(FSWCR_WTRE, 1) |
+			BUILD_FIELD_VAL(FSWCR_WDT_CNT, 1));
+#else
+	/* notify TIP to retry */
+	REG_WRITE(SCRPAD_10_41(0), 0x02);
+	REG_WRITE(B2CPNT2, 0x02);
+	while (1);
+#endif
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -173,10 +185,17 @@ void errHandler (void)
 /*---------------------------------------------------------------------------------------------------------*/
 void irqHandler (void)
 {
+	// Get interrupt ID:
+	unsigned int int_id = READ_REG_FIELD(GIC_C_IAR, GIC_C_IAR_InterruptID);
+
 	serial_printf_init();
 	serial_printf(KRED "\n\nA35 Bootblock: IRQ handler\n");
 	MC_PrintRegs();
 	MC_ClearInterrupts();
+
+	// Signal end of interrupt:
+	SET_REG_FIELD (GIC_C_EOIR, GIC_C_EOIR_InterruptID, int_id);
+
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -189,10 +208,16 @@ void irqHandler (void)
 /*---------------------------------------------------------------------------------------------------------*/
 void fiqHandler (void)
 {
+	// Get interrupt ID:
+	unsigned int int_id = READ_REG_FIELD(GIC_C_IAR, GIC_C_IAR_InterruptID);
+
 	serial_printf_init();
 	serial_printf(KRED "\n\nA35 Bootblock: FIQ handler\n");
 	MC_PrintRegs();
 	MC_ClearInterrupts();
+
+	// Signal end of interrupt:
+	SET_REG_FIELD (GIC_C_EOIR, GIC_C_EOIR_InterruptID, int_id);
 }
 
 
@@ -411,7 +436,7 @@ static void bootblock_PrintClocks (void)
 	serial_printf("CLKDIV3  = %#010lx\n", REG_READ(CLKDIV3));
 	serial_printf("CLKDIV4  = %#010lx\n", REG_READ(CLKDIV4));
 
-	serial_printf("n>CPU CLK = %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPUFreq()));
+	serial_printf("\nCPU CLK = %d.%d MHz \n", PRINT_FLOAT(CLK_GetCPUFreq()));
 	serial_printf("MC CLK = %d.%d MHz\n", PRINT_FLOAT(CLK_GetMCFreq()));
 
 	serial_printf("APB1 = %d.%d MHz  \n", PRINT_FLOAT(CLK_GetAPBFreq(CLK_APB1)));
@@ -654,8 +679,8 @@ __attribute__((noreturn)) void bootblock_main (void)
 
 				/* Errata fix: 1.7 eSPI FATAL_ERROR response */
 				REG_WRITE(ESPI_ESPI_TEN, 0x55);
-				SET_REG_FIELD(ESPI_ESPI_ENG, ESPI_ENG_TRANS_END_CMBCK_SW_CB, 1);
-				REG_WRITE(ESPI_ESPI_TEN, 0);
+				REG_WRITE(ESPI_ESPI_ENG, 0X40);
+				REG_WRITE(ESPI_ESPI_TEN, 0x6C);
 			}
 		}
 
@@ -700,7 +725,6 @@ __attribute__((noreturn)) void bootblock_main (void)
 	}
 
 
-	serial_printf ("uptime %d.%d \n", PRINT_FLOAT2(CLK_GetUpTimeMiliseconds()));
 
 #ifndef _NOTIP_
 	// Signal to TIP that BootBlock is done:

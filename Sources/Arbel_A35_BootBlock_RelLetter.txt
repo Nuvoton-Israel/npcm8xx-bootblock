@@ -7,8 +7,8 @@
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.05.02
-Date:    Sep 2024
+Version: 00.05.03
+Date:    Oct 2024
 
 
 # PACKAGE CONTENTS
@@ -56,6 +56,12 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.5.3  SORT ONLY   - Oct 27th 2024
+============
+- MC: enforce requirement for sweep eye size must be greater then 12 steps. Otherwise training will fail.
+
+# HISTORY
+---------------
 version 0.5.2     - Sep 15th 2024
 ============
 - Bug fix: Errata fix: 1.7 eSPI FATAL_ERROR: Set ESPI_ESPI_ENG to 0x40 (remove RMW to set bit 6).
@@ -63,8 +69,6 @@ version 0.5.2     - Sep 15th 2024
 - In case of traps and unexpected IRQs and FIQ: clear GIC registers.
 - In case of TRAP: notify TIP (TIP mode), or FSW (NO_TIP mode).
 
-# HISTORY
----------------
 version 0.5.1     - Aug 1st 2024
 ============
 - Improve boot speed. 1.8 sec 1GB no ECC, 2 sec with ECC.

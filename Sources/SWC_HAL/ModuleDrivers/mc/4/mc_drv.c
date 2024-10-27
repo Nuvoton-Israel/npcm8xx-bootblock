@@ -1525,11 +1525,40 @@ static DEFS_STATUS MC_ConfigureDDR_l (DDR_Setup *ddr_setup, unsigned int try)
 	HAL_PRINT(KCYN "Main flow Sweeps 0x%x\n" KNRM, ddr_setup->sweep_main_flow);
 
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_LANE, TRUE, 0xFF00); // Run Parametric Sweep on WRITE side (TRIM_2.lane0) and find the center for lane0
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "TRIM2 sweep fail \n" KNRM);
+	}
+	
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DM, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DM) and find the center for each DQn and average for each DM lane.
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "Output DM sweep fail sweep fail \n" KNRM);
+	}
+
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DQ, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DQn) and find the center for each DQn
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "Out DQn sweep fail \n" KNRM);
+	}
+
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_IN_DQ, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQn) and find the center for each DQn.
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "In DQn sweep fail \n" KNRM);
+	}
+
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_IN_DQS, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQS) and find the center for each DQn.
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "In DQS sweep fail \n" KNRM);
+	}
+
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_DQS, TRUE, 0);	   // Run Parametric Sweep on WRITE side (Output DQS) and find the center for each DQn.	
+	if (status_out_sweep != DEFS_STATUS_OK)
+	{
+		HAL_PRINT(KRED "OUT DQS sweep fail \n" KNRM);
+	}
 
 	// MC_DSCL_Enable(FALSE);
 	// NTIL TBD: seems code crash when this section moved up. need to check if this is some limit memory size issue or a real DDR ECC issue

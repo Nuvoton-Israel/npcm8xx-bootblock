@@ -34,13 +34,16 @@ const BOOTBLOCK_Version_T bb_version = {
 					__DATE__
 					"\n"
 					__TIME__
+#ifdef _SORT_
+					" SORT "
+#endif
                                        "\n\0",
 
 	.BootBlockTag    = 'B' | 'O'<<8 | 'O'<<16 | 'T'<<24,
 
     #define BOOT_DEBUG_VAL 0x00000000
 
-	.BootblockVersion = (BOOT_DEBUG_VAL | 0x000502)     //ver 00.05.02
+	.BootblockVersion = (BOOT_DEBUG_VAL | 0x000503)     //ver 00.05.03
 };
 
 #undef BOOTBLOCK_VERSION_C

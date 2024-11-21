@@ -65,6 +65,7 @@ SECTIONS
 
     .StartUp :
     {
+	    PROVIDE (_ram_start = .);
     	./source/startup.o(.text.start64*)
     	./source/startup.o(.text.el3_primary*)
     } > RAM2
@@ -109,14 +110,24 @@ SECTIONS
         __bss_end__ = .;
     } > RAM2_DATA
 
+    .hardening_table  (NOLOAD):
+    {
+        . = ALIGN(16);
+        __hardening_table_start__ = .;
+        . = ALIGN(16*100);
+        __hardening_table_end__ = .;
+        PROVIDE (_ram_end = .);
+    } > RAM2_DATA
 
 
-	/* use BL31 area as stack */
+	/* stack */
     .el3_stack (NOLOAD):
     {
+    	PROVIDE (_stack_end = .);
         . = ALIGN(64);
-        . = . + 4 * 0x4000;
+        . = . + 0xC00;
         __el3_stack = .;
+        PROVIDE ( _stack_start = . );
     } > RAM2_DATA
 
     /*

@@ -51,6 +51,8 @@
 	.global __ttb0_l1
 	.global __el3_stack
 	.global __stack
+	.global _stack_end
+	.global _stack_start
 
 // ------------------------------------------------------------
 
@@ -221,6 +223,23 @@ start64:
 	MSR sp_el2, x0
 	MSR sp_el1, x0
 	MSR sp_el0, x0
+
+	/*
+	 * zero the stack
+	 */
+	ldr x1, =_stack_end
+	ldr x2, =_stack_start
+ 	mov x0, #0
+#ifdef BOOTBLOCK_STACK_PROFILER
+	mov w0, #0xAAAAAAAA
+#endif
+.L_loop3_stack:
+    cmp     x1, x2
+    b.ge    .L_loop3_stack_end           // If x1 >= x2, exit loop
+    str     w0, [x1], #4 
+    b       .L_loop3_stack
+    
+.L_loop3_stack_end:
 	
 
 	//

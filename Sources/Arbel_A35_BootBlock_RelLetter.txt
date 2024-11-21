@@ -8,7 +8,7 @@
 
 # NPCM8XX bootBlock Package Release Letter
 Version: 00.05.03
-Date:    Oct 2024
+Date:    Sep 2024
 
 
 # PACKAGE CONTENTS
@@ -56,9 +56,15 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
-version 0.5.3  SORT ONLY   - Oct 27th 2024
+version 0.5.3     - Nov 11th 2024
 ============
-- MC: enforce requirement for sweep eye size must be greater then 12 steps. Otherwise training will fail.
+- Fix MC trim override options.
+- Reduce stack to leave TIP_FW some memory.
+- Define region for hardening table.
+- MC: optimize register print function.
+- Zero the stack.
+- Add an option stack profiler (compilation flag).
+- Add an optional compilation flag for SORT. If it's set then fail boot if sweep fails (eye_size smaller then 12) 
 
 # HISTORY
 ---------------

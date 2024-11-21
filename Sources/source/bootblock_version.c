@@ -34,8 +34,10 @@ const BOOTBLOCK_Version_T bb_version = {
 					__DATE__
 					"\n"
 					__TIME__
-					KRED
-					"\nSORT\n\0",
+#ifdef _SORT_
+					" SORT "
+#endif
+                                       "\n\0",
 
 	.BootBlockTag    = 'B' | 'O'<<8 | 'O'<<16 | 'T'<<24,
 

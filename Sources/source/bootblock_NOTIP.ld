@@ -64,6 +64,7 @@ SECTIONS
 
     .StartUp :
     {
+	    PROVIDE (_ram_start = .);
     	./source/startup.o(.text.start64*)
     	./source/startup.o(.text.el3_primary*)
     } > FLASH_XIP
@@ -113,14 +114,17 @@ SECTIONS
         *(.data*)
         *(COMMON)
         . = ALIGN(4);
+        PROVIDE (_ram_end = .);
     } > RAM2
 
-	/* use BL31 area as stack */
+    /* stack */
     .el3_stack (NOLOAD):
     {
+    	PROVIDE (_stack_end = .);
         . = ALIGN(64);
         . = . + 4 * 0x4000;
         __el3_stack = .;
+        PROVIDE ( _stack_start = . );
     } > RAM2
 
     /*

@@ -46,13 +46,17 @@ rem pushd \\tanap1\proj_sw\sw_dev_tools
 rem set SW_DEV_TOOLS_DIR=%CD%
 rem cd /D %BASE_DIR%
 
+rem external flags can be:
+rem SET OPTIONAL_FLAGS=-D_SORT_ -DBOOTBLOCK_STACK_PROFILER
+SET OPTIONAL_FLAGS=''
+
 @echo ==========================================
 @echo = Building Arbel %TARGET% %ENCLAVE% code
 @echo ==========================================
 if "%1%" EQU "no_tip" (
-	make arbel_a35_bootblock_no_tip CROSS_COMPILE=%CROSS_COMPILER_PATH% || goto ERROR_COMPILATION
+	make arbel_a35_bootblock_no_tip CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% || goto ERROR_COMPILATION
 ) else (
-	make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH% || goto ERROR_COMPILATION
+	make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% || goto ERROR_COMPILATION
 )
 
 :continue

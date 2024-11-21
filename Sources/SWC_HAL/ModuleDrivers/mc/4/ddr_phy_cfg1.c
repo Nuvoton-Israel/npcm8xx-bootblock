@@ -626,15 +626,13 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 
 		dll_recalib_trim_adrctrl_ma += ddr_setup->dll_recalib_trim_adrctrl_ma;
 		dll_recalib_trim_increment_ma = ddr_setup->dll_recalib_trim_increment_ma;
-
 	}
-
 
 	// override from header:
 	if (ddr_setup->hdr_dlls_trim_adrctl != 0xFF)
 	{
 		dlls_trim_adrctrl = ddr_setup->hdr_dlls_trim_adrctl  & MASK_FIELD(PHY_DLL_ADRCTRL_dlls_trim_adrctrl);
-		dlls_trim_adrctrl_incr    =  (0x40 & ddr_setup->hdr_dlls_trim_adrctl ) >> 6;
+		dlls_trim_adrctrl_incr    =  READ_VAR_BIT (ddr_setup->hdr_dlls_trim_adrctl, 6);
 		HAL_PRINT(KMAG "Override dlls_trim_adrctrl with %c%d  (0x%x)\n",
 			dlls_trim_adrctrl_incr? '+': '-',  dlls_trim_adrctrl, dlls_trim_adrctrl);
 	}
@@ -643,19 +641,18 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	if (ddr_setup->hdr_dlls_trim_clk != 0xFF)
 	{
 		dlls_trim_clk = ddr_setup->hdr_dlls_trim_clk  & MASK_FIELD(PHY_DLL_TRIM_CLK_dlls_trim_clk);
-		dlls_trim_clk_incr =  (0x40 & ddr_setup->hdr_dlls_trim_clk ) >> 6;
-		HAL_PRINT(KMAG "Override dlls_trim_clk with %c%d (0x%x)\n",
-
-		dlls_trim_clk_incr? '+': '-',  dlls_trim_clk, dlls_trim_clk);
+		dlls_trim_clk_incr = READ_VAR_BIT (ddr_setup->hdr_dlls_trim_clk, 7);
+		HAL_PRINT(KMAG "Override dlls_trim_clk with %c%d\n",
+			MC_SignToChar(dlls_trim_clk_incr), dlls_trim_clk);
 	}
 
 	// override from header:
 	if (ddr_setup->hdr_dlls_trim_adrctrl_ma != 0xFF)
 	{
 		dll_recalib_trim_adrctrl_ma   =          ddr_setup->hdr_dlls_trim_adrctrl_ma  & MASK_FIELD(PHY_DLL_RECALIB_dlls_trim_adrctrl_ma);
-		dll_recalib_trim_increment_ma =  (0x40 & ddr_setup->hdr_dlls_trim_adrctrl_ma ) >> 6;
+		dll_recalib_trim_increment_ma =  READ_VAR_BIT(ddr_setup->hdr_dlls_trim_adrctrl_ma, 6);
 		HAL_PRINT(KMAG "Override dlls_trim_adrctrl_ma with %c%d (0x%x)\n",
-			dll_recalib_trim_increment_ma? '+': '-',  dll_recalib_trim_adrctrl_ma, dll_recalib_trim_adrctrl_ma);
+			MC_SignToChar(dll_recalib_trim_increment_ma),  dll_recalib_trim_adrctrl_ma, dll_recalib_trim_adrctrl_ma);
 	}
 
 	// protect from overflow:
@@ -665,14 +662,14 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 
 
 	REG_WRITE( PHY_DLL_ADRCTRL, ((dlls_trim_adrctrl_incr << 9) | dlls_trim_adrctrl) );
-	HAL_PRINT_DBG(KNRM ">ddr_phy_cfg1 set dlls_trim_adrctrl %c%d \n", dlls_trim_adrctrl_incr? '+': '-', dlls_trim_adrctrl);
+	HAL_PRINT_DBG(KNRM ">ddr_phy_cfg1 set dlls_trim_adrctrl %c%d \n", MC_SignToChar(dlls_trim_adrctrl_incr), dlls_trim_adrctrl);
 
 
 	REG_WRITE( PHY_LANE_SEL, 0x00000000 );
 	// JACOB: REG_WRITE( UNIQUIFY_IO_1, 0x00000001);
 
-	REG_WRITE( PHY_DLL_TRIM_CLK, ((dlls_trim_clk_incr << 6) | dlls_trim_clk) );
-	HAL_PRINT_DBG(">ddr_phy_cfg1 dlls_trim_clk	%c%d (0x%x)\n", dlls_trim_clk_incr? '+': '-', dlls_trim_clk, REG_READ (PHY_DLL_TRIM_CLK));
+	REG_WRITE( PHY_DLL_TRIM_CLK, ((dlls_trim_clk_incr << 7) | dlls_trim_clk) );
+	HAL_PRINT_DBG(">ddr_phy_cfg1 dlls_trim_clk	%c%d (reg=0x%x)\n", MC_SignToChar(dlls_trim_clk_incr), dlls_trim_clk, REG_READ (PHY_DLL_TRIM_CLK));
 	if (ddr_setup->dram_type_clk > DRAM_CLK_TYPE_1600)
 	{
 		REG_WRITE( PHY_DLL_RECALIB, ((0xA << 28)|(dll_recalib_trim_increment_ma<<27)|(1<<26)|(0x854<<8) | dll_recalib_trim_adrctrl_ma) ); /* replace 0x10 with 0x640 */
@@ -684,7 +681,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	}
 #endif
 	HAL_PRINT_DBG(">ddr_phy_cfg1 dlls_trim_adrctrl_ma %c%d\n",
-		READ_REG_FIELD(PHY_DLL_RECALIB, PHY_DLL_RECALIB_incr_dly_adrctrl_ma) ? '+': '-',
+		MC_SignToChar(READ_REG_FIELD(PHY_DLL_RECALIB, PHY_DLL_RECALIB_incr_dly_adrctrl_ma)),
 		READ_REG_FIELD(PHY_DLL_RECALIB, PHY_DLL_RECALIB_dlls_trim_adrctrl_ma));
 
 
@@ -769,7 +766,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	if(ddr_setup->dqs_out_lane1   != 0xFF)
 		Set_DQS_out_val( 1 , ddr_setup->dqs_out_lane1, FALSE, TRUE);
 
-
+	/* Manual override of trims using IGPS header parameters: */
 	for (ilane = 0 ; ilane < 2 ; ilane++)
 	{
 		REG_WRITE( PHY_LANE_SEL , 0x00000005 * ilane );
@@ -787,19 +784,13 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 
 
 		REG_WRITE( PHY_LANE_SEL , 0x00000006 * ilane );
-		if(ddr_setup->dlls_trim_1[ilane]  != 0xFF)
+		if(ddr_setup->dlls_trim_1[ilane] != 0xFF)
 		{
-			int incr = 0;
-			char incr_letter = '-';
+			char incr_letter = MC_SignToChar(ddr_setup->dlls_trim_1[ilane] & 0x80);
 			
-			if (ddr_setup->dlls_trim_1[ilane] & 0x80)
-			{
-				incr = 1;
-				incr_letter = '+';
-			}
-			HAL_PRINT(KMAG "Lane%d: set dlls_trim_1 to %c %d\n" KNRM, ilane, incr_letter, ddr_setup->dlls_trim_1[ilane] & 0x3F);
+			HAL_PRINT(KMAG "Lane%d: set dlls_trim_1 to %c%d\n" KNRM, ilane, incr_letter, ddr_setup->dlls_trim_1[ilane] & 0x7F);
 			SET_REG_FIELD(PHY_DLL_TRIM_1, PHY_DLL_TRIM_1_dlls_trim_1, ddr_setup->dlls_trim_1[ilane]);
-			if (incr == 1)
+			if (incr_letter == '+')
 			{
 				SET_REG_BIT(PHY_DLL_INCR_TRIM_1, ilane);
 			}
@@ -809,25 +800,19 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 			}
 		}
 
-		if(ddr_setup->dlls_trim_2[ilane]  != 0xFF)
+		if(ddr_setup->dlls_trim_2[ilane] != 0xFF)
 		{
 			HAL_PRINT(KMAG "Lane%d: set dlls_trim_2 to %d\n" KNRM, ilane, ddr_setup->dlls_trim_2[ilane]);
 			SET_REG_FIELD(PHY_DLL_TRIM_2, PHY_DLL_TRIM_2_dlls_trim_2, ddr_setup->dlls_trim_2[ilane]);
 		}
 
-		if(ddr_setup->dlls_trim_3[ilane]  != 0xFF)
+		if(ddr_setup->dlls_trim_3[ilane] != 0xFF)
 		{
-			int incr = 0;
-			char incr_letter = '-';
+			char incr_letter = MC_SignToChar (ddr_setup->dlls_trim_3[ilane] & 0x80);
 			
-			if (ddr_setup->dlls_trim_3[ilane] & 0x80)
-			{
-				incr = 1;
-				incr_letter = '+';
-			}
-			HAL_PRINT(KMAG "Lane%d: set dlls_trim_3 to %c %d\n" KNRM, ilane, incr_letter, ddr_setup->dlls_trim_3[ilane] & 0x3F);
+			HAL_PRINT(KMAG "Lane%d: set dlls_trim_3 to %c%d\n" KNRM, ilane, incr_letter, ddr_setup->dlls_trim_3[ilane] & 0x7F);
 			SET_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3, ddr_setup->dlls_trim_3[ilane]);
-			if (incr == 1)
+			if (incr_letter == '+')
 			{
 				SET_REG_BIT(PHY_DLL_INCR_TRIM_3, ilane);
 			}
@@ -837,8 +822,6 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 			}
 		}
 	}
-
-
 
 	REG_WRITE( UNIQUIFY_IO_1 ,  UNQ_IO_1_MASK);
 	CLK_Delay_MicroSec( 100 );

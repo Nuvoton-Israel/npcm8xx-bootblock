@@ -37,6 +37,51 @@ extern void disable_highvecs (void);
 extern void enable_highvecs (void);
 
 
+#ifdef BOOTBLOCK_STACK_PROFILER
+/**
+ * Print TIP stack profiler.
+ *
+ * This function prints the MSP stack usage stats.
+ * For L0 the stats will be for the MSP.
+ * For L1 the stats are only for the RTOS stack.
+ */
+static void stack_profiler (void)
+{
+	extern unsigned long _stack_end;
+	extern unsigned long _stack_start;
+	unsigned long stack_used;
+	unsigned long stack_total;
+	extern uint32_t _ram_start;
+	extern uint32_t _ram_end;
+	unsigned long *p;
+
+	serial_printf(KGRN "\nImage stats\n" KNRM);
+	serial_printf("code start = %#010lx \n" , &_ram_start);
+	serial_printf("code end   = %#010lx \n" , &_ram_end);
+	serial_printf("code size  = %#010lx \n\n" , 
+		(uint32_t) &_ram_end - (uint32_t) &_ram_start);
+	
+	p = &_stack_end;
+	while (p < &_stack_start) {
+		if (*p == (unsigned long)0xAAAAAAAAAAAAAAAA) {
+			p++;
+			}
+		else {
+			break;
+		}
+	}
+
+	stack_used = (unsigned long)(&_stack_start - p);
+	stack_total = (unsigned long)(&_stack_start - &_stack_end);
+	
+	serial_printf ("stack top       %#010lx \n", &_stack_end);
+	serial_printf ("stack watermark %#010lx \n", p);
+	serial_printf ("stack bottom    %#010lx \n", &_stack_start);
+	serial_printf ("stack usage     %#010lx \n", stack_used);
+	serial_printf ("stack usage percentage: %lu%% \n\n\n", (stack_used * 100) / stack_total);
+}
+#endif // BOOTBLOCK_STACK_PROFILER
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Prototypes                                                                                              */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -555,6 +600,9 @@ __attribute__((noreturn)) void bootblock_main (void)
 		REG_WRITE(SCRPAD_10_41(i), 0);
 
 	bootblock_PrintLogo();
+#ifdef BOOTBLOCK_STACK_PROFILER
+	stack_profiler ();
+#endif
 
 	serial_printf ("uptime %d.%d \n", PRINT_FLOAT2(CLK_GetUpTimeMiliseconds()));
 
@@ -778,6 +826,10 @@ __attribute__((noreturn)) void bootblock_main (void)
 	for (int i = 2; i <= 9; i++)
 		REG_WRITE(SCRPAD_10_41(i), 0);
 
+#endif
+
+#ifdef BOOTBLOCK_STACK_PROFILER
+	stack_profiler ();
 #endif
 
 	// Go to BL31

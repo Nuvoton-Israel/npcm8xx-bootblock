@@ -285,12 +285,14 @@ DEFS_STATUS Sweep_DQn_Trim_l (DDR_Setup *ddr_setup, int SweepType, BOOLEAN DoCen
 			for (ibit = 0; ibit < 8; ibit++)
 			{
 				ind = ilane * 8 + ibit;
-				if (g_Table_Y_BestTrim_EyeSize[ind] < 12)
+				if (g_Table_Y_BestTrim_EyeSize[ind] < 10)
 				{
 					HAL_PRINT_DBG(KRED "ERROR:   in DQn lane %d bit %d eye size %3d \n" KNRM, ilane, ibit, g_Table_Y_BestTrim_EyeSize[ind]);
+#ifdef _SORT_
 					status = DEFS_STATUS_HARDWARE_ERROR;
+#endif
 				}
-				else if (g_Table_Y_BestTrim_EyeSize[ind] > 15)
+				else if (g_Table_Y_BestTrim_EyeSize[ind] >= 12)
 				{
 					HAL_PRINT_DBG(KGRN "PASS:    in DQn lane %d bit %d eye size %3d \n" KNRM, ilane, ibit, g_Table_Y_BestTrim_EyeSize[ind]);
 				}

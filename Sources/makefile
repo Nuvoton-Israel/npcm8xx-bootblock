@@ -15,6 +15,8 @@ THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 # Edit this to change what make does when invoked without specifying a target.
 DEFAULT_TARGET = help
 
+# external flags from build.bar can be combination of:
+# OPTIONAL_FLAGS += -D_SORT_ -DBOOTBLOCK_STACK_PROFILER
 
 #
 # Source tree roots
@@ -57,11 +59,12 @@ else
 endif  
 
 
-CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER  
+CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER
 CFLAGS += -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h
 CFLAGS += -mcpu=Cortex-A35 -march=armv8-a -mcmodel=large -D__AARCH64__ -D__LP64__
 CFLAGS += -Wno-empty-body -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -lm  -mstrict-align
 CFLAGS += -fno-PIC
+CFLAGS += $(OPTIONAL_FLAGS)
 
 #
 # make serial_printf compile. Select DEBUG_LOG (really detailed) DEV_LOG (lite logging) or none of them (no logging)
@@ -70,9 +73,12 @@ DBG = -DDEBUG_LOG
 # DBG += -DDEV_LOG
 CFLAGS += $(DBG)
 
-
 export CFLAGS
+
 ASFLAGS = -mcpu=Cortex-A35 -march=armv8-a -gdwarf-3
+ASFLAGS += $(OPTIONAL_FLAGS)
+
+
 DEPEND_FLAGS = -MD -MF $@.d
 export $(ASFLAGS)
 

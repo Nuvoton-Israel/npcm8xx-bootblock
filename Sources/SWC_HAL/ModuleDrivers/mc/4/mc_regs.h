@@ -35,7 +35,6 @@
 #define MC_BASE  0xF0824000
 
 #define 	PHY_PAD_CTRL_1               (PHY_BASE + 0x31 * 4), MC_ACCESS, 32
-
 #define 	PHY_PAD_CTRL_1_clk_drive_p	0, 4				// 	Clock I/O pull up pad drive strength control.
 #define 	PHY_PAD_CTRL_1_clk_drive_n	4 ,4				// 	Clock I/O pull down pad drive strength control.
 #define 	PHY_PAD_CTRL_1_adrctrl_drive_p	8 ,4				// 	Address control I/O’s pull up pad drive strength control.
@@ -44,7 +43,6 @@
 #define 	PHY_PAD_CTRL_1_dq_dqs_drive_n	20 ,4				// 	DQ, DM, DQS I/O’s pull down pad drive strength control. For PHYs supporting LPDDR4, pre-program PHY_LANE_SEL [7:0] with the desired byte lane number [0…        MEM_STRB_WIDTH].
 
 #define 	PHY_PAD_CTRL_2               (PHY_BASE + 0x32 * 4), MC_ACCESS, 32
-
 #define 	PHY_PAD_CTRL_2_dq_dqs_term_p	0 ,4				// 	DQ, DM, DQS I/O’s pull up ODT impedance control. For PHYs supporting LPDDR4, pre-program PHY_LANE_SEL [7:0] with the desired byte lane number [0…        MEM_STRB_WIDTH]. Also, refer to description for local_odt_ctrl in SCL_CONFIG_1 to see how read termination window is controlled
 #define 	PHY_PAD_CTRL_2_dq_dqs_term_n	4 ,4				// 	DQ, DM, DQS I/O’s pull down ODT impedance control. For PHYs supporting LPDDR4, pre-program PHY_LANE_SEL [7:0] with the desired byte lane number [0…        MEM_STRB_WIDTH].
 #define 	PHY_PAD_CTRL_2_adrctrl_term_p	8 ,4				// 	Address control I/O’s pull up ODT impedance control. Not required to be used since these I/O’s are output only.
@@ -52,7 +50,6 @@
 
 
 #define 	PHY_PAD_CTRL_3               (PHY_BASE + 0x27 * 4), MC_ACCESS, 32
-
 #define 	PHY_PAD_CTRL_3_clk_pemp_p	0 ,2				// 	CLK I/O’s pull up pre-emphasis mode control.
 #define 	PHY_PAD_CTRL_3_clk_pemp_n	2 ,2				// 	CLK I/O’s pull down pre-emphasis mode control.
 #define 	PHY_PAD_CTRL_3_adrctrl_pemp_p	4 ,2				// 	Address control I/O’s pull up pre-emphasis mode control.
@@ -62,7 +59,6 @@
 #define 	PHY_PAD_CTRL_3_test_vibias_desel_bg	11 ,2				// 	For Uniquify internal use only. Optional bit that is available only in certain PHY versions
 
 #define 	PHY_PAD_CTRL               (PHY_BASE + 0x48 * 4), MC_ACCESS, 32
-
 #define 	PHY_PAD_CTRL_extra_oen_clk	8 ,1				// 	Set to drive pad output enables for an extra cycle after a write burst if necessary.
 #define 	PHY_PAD_CTRL_wdqs_on	9 ,1				// 	For PHYs supporting LPDDR4, it is set only when using Hynix LPDDR4 SDRAM that requires extended write preamble.
 #define 	PHY_PAD_CTRL_dynamic_receiver_en	10 ,1				// 	For PHYs that support dynamic input enable on IO receivers as a power saving feature. Set to enable. See also the DYNAMIC_IE_TIMER register description.
@@ -71,8 +67,6 @@
 #define 	PHY_PAD_CTRL_receiver_en	28 ,1				// 	Set to 1 to allow pad receivers on bi-directional IOs to be turned on.
 #define 	PHY_PAD_CTRL_preamble_dly	29 ,2				// 	Controls the length of the preamble for writes. Applicable only for non-LPDDR4 PHYs 2’h0 => 2 cycles. 2’h1 => 1 ½ cycles. 2’h2 => 1 cycle.
 #define 	PHY_PAD_CTRL_reten_en_state	31 ,1				// 	When the PHY includes a retention pad, this bit indicates the state of the retention control. 0 indicates retention mode is enabled.
-
-
 
 #define 	UNIQUIFY_IO_1               (PHY_BASE + 0x5C * 4), MC_ACCESS, 32
 #define 	UNIQUIFY_IO_1_start_tx         0, 1  /*    Enables dynamic impedance calibration for the transmitter. Dynamic impedance calibration will run continuously as long as start_tx is high.                                                                      */
@@ -105,7 +99,6 @@
 #define 	UNIQUIFY_IO_2_cal_trim_rx_saved     25,6     /*   RX calibration trim setting found after RX calibration read from UCAL                                                         */
 #define 	UNIQUIFY_IO_2_uclk_trim_upd_extend  31,1     /*  dfi_phyupd_ack is asserted for 20 DFI clock cycles normally for IO calibration trim update. Set to double that number.         */
 
-
 #define 	UNIQUIFY_IO_3               (PHY_BASE + 0x73 * 4), MC_ACCESS, 32
 #define		UNIQUIFY_IO_3_slew 0, 8     /*  I/O slew control                                                                                   */
 #define		UNIQUIFY_IO_3_ucal_config_bits 8, 13     /*  UCAL IO configuration control which determine the type of calibration begin done.     */
@@ -113,8 +106,6 @@
 #define		UNIQUIFY_IO_3_lpddr4_divby2p5 25,1     /*  Set to enable LPDDR4 VDDQ/2.5 mode calibration. RW 0                                     */
 #define		UNIQUIFY_IO_3_lpddr4_divby3 26,1     /*  Set to enable LPDDR4 VDDQ/3 mode calibration. RW 0                                         */
 #define		UNIQUIFY_IO_3_ucal_2step_cal 27,1     /* Set to enable two step 0.67/0.8*VDDQ style calibration. RW 0                              */
-
-
 
 #define 	UNIQUIFY_IO_4               (PHY_BASE + 0x74 * 4), MC_ACCESS, 32
 #define		UNIQUIFY_IO_4_cal_trim_npu_saved 0, 6     /*  Saved CAL IO NMOS pull-up trim value.                                                */
@@ -124,11 +115,9 @@
 #define		UNIQUIFY_IO_4_cal_trim_npd_0p8_saved 24, 6     /*  Saved CAL IO NMOS pull-down trim values for DDR4 0p8 trim IOs.                 */
 
 #define 	UNIQUIFY_IO_5               (PHY_BASE + 0x7C * 4), MC_ACCESS, 32
-
 #define 	UNIQUIFY_IO_5_clk_slew	0 ,8				// 	Used to program customized SLEW control value for each memory clock output IO. Pre-program PHY_LANE_SEL [7:0] with <clock number> * 8
 
 #define 	SCL_START               (PHY_BASE + 0x40 * 4), MC_ACCESS, 32
-
 #define 	SCL_START_cuml_scl_rslt	0, MEM_STRB_WIDTH				// 	Read only value that gets set after SCL is run. It shows whether SCL passed or failed on each byte lane, 1 bit per byte lane.
 #define 	SCL_START_cmd_bus_training	16 ,1				// 	Set to enable command bus training mode for PHYs supporting hardware CA training. Applicable only for LPDDR3 and LPDDR4.
 #define 	SCL_START_cycle_cnt	20 ,8				// 	Read only value that indicates the number of delay elements required to delay the clock signal to align with the read DQS falling edge (after it has been delayed ¼ cycle by the analog or digital DLL). Before reading cycle_cnt , program phy_lane_sel to         MAS_DLY_WIDTH*<lane number> to select the desired lane.
@@ -145,16 +134,12 @@
 #define 	SCL_START_save_restore_data	31 ,1				// 	Used in the SCL routines and should not be set by the user. When set, the user did not allocate space in the DRAM for SCL or bit-leveling training data. Therefore during DSCL and/or dynamic bit-leveling, the user’s data will be saved and overwritten with training data to complete the process and then restored for normal operation.
 
 #define 	SCL_DATA_0               (PHY_BASE + 0x41 * 4), MC_ACCESS, 32
-
 #define 	scl_data	0 ,32				// 	SCL_DATA_1 and SCL_DATA_0 control the test data pattern used for SCL and loopback routines. The default value provides the best calibration and test capability and is not recommended to be changed by the user. The bit-leveling routine also uses this register to write a bit-leveling specific data pattern into the DRAM.
 
-
 #define 	SCL_DATA_1               (PHY_BASE + 0x42 * 4), MC_ACCESS, 32
-
 #define 	SCL_DATA_1_scl_data_63_32	0 ,32				// 	Please see description of SCL_DATA_0
 
 #define 	SCL_LATENCY               (PHY_BASE + 0x43 * 4), MC_ACCESS, 32
-
 #define 	SCL_LATENCY_capture_clk_dly	0 ,4				// 	This field is used to specify the number of delay line steps that the SCL state machine should skip when trying to locate the 1 to 0 transition on the input DQS. The difference should be enough analog / digital delay line steps needed to cover the maximum jitter than can be expected on the input DQS.
 #define 	SCL_LATENCY_main_clk_dly	4 ,4				// 	Automatically programmed by SCL based on the delay for generating dfi_rddata_valid with respect to dfi_rddata_en.  SCL automatically ensures that dfi_rddata_valid timing is matched for all byte lanes, so user only needs to deal with a single dfi_rddata_valid.
 #define 	SCL_LATENCY_loopback	8 ,1				// 	Set to 1 to put the PHY in loopback mode.
@@ -164,17 +149,14 @@
 #define 	SCL_LATENCY_wbl_jitter_threshold	16 ,4				// 	Jitter rejection factor to ensure write bit-levleing will not falsely lock DQS transition on the rising / falling edge of DQ instead of the center because of jitter – similar to capture_clk_dly used for read bit-leveling. Delay of 2 times this number of delay line steps should be greater than the maximum jitter that can occur.
 
 #define 	SCL_RD_ADDR               (PHY_BASE + 0x44 * 4), MC_ACCESS, 32
-
 #define 	SCL_RD_ADDR_scl_rd_addr	0 ,2				// 	SCL related.  For debug only. Selects between upper and lower 32-bits of SCL read data burst.
 #define 	SCL_RD_ADDR_rotate_ctr_strt_val	4 ,4				// 	SCL related. Not user programmable.
 #define 	SCL_RD_ADDR_data_phy_sel	8 ,  MEM_STRB_WIDTH				// 	SCL related.
 
 #define 	SCL_RD_DATA               (PHY_BASE + 0x45 * 4), MC_ACCESS, 32
-
 #define 	SCL_RD_DATA_scl_rd_data	0 ,32				// 	SCL related For debug only. Used to read back read data captured during SCL.
 
 #define 	SCL_CONFIG_1               (PHY_BASE + 0x46 * 4), MC_ACCESS, 32
-
 #define 	SCL_CONFIG_1_burst8		0 ,1				// 	Used by the PHY while running the SCL test to understand if the DDR is in burst of 4 mode (0) or burst of 8 mode (1).
 #define 	SCL_CONFIG_1_ddr3		2 ,1				// 	Set to 1 for DDR3 and 0 otherwise.
 #define 	SCL_CONFIG_1_dly_dfi_phyupd_ack	3 ,1				// 	Delay the dfi_phyupd_ack from the controller if it does not support issuing dfI_phyupd_ack only when all banks are idle and ready to be activated. Delayed by (REF_TO_ACT_DLY << double_ref_dly) where REF_TO_ACT_DLY is a fixed RTL parameter value.
@@ -198,17 +180,14 @@
 #define 	SCL_CONFIG_2_swap_phase	31 ,1				// 	When the PHY sends DRAM commands during PHY training sequences, this bit decides if the command will be sent during phase 0 or phase 1 in half rate mode. If swap_phase = 1'b0, then CS_N will be asserted on phase 0, otherwise on phase 1.
 
 #define 	SCL_CONFIG_3               (PHY_BASE + 0x5B * 4), MC_ACCESS, 32
-
 #define 	SCL_CONFIG_3_scl_lanes_mask	0, MEM_STRB_WIDTH				// 	Can be used to run SCL on a limited number of lanes rather than all lanes by default. Lanes with the corresponding bit set are not checked by SCL.
 
 #define 	CBT_CTRL               (PHY_BASE + 0x33 * 4), MC_ACCESS, 32
-
 #define 	CBT_CTRL_pulse_ca_half_wide	02 ,1				// 	Generates a CA training pulse to train all CA except CA4 and CA9.Clears automatically when finished.
 #define 	CBT_CTRL_pulse_ca_half_wide2	03 ,1				// 	Generates a CA training pulse to train CA4 and CA9. Clears automatically when finished.
 
 
 #define 	PHY_DLL_RECALIB               (PHY_BASE + 0x49 * 4), MC_ACCESS, 32
-
 #define 	PHY_DLL_RECALIB_dlls_trim_adrctrl_ma	0, SLV_DLY_WIDTH	// 	Trim settings for adjusting the output timing of all 2T timing capable signals namely row/column/bank address and ras_n/cas_n/we_n with respect to all other outputs such as DRAM clock and DQ/DQS/DM. The programmed delay should be such as to match the timing of DRAM clock programmed in PHY_DLL_TRIM_CLK when these signals are received by the DRAM. he maximum negative delay is limited to dll_slv_dly.When 2T timing is used i.e. the above mentioned outputs switch only once every 2 cycles, the total setup + hold timing budget available is 2 DDR clock cycles, and in 1T timing mode, it is 1 DDR clock cycle.
 #define 	PHY_DLL_RECALIB_recalib_cnt	8 ,18				// 	Determines how often the PHY issues the dfi_phyupd_req type 1 to controller in PHY clock cycles. Also determines the period of recalibration of the digital DLL in units of (PHY clock cycles * 256). Also used as a timer for IO impedance recalibration when IO supports this feature
 #define 	PHY_DLL_RECALIB_disable_recalib	26 ,1				// 	Prevents the digital DLL from recalibrating after the 1st time.
@@ -216,7 +195,6 @@
 #define 	PHY_DLL_RECALIB_ctr_start_val	28 ,4				// 	Controls the start value of the digital DLL master delay line. Recommended value is 4’hA.
 
 #define 	PHY_DLL_ADRCTRL               (PHY_BASE + 0x4A * 4), MC_ACCESS, 32
-
 #define 	PHY_DLL_ADRCTRL_dlls_trim_adrctrl	0, SLV_DLY_WIDTH				// 	Trim sett ings for adjusting the output timing of all 1T timing signals namely CS_N/CKE/ODT with respect to all other outputs such as DRAM clock and DQ/DQS/DM. The programmed delay should be such as to match the timing of DRAM clock programmed in PHY_DLL_TRIM_CLK when these signals are received by the DRAM. The maximum negative delay is limited to dll_slv_dly. It may be noted that in a multi-rank system, the 1T timing signals CS_N/CKE/ODT are separately driven for every rank and so the tighter setup + hold timing budget of 1 DDR clock cycle is acceptable. RW
 #define 	PHY_DLL_ADRCTRL_override_adrctrl	8 ,1				// 	Used to override the digital DLL master delay line and set the slave delay line output delay directly through dlls_trim_adrctrl and dlls_trim_adrctrl_ma. Recommended value is 0.
 #define 	PHY_DLL_ADRCTRL_incr_dly_adrctrl	9 ,1				// 	Used only if override_adrctrl is 0. Set to increment the delay on the slave delay line using dlls_trim_adrctrl, decrement otherwise. Recommended value is 0.
@@ -224,54 +202,40 @@
 #define 	PHY_DLL_ADRCTRL_dll_mas_dly	24, MAS_DLY_WIDTH				// 	Digital DLL master delay line setting (corresponds to 1 clock delay)
 
 #define 	PHY_DLL_TRIM_CLK               (PHY_BASE + 0x69 * 4), MC_ACCESS, 32
-
-#define 	PHY_DLL_TRIM_CLK_dlls_trim_clk	0, SLV_DLY_WIDTH				// 	Used to control the output delay of clock with respect to data signals (dq/dqs/dm). Prior to write leveling this register must be programmed such that it is guaranteed that clock arrival time is greater than DQS arrival time at each DRAM. The delay should also be such as to match output timing of other address and control signals in PHY_DLL_RECALIB and_PHY_DLL_ADRCTRL. The negative delay is limited to dll_slv_dly Bit [        SLV_DLY_WIDTH + 1] is set to increment the delay on the clock output delay line using dlls_trim_clk[        SLV_DLY_WIDTH :0], decrement otherwise. Bit [        SLV_DLY_WIDTH + 1] is used only when override_adrctrl is NOT set. Pre-program phy_lane_sel to (        SLV_DLY_WIDTH+2)*<clock number>, where clock number can range from 0 to MEM_CLOCKS - 1.
+#define 	PHY_DLL_TRIM_CLK_dlls_trim_clk	0, (SLV_DLY_WIDTH+1)				// 	Used to control the output delay of clock with respect to data signals (dq/dqs/dm). Prior to write leveling this register must be programmed such that it is guaranteed that clock arrival time is greater than DQS arrival time at each DRAM. The delay should also be such as to match output timing of other address and control signals in PHY_DLL_RECALIB and_PHY_DLL_ADRCTRL. 
+#define 	PHY_DLL_TRIM_CLK_dlls_trim_clk_incr	(SLV_DLY_WIDTH+1), 1		// 	The negative delay is limited to dll_slv_dly Bit [SLV_DLY_WIDTH + 1] is set to increment the delay on the clock output delay line using dlls_trim_clk[        SLV_DLY_WIDTH :0], decrement otherwise. Bit [        SLV_DLY_WIDTH + 1] is used only when override_adrctrl is NOT set. Pre-program phy_lane_sel to (        SLV_DLY_WIDTH+2)*<clock number>, where clock number can range from 0 to MEM_CLOCKS - 1.
 
 #define 	PHY_LANE_SEL               (PHY_BASE + 0x4B * 4), MC_ACCESS, 32
-
 #define 	PHY_LANE_SEL_phy_lane_sel	0 ,8				// 	Used to select one of an array of register fields (such as a register that exists per byte lane) during programming. The value to be programmed to select the particular register field depends on the field width and is = <FIELD_WIDTH> * <field number>.
 #define 	PHY_LANE_SEL_bit_sel	8 ,4				// 	Must be programmed to appropriate value before programming OP_DQ_DM_DQS_BITWISE_TRIM/ IP_DQ_DQS_BITWISE_TRIM registers.
 
 #define 	PHY_DLL_TRIM_1               (PHY_BASE + 0x4C * 4), MC_ACCESS, 32
-
-
 #define 	PHY_DLL_TRIM_1_dlls_trim_1	0 , SLV_DLY_WIDTH				// 	Can be used to adjust the trim settings on the internal digital or analog DLL for controlling output dqs timing with respect to output dq/dm signals. Recommended value is 0.
 
-
 #define 	PHY_DLL_TRIM_2               (PHY_BASE + 0x4D * 4), MC_ACCESS, 32
-
-
 #define 	PHY_DLL_TRIM_2_dlls_trim_2	0, SLV_DLY_WIDTH				// 	Can be used to adjust output dq/dqs/dm timing with respect to DRAM clock. Recommended value is 0. For (LP)DDR3/4 SDRAM this value is set by the write leveling training procedure. Program phy_lane_sel with SLV_DLY_WIDTH*<lane number> before programming this field.
 #define 	PHY_DLL_TRIM_2_inc_dec_all_trims	8 , SLV_DLY_WIDTH				// 	When this field is non-zero when writing this register, all dlls_trim_2 values for all byte lanes are incremented (if bit 17 is 0) or decremented (if bit 17 is 1) by the value specified for the field.
 #define 	PHY_DLL_TRIM_2_clear_all_trims	16 ,1				// 	When this field is set to 1 when writing this register, all dlls_trim_2 values for all byte lanes are reset to 0.
 #define 	PHY_DLL_TRIM_2_inc_or_dec_all_trims	17 ,1				// 	See description for inc_dec_all_trims.
 
 #define 	PHY_DLL_TRIM_3               (PHY_BASE + 0x4E * 4), MC_ACCESS, 32
-
-
 #define 	PHY_DLL_TRIM_3_dlls_trim_3	0, SLV_DLY_WIDTH				// 	Can be used to adjust input dqs timing with respect to input dq by adjusting the trim settings on the internal digital or analog DLL. Recommended value is 0.
 
-
 #define 	PHY_DLL_INCR_TRIM_1               (PHY_BASE + 0x59 * 4), MC_ACCESS, 32
-
 #define 	PHY_DLL_INCR_TRIM_1_incr_dly_1	0, MEM_STRB_WIDTH				// 	If set, dlls_trim_1 is to be used to increment the associated delay. Otherwise, dlls_trim_1 will be used to decrement the delay. 1 bit per byte lane. Recommended value is 0.
 
 #define 	PHY_DLL_INCR_TRIM_3               (PHY_BASE + 0x5A * 4), MC_ACCESS, 32
-
 #define 	PHY_DLL_INCR_TRIM_3_incr_dly_3	0, MEM_STRB_WIDTH			// 	If set, dlls_trim_3 is to be used to increment the associated delay. Otherwise, dlls_trim_3 will be used to decrement the delay. 1 bit per byte lane. Recommended value is 0.
 
 #define 	SCL_DCAPCLK_DLY               (PHY_BASE + 0x4F * 4), MC_ACCESS, 32
-
 #define 	SCL_DCAPCLK_DLY_dcap_byte_dly	0, DATA_CAP_DLY_WIDTH				// 	SCL data_capture_clk setting programmed per byte lane. Automatically programmed by SCL, but can be manually programmed by user as well. For manual programming, program phy_lane_sel to (lane number * DATA_CAP_DLY_WIDTH), before programming or reading this value. SCL / DSCL programs this register in such as way that the data_capture_clk edge used to transfer data from the input DQS clock domain to the PHY core clock domain provides the best possible timing margins (please see chapter 11 for more details).
 
 #define 	SCL_MAIN_CLK_DELTA               (PHY_BASE + 0x50 * 4), MC_ACCESS, 32
-
 #define 	SCL_MAIN_CLK_DELTA_main_clk_delta_dly	0 ,3				// 	SCL latency setting programmed per byte lane. Automatically programmed by SCL, but can be manually programmed by user as well. For manual programming, program phy_lane_sel to (lane number * 3), before programming or reading this value. This value is programmed by SCL/DSCL to delay faster byte lanes compared to slower byte lanes in such a way that a common dfi_rddata_valid can be generated for all byte lanes aligned with the controller’s clock. Please see section 11.2 for more details.
 #define 	SCL_MAIN_CLK_DELTA_clear	4 ,1				// 	Write 1 to clear main_clk_delta_dly for all lanes.
 #define 	SCL_MAIN_CLK_DELTA_scl_rslt	4 , MEM_STRB_WIDTH				// 	Read only value that gets set after SCL is run. It shows whether SCL passed or failed on each byte lane, 1 bit per byte lane. Should be identical to cuml_scl_rslt.
 
 #define 	WRLVL_CTRL               (PHY_BASE + 0x52 * 4), MC_ACCESS, 32
-
 #define 	WRLVL_CTRL_wrlvl_rslt	0, MEM_STRB_WIDTH				// 	SCL related Used to check if write leveling passed on each lane. It stores the last sampled value at the end of write-leveling. A zero should be seen in start_wr_lvl and a one in wrlvl_rslt to confirm write-leveling passed.
 #define 	WRLVL_CTRL_ip_dq_sample	20 ,8				// 	SCL related. Used only for debug.
 #define 	WRLVL_CTRL_pulse_dqs	20 ,1				// 	SCL related. Used only for debug.
@@ -281,7 +245,6 @@
 #define 	WRLVL_CTRL_turn_on_dq_op	31 ,1				// 	SCL related. Used only for debug.
 
 #define 	WRLVL_AUTOINC_TRIM               (PHY_BASE + 0x53 * 4), MC_ACCESS, 32
-
 #define 	WRLVL_AUTOINC_TRIM_start_wr_lvl	0, MEM_STRB_WIDTH				// 	Specifies lanes to be trained during write leveling. When read back after write-leveling, it indicates for each lane if a zero was sampled sometime during write-leveling. It can be used in combination with wrlvl_rslt to check if write-leveling passed.
 #define 	WRLVL_AUTOINC_TRIM_bit_lvl_from_saved	20 ,1				// 	Read back value for bit of the same name in SCL_START.
 #define 	WRLVL_AUTOINC_TRIM_bit_lvl_norm	21 ,1				// 	Read back value for bit of the same name in SCL_START.
@@ -292,40 +255,32 @@
 #define 	WRLVL_AUTOINC_TRIM_cmd_bus_training	26 ,1				// 	Read back value for bit of the same name in SCL_START.
 
 #define 	WRLVL_DYN_ODT               (PHY_BASE + 0x54 * 4), MC_ACCESS, 32
-
 #define 	WRLVL_DYN_ODT_dynamic_odt_off	0 ,16				// 	Value that should be programmed in (LP)DDR3/DDR4 SDRAM’s Mode register 2 prior to write-leveling. It specifies the value of Mode register 2 that is to be used during Write leveling. Please be careful to turn off dynamic ODT here since dynamic ODT is not permitted during write-leveling.
 #define 	WRLVL_DYN_ODT_dynamic_odt_on	16 ,16				// 	Value that should be programmed in (LP)DDR3/DDR4 SDRAM’s Mode register 2 after write-leveling corresponding to the value of Mode register 2 that is desired to be used for functional operation. This value may be DIFFERENT or SAME as bits 15:0 depending on whether dynamic ODT is used or not used during functional operation.
 
 #define 	WRLVL_ON_OFF               (PHY_BASE + 0x55 * 4), MC_ACCESS, 32
-
 #define 	WRLVL_ON_OFF_wr_lvl_off	0 ,16				// 	Value that should be programmed in (LP)DDR3/DDR4 SDRAM’s Mode register 1 to turn off write-leveling.
 #define 	WRLVL_ON_OFF_wr_lvl_on	16 ,16				// 	Value that should be programmed in (LP)DDR3/DDR4 SDRAM’s Mode register 1 to turn on write-leveling.
 
 #define 	WRLVL_STEP_SIZE               (PHY_BASE + 0x19 * 4), MC_ACCESS, 32
-
 #define 	WRLVL_STEP_SIZE_wr_lvl_step_size	0 ,6				// 	Step size control for write-leveling. How many steps does the delay line increment at each iteration of write leveling.
 #define 	WRLVL_STEP_SIZE_wr_lvl_transition_step_size	8 ,6				// 	Step size control for write leveling used at the 1->0 transition of DRAM clock so write leveling will not falsely lock on the falling edge transition instead of rising edge transition as required.
 
 #define 	UNQ_ANALOG_DLL_1               (PHY_BASE + 0x57 * 4), MC_ACCESS, 32
-
 #define 	UNQ_ANALOG_DLL_1_analog_dll_reset	0, MEM_STRB_WIDTH				// 	Reset control for the analog DLL on a per byte lane basis.
 
 #define 	UNQ_ANALOG_DLL_2               (PHY_BASE + 0x58 * 4), MC_ACCESS, 32
-
 #define 	UNQ_ANALOG_DLL_2_analog_dll_lock	0, MEM_STRB_WIDTH				// 	Indication from Analog DLL about its lock state.
 #define 	UNQ_ANALOG_DLL_2_mas_dly	24 ,7				// 	Indication from Analog DLL about its master delay line setting. Program phy_lane_sel to         MAS_DLY_WIDTH*<lane number> before programming this field.
 
 #define 	UNQ_ANALOG_DLL_3               (PHY_BASE + 0x64 * 4), MC_ACCESS, 32
-
 #define 	UNQ_ANALOG_DLL_3_phase1	0 ,5				// 	Phase by which DQS should be delayed on the write side. Bit 4 is used to delay by 1/4 cycle, Bit 3 by 1/8 cycle, Bit 2 by 1/16 cycle, Bit 1 by 1/32 cycle and Bit 0 by 1/64 cycle. Program phy_lane_sel to 5*<lane number> before programming this field. Recommended value is 5’h10
 #define 	UNQ_ANALOG_DLL_3_phase2	8 ,5				// 	Phase by which DQS should be delayed on the read side. Bit 4 is used to delay by 1/4 cycle, Bit 3 by 1/8 cycle, Bit 2 by 1/16 cycle, Bit 1 by 1/32 cycle and Bit 0 by 1/64 cycle. Program phy_lane_sel to 5*<lane number> before programming this field. Recommended value is 5’h10.
 #define 	UNQ_ANALOG_DLL_3_rise_cycle_cnt_dphy	16, ADLL_MAS_DLY_WIDTH				// 	Indication from Analog DLL of half clock cycle delay value. Program phy_lane_sel to ADLL_MAS_DLY_WIDTH*<lane number> before reading this field
 
 
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1               (PHY_BASE + 0x5E * 4), MC_ACCESS, 32
-
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1_addr_ctrl_loopback	0 ,2				// 	Set to 1 to enable loopback test on the address control pins.
-
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1_ras_n_result	2 ,1				// 	Compare result for RASN output to DRAM.
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1_cas_n_result	3 ,1				// 	Compare result for CASN output to DRAM.
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1_we_n_result	4 ,1				// 	Compare result for WEN output to DRAM.
@@ -335,38 +290,30 @@
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_1_rst_n_result	6+MEM_BANK_BITS ,  MEM_CHIP_SELECTS 				// 	Compare result for RST_N output to DRAM.
 
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_2               (PHY_BASE + 0x5F * 4), MC_ACCESS, 32
-
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_2_ma_result	0 , MEM_ADDR_BITS				// 	Compare result for DRAM MA (row / column address) output.
 #define 	UNIQUIFY_ADDR_CTRL_LOOPBACK_2_cs_n_result	MEM_ADDR_BITS , MEM_CHIP_SELECTS				// 	Compare result for DRAM CSN output.
 
 #define 	PHY_SCL_START_ADDR               (PHY_BASE + 0x62 * 4), MC_ACCESS, 32
-
 #define 	PHY_SCL_START_ADDR_scl_start_row_addr	0 ,16				// 	Row address to use when running SCL / Bit-leveling.
 #define 	PHY_SCL_START_ADDR_scl_start_col_addr	16 ,13				// 	Column address to use when running SCL / Bit-leveling. 16 column locations starting from this column address need to be reserved for dynamic SCL / bit-leveling
 #define 	PHY_SCL_START_ADDR_scl_start_bank_addr	29 ,3				// 	Bank address to use when running SCL / Bit-leveling. For DDR4, this bank address in bank group 0 and bank group 1 will both be used
 
 #define 	PHY_DLL_RISE_FALL               (PHY_BASE + 0x63 * 4), MC_ACCESS, 32
-
 #define 	PHY_DLL_RISE_FALL_min_rise_fall_dly	0 ,4				// 	Used to prevent DLL from locking on the half-cycle because of clock jitter. Recommended value is 4’h6.
 #define 	PHY_DLL_RISE_FALL_rise_cycle_cnt	4 ,8				// 	Half-cycle period detected by the DLL.
 #define 	PHY_DLL_RISE_FALL_dfi_init_complete	12 ,1				// 	Signal defined in the DFI spec. It indicates that PHY is ready to accept commands on the DFI interface.
 
 #define 	DSCL_CNT               (PHY_BASE + 0x67 * 4), MC_ACCESS, 32
-
 #define 	DSCL_CNT_dscl_exp_cnt	0 ,24				// 	When dscl_en is set, this controls the frequency at which the PHY issues dfi_ phyupd request for running DSCL. Interval between DSCL requests is = dscl_exp_cnt * 256 PHY clock cycles.
 #define 	DSCL_CNT_dscl_en	24 ,1				// 	Set to 1 to enable DSCL to run continuously without software intervention.
 #define 	DSCL_CNT_dscl_save_restore_needed	25 ,1				// 	If set to 1 whenever DSCL is run, the data in the DRAM is saved and restored. This will increase the DSCL run time. To save DSCL run time, the user may set this bit to 0 and program the PHY_SCL_START_ADDR register with the location of the reserved memory in DRAM. Save/restore is not supported when phy is operating at half frequency and this bit SHOULD be set to 0.
 
 #define 	IP_DQ_DQS_BITWISE_TRIM               (PHY_BASE + 0x65 * 4), MC_ACCESS, 32
-
-
 #define 	IP_DQ_DQS_BITWISE_TRIM_ip_dq_dqs_bitwise_trim_reg	0, TRIM_WIDTH				// 	Trim delay and Incr/Decr setting for each input DQ bit. The MSB is the Incr (1)/Decr (0) control and the other bits are the trim. This delay is added using the input delay line available for each DQ bit. Program phy_lane_sel to <byte number>*(        BITLVL_DLY_WIDTH + 1) and bit_sel to <bit number> before programming this field with the delay required on that byte lane and that bit. <bit number> is defined as 0 to 7 for DQ bits 0 to 7 and 8 for DQS. Recommended value is 0. This register stores the user programmed value only when ip_dq_trim_override is set. Otherwise, this register automatically registers the DQ bit trim values found during bit-leveling.
 #define 	IP_DQ_DQS_BITWISE_TRIM_ip_dq_trim_override	TRIM_WIDTH, 1				// 	Used to override the trim delay of all input DQ’s found from bit- leveling and to set the delay directly through the value programmed in the ip_dq_trim_bitwise register. Note that this override bit is common to all bits / lanes, and if it is set to 0 during any register write, all the previously software programmed values will be immediately overwritten with the current hardware value.
 #define 	IP_DQ_DQS_BITWISE_TRIM_bit_lvl_done_status	8, MEM_STRB_WIDTH				// 	Read only indication of whether bit-leveling has finished on each byte lane, 1 bit per byte lane.
 
 #define 	OP_DQ_DM_DQS_BITWISE_TRIM               (PHY_BASE + 0x68 * 4), MC_ACCESS, 32
-
-
 #define 	OP_DQ_DM_DQS_BITWISE_TRIM_op_dq_dm_dqs_bitwise_trim_reg	0, TRIM_WIDTH				// 	Trim delay and Incr/Decr setting for each output DQ/DM/DQS. The MSB is the Incr (1)/Decr (0) and the other bits are the trim. This delay is added using the output delay line available for each DQ/DM/DQS signal.
 #define 	OP_DQ_DM_DQS_BITWISE_TRIM_op_dq_trim_override_DQ	TRIM_WIDTH, 1				// 	Used to override the trim delay of all output DQ’s from bit- leveling and to set the delay directly through value programmed in op_dq_dm_dqs_bitwise_trim.
 #define 	OP_DQ_DM_DQS_BITWISE_TRIM_op_dq_trim_override_DM	TRIM_WIDTH+1, 1				// 	Used to override the trim delay of all output DQ’s from bit- leveling and to set the delay directly through value programmed in op_dq_dm_dqs_bitwise_trim.
@@ -374,58 +321,44 @@
 
 
 #define 	DYNAMIC_BIT_LVL               (PHY_BASE + 0x6B * 4), MC_ACCESS, 32
-
-
 #define 	DYNAMIC_BIT_LVL_dynamic_bit_leveling	0 ,1				// 	Set to run read bit-leveling dynamically.
 #define 	DYNAMIC_BIT_LVL_bit_lvl_trim_latency	4 ,4				// 	Used by bit-leveling logic to add delay in-between samplings of input DQ such that each time trim values are updated, the sampled value has taken the effect of the update.
 #define 	DYNAMIC_BIT_LVL_bit_lvl_read_latency	8 ,6				// 	Used by bit-leveling logic after the dynamic bit-leveling process is started to delay the initial sampling of input DQ till there is valid data.
 #define 	DYNAMIC_BIT_LVL_bit_lvl_failure_status	14, MEM_STRB_WIDTH				// 	Read only indication of whether bit-leveling has failed on each byte lane, 1 bit per byte lane.
 
 #define 	SCL_WINDOW_TRIM               (PHY_BASE + 0x6D * 4), MC_ACCESS, 32
-
 #define 	SCL_WINDOW_TRIM_winA_extra_margin	0, MAS_DLY_WIDTH 			// 	Can be used to add additional weightage to SCL window A when comparing to window B in case window A has better timing than window B. See “SCL Theory of Operation” for definition of window A and window B.
 #define 	SCL_WINDOW_TRIM_winB_extra_margin	8, MAS_DLY_WIDTH 				// 	Can be used to add additional weightage to SCL window B in case window B has better timing than window A. See “SCL Theory of Operation” for definition of window A and window B.
 #define 	SCL_WINDOW_TRIM_incr_winA_val   	16, MAS_DLY_WIDTH 				// 	Value by which window A center point needs to be incremented or decremented if the default formula used to calculate the center point is not optimal.
 #define 	SCL_WINDOW_TRIM_incr_winB_val	        24, MAS_DLY_WIDTH 				// 	Value by which window B center point needs to be incremented or decremented if the default formula used to calculate the center point is not optimal.
 
 #define 	SCL_GATE_TIMING               (PHY_BASE + 0x78 * 4), MC_ACCESS, 32
-
-
 #define 	SCL_GATE_TIMING_invert_cycle_cnt_modified_clk	0 ,1				// 	If 1, advances DQS gate opening timing by 1 full DDR clock period from the default value.
 #define 	SCL_GATE_TIMING_del_dqs_gate	1 ,1				// 	Used to control whether DQS gate opening timing needs to be delayed (if 1) or advanced (if 0) by dqs_gate_trim.
 #define 	SCL_GATE_TIMING_dqs_gate_trim	4, MAS_DLY_WIDTH				// 	Value by which DQS gate opening timing needs to be delayed or advanced. This control is independent of and additional to invert_cycle_cnt_modified_clk
 
 #define 	DISABLE_GATING_FOR_SCL               (PHY_BASE + 0x6E * 4), MC_ACCESS, 32
-
-
 #define 	DISABLE_GATING_FOR_SCL_disable_scl_gating	0 ,1				// 	Setting this to 1 will disable the traditional SCL gating logic. This gating should be allowed when running bit-leveling at initialization. Once complete this should be set to 1 prior to running SCL at initialization, as SCL will determine proper gating settings to be used throughout operation.
 #define 	DISABLE_GATING_FOR_SCL_disable_x_prop_fix	1 ,1				// 	Only used for simulation, this register will not be synthesized. Should be set to 1 after SCL is run for the first time.
 
 
 #define 	SCL_CONFIG_4               (PHY_BASE + 0x6F * 4), MC_ACCESS, 32
-
-
 #define 	SCL_CONFIG_4_dly_dfi_wrdata_en_start	0 ,1				// 	Used to delay the wrdata_en_start in the PHY by one cycle when swap phase is set and write CAS latency is even.
 
 #define 	BIT_LVL_CONFIG               (PHY_BASE + 0x18 * 4), MC_ACCESS, 32
-
 #define 	BIT_LVL_CONFIG_bit_lvl_sample_qty	0 ,4				// 	Determines the number of DQ samples that should be taken during each step of bit-leveling to detect if a DQ transition has occurred.
 #define 	BIT_LVL_CONFIG_bit_lvl_edge_sel	4 ,2				// 	Selects which edge of DQS to sample data with during read/write bit-leveling. ‘h0 = Negative Edges Only ‘h1 = Positive Edges Only ‘h3 = Both Edges Program         PHY_LANE_SEL with [0…        MEM_STRB_WIDTH] to choose the desired byte lane.
 
 #define 	DYNAMIC_WRITE_BIT_LVL               (PHY_BASE + 0x70 * 4), MC_ACCESS, 32
-
 #define 	DYNAMIC_WRITE_BIT_LVL_dynamic_write_bit_leveling	0 ,1				// 	Set to run bit leveling dynamically with independent write side training. Mutually exclusive with dynamic_bit_leveling. Note that write side bit leveling takes about 10 times longer than read side bit leveling. So set dynamic_bit_leveling and not dynamic_write_bit_leveling if training related latency is a concern.
 #define 	DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_side_trim_lat	4 ,6				// 	Latency value used to know when to evaluate the next sample and update trim.
 #define 	DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_side_read_lat	12 ,7				// 	Latency value used to know when to expect the first read issued by the addr phy.
 #define 	DYNAMIC_WRITE_BIT_LVL_bit_lvl_wr_failure_status	20, MEM_STRB_WIDTH				// 	Failure status of write side bit leveling, per lane. 1 signifies that a lane has failed.
 
 #define 	DYNAMIC_WRITE_BIT_LVL_EXT               (PHY_BASE + 0x7B * 4), MC_ACCESS, 32
-
-
 #define 	DYNAMIC_WRITE_BIT_LVL_EXT_bit_lvl_wr_failure_status	0, (MEM_STRB_WIDTH-12)				// 	Overflow bits from bit_lvl_wr_failure_status in DYNAMIC_WRITE_BIT_LVL.
 
 #define 	DDR4_CONFIG_1               (PHY_BASE + 0x71 * 4), MC_ACCESS, 32
-
 #define 	DDR4_CONFIG_1_ddr4	0 ,1				/* 	Set to 1 for DDR4 otherwise 0.*/
 #define 	DDR4_CONFIG_1_scl_start_row_addr	1 ,2				// 	Upper bits, 17:16, of row addr for the start location of SCL data, only applicable in DDR4.
 #define 	DDR4_CONFIG_1_pod_term	3 ,1				// 	Set to 1 to enable pull up style on-die termination on the receive path.
@@ -433,40 +366,31 @@
 
 // was in Poleg: #define  DDR4_CONFIG_1_scl_bit_lvl_in_ddr4  7 , 1               /* 7 scl_bit_lvl_in_ddr4  This bit must be programmed high before starting SCL or bit-leveling with DDR4                 */
 
-
 #define 	VREF_TRAINING               (PHY_BASE + 0x72 * 4), MC_ACCESS, 32
-
 #define 	VREF_TRAINING_vref_training	0 ,1				// 	Set high to signal the PHY to operate in vref training mode.
 #define 	VREF_TRAINING_vref_output_enable	2 ,1				// 	Set high to enable internally generated VREF reference voltage from UVREF pad.
 #define 	VREF_TRAINING_vref_value	4 , VREF_WIDTH				// 	Vref value for the PHY per lane.
 
-
 #define 	VREF_CA_TRAINING               (PHY_BASE + 0x30 * 4), MC_ACCESS, 32
-
 #define 	VREF_CA_TRAINING_vref_ca_value	0, VREF_WIDTH				// 	VREF value for the Command / Address IOs – used only during loopback test when CA IO receivers are being used..
 
 #define 	VREF_TRAINING_WINDOWS               (PHY_BASE + 0x75 * 4), MC_ACCESS, 32
-
 #define 	VREF_TRAINING_WINDOWS_ddr_window_0	0, BITLVL_DLY_WIDTH				// 	Measured size, in delay steps, of the 0 portion of the data eye. Program phy_lane_sel to <lane>*        BITLVL_DLY_WIDTH before reading this field.
 #define 	VREF_TRAINING_WINDOWS_ddr_window_1	8, BITLVL_DLY_WIDTH				// 	Measured size, in delay steps, of the 1 portion of the data eye. Program phy_lane_sel to <lane>*        BITLVL_DLY_WIDTH before reading this field.
 
 #define 	MRW_CTRL               (PHY_BASE + 0x34 * 4), MC_ACCESS, 32
-
 #define 	MRW_CTRL_mrw_cmd	0 ,1				// 	Set to 1 to issue a mode register write command to DRAM. Auto clears when the operation is complete. To program the data to be written in the mode register, use MRW_CTRL_DDR4 in the case of DDR3/DDR4 or mrw_op in the case of LPDDR2/LPDDR3
 #define 	MRW_CTRL_mrw_op	4 ,8				// 	Value to be written into LPDDR2/LPDDR3/LPDDR4 mode register. See mrw_cmd
 #define 	MRW_CTRL_mrw_mr	12 ,8				// 	Mode register address being programmed
 #define 	MRW_CTRL_mrw_wait	20 ,9				// 	Number of half rate cycles of wait time required after programming the concerned mode register.
 
 #define 	MRW_CTRL_DDR4               (PHY_BASE + 0x1A * 4), MC_ACCESS, 32
-
 #define 	MRW_CTRL_DDR4_mrw_op_ddr4	0 ,18				// 	Value to be written into DDR3/DDR4 mode register. See mrw_cmd,
 
 #define 	CA_TRAINING               (PHY_BASE + 0x17 * 4), MC_ACCESS, 32
-
 #define 	CA_TRAINING_ca_training_pattern	0 ,20				// 	Programmable pattern used for LPDDR3 CA training.
 
 #define 	DLL_TEST               (PHY_BASE + 0x11 * 4), MC_ACCESS, 32
-
 #define 	DLL_TEST_dll_test	0 ,1				// 	Enables the DLL test feature.
 #define 	DLL_TEST_dll_test_dly	4, MAS_DLY_WIDTH				// 	Delay line delay to be used during the DLL test.
 #define 	DLL_TEST_dll_test_period	16 ,10				// 	Programmable time period that specifies how many PHY clock cycles the DLL test feature divider enable should be asserted. The dividers then measure the delay value of each delay line.
@@ -474,56 +398,35 @@
 #define 	DLL_TEST_loopback_test_clk_sel	31 ,1				// 	Set to 1 to enable loopbacked DRAM clock to be calibrated by DLL master for test purposes.
 
 #define 	DLL_TEST_START               (PHY_BASE + 0x12 * 4), MC_ACCESS, 32
-
 #define 	DLL_TEST_START_dll_test_start	0, MEM_STRB_WIDTH				// 	Starts the DLL test. Programmable per byte lane and self-clearing.
 
 #define 	DLL_TEST_RANGE               (PHY_BASE + 0x13 * 4), MC_ACCESS, 32
-
 #define 	DLL_TEST_RANGE_dll_test_min_value	0, NUM_FF_DIVIDER				// 	Programmable test min value which is used for comparison against the output of the DLL test divider NOTE: DLL test passes if the DLL test divider output is between both the min and max values. For UCLK Loopback Test: Max negative error in delay line steps of calibrated delay of full clock and half-clock periods for the looped back DRAM clock.
 #define 	DLL_TEST_RANGE_dll_test_max_value	16, NUM_FF_DIVIDER				// 	Programmable test max value which is used for comparison against the output of the DLL test divider For UCLK Loopback Test: Max positive error in delay line steps of calibrated delay of full clock and half-clock periods for the looped back DRAM clock.
 
 #define 	DLL_TEST_RESULT               (PHY_BASE + 0x14 * 4), MC_ACCESS, 32
-
 #define 	DLL_TEST_RESULT_dll_test_pass	0, AHB_REG_DATA_WIDTH				// 	Readout of whether the DLL test has passed for each DLL. Program PHY_LANE_SEL to shift through dll_test_pass result of all delay lines, 32-bits at a time: dll_test_pass >> {phy_lane_sel, 5’h0} For UCLK Loopback Test: dll_test_pass[        DLL_SIGNAL_WIDTH_DPHY] is used to indicate pass/fail.
 
 #define 	DLLM_WINDOW_SIZE               (PHY_BASE + 0x16 * 4), MC_ACCESS, 32
-
 #define 	DLLM_WINDOW_SIZE_dllm_window_size	0 ,5				// 	Specifies the number of DLL master delay calibration values to take for calculating the moving window average value.in dll_mas_dly. Note: The programmed value represents a power of 2 number of samples. A value of 0 will just take the current calibrated value as is instead of taking an average.
 #define 	DLLM_WINDOW_SIZE_clr_dllm_window	8 ,1				// 	Clears all DLL master delay moving window calculation values in the address and data PHYs. It self-clears when address PHY DLL master has finished. Setting this bit also sets clr_dllm_window_dphy for all lanes
 #define 	DLLM_WINDOW_SIZE_clr_dllm_window_dphy	12, MEM_STRB_WIDTH				// 	Self-clears when corresponding data PHY DLL master delay moving window calculation values have been cleared.
 
 #define 	DC_PARAM_OUT               (PHY_BASE + 0x76 * 4), MC_ACCESS, 32
-
-
 #define 	DC_PARAM_OUT_dc_param_wdata	0 ,32				// 	Data to be sent on DDR IOs for test purposes.
 
 #define 	DC_PARAM_SEL               (PHY_BASE + 0x77 * 4), MC_ACCESS, 32
-
-
 #define 	DC_PARAM_SEL_dc_param_enable	0 ,1				// 	Enables the test mode output value and test mode output enable for DDR IOs.
 #define 	DC_PARAM_SEL_dc_param_mode	1 ,2				// 	Program to switch between DC parametric modes as follows; 00: Input, 01: duplicate test data on all PHYs, 10: Test data driven only on selected PHY and all other PHYs drive ‘0’, 11: Test data driven only on selected PHY and all other PHYs drive ‘1’
 #define 	DC_PARAM_SEL_dc_param_sel	4 ,5				// 	Set to target the desired PHY for the test input or output. Program hex value for desired data lane and all high for address PHY, i.e. 00011 = lane 3 and 11111 = addr.
 #define 	DC_PARAM_SEL_dc_param_rdata	12 ,9				// 	Holds the input from the DDR as {jtag_ip_dqs, jtag_ip_dq} for the byte lane selected above, returns 0 if addr PHY is selected.
 
 #define 	BIT_LVL_MASK               (PHY_BASE + 0x79 * 4), MC_ACCESS, 32
-
 #define 	BIT_LVL_MASK_bit_lvl_mask	0 , DQ_DQS_RATIO				// 	Set to 1 to disable read and write bit leveling from running for a particular bit(s) within every byte lane.
 
-
 #define 	DYNAMIC_IE_TIMER               (PHY_BASE + 0x7A * 4), MC_ACCESS, 32
-
-
 #define 	DYNAMIC_IE_TIMER_dynamic_ie_timer_val	0 ,10				// 	Specifies the number of clock cycles that should pass without any read commands being detected before the dynamic input enable control feature disables the dynamic input enable to the IOs
 #define 	DYNAMIC_IE_TIMER_enable_ctrl_ie	16 ,1				// 	Set when the controller supports assertion of the turn_on_ie input to PHY to provide an early indication to the PHY about an upcoming read command. The PHY needs this indication at least (        UNIQUIFY_NUM_STAGES_C2D + 2) number of DFI clocks - RL + 10ns before the read command is issued on the DFI bus.
-
-
-
-
-
-
-
-
-
 
 
 

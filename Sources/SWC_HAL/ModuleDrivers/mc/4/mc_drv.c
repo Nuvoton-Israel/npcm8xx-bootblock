@@ -90,6 +90,7 @@ static void                 MC_PrintPhy               (void);
 static void                 MC_PrintTrim              (BOOLEAN bIn, BOOLEAN bOut);
 static void                 MC_BIST_Init_DRAM_mem     (UINT32 start_address, UINT64 size, UINT32 dataPattern);
 static void                 setup_registers_MRS       (UINT32 index, UINT32 data, DDR_Setup *ddr_setup );
+static char                 MC_SignToChar             (UINT32 val);
 
 static UINT32 volatile g_fail_rate_0;
 static UINT32 volatile g_fail_rate_1;
@@ -1527,37 +1528,37 @@ static DEFS_STATUS MC_ConfigureDDR_l (DDR_Setup *ddr_setup, unsigned int try)
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_LANE, TRUE, 0xFF00); // Run Parametric Sweep on WRITE side (TRIM_2.lane0) and find the center for lane0
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "TRIM2 sweep fail \n" KNRM);
+		HAL_PRINT("TRIM2 sweep fail \n" KNRM);
 	}
 	
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DM, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DM) and find the center for each DQn and average for each DM lane.
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "Output DM sweep fail sweep fail \n" KNRM);
+		HAL_PRINT("Output DM sweep fail sweep fail \n" KNRM);
 	}
 
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DQ, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DQn) and find the center for each DQn
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "Out DQn sweep fail \n" KNRM);
+		HAL_PRINT("Out DQn sweep fail \n" KNRM);
 	}
 
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_IN_DQ, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQn) and find the center for each DQn.
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "In DQn sweep fail \n" KNRM);
+		HAL_PRINT("In DQn sweep fail \n" KNRM);
 	}
 
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_IN_DQS, TRUE, 0);		   // Run Parametric Sweep on READ side (Input DQS) and find the center for each DQn.
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "In DQS sweep fail \n" KNRM);
+		HAL_PRINT("In DQS sweep fail \n" KNRM);
 	}
 
 	status_out_sweep |= Sweep_DQS_Trim_l(ddr_setup, SWEEP_OUT_DQS, TRUE, 0);	   // Run Parametric Sweep on WRITE side (Output DQS) and find the center for each DQn.	
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{
-		HAL_PRINT(KRED "OUT DQS sweep fail \n" KNRM);
+		HAL_PRINT("OUT DQS sweep fail \n" KNRM);
 	}
 
 	// MC_DSCL_Enable(FALSE);
@@ -1660,6 +1661,29 @@ void MC_UpdateDramSize(DDR_Setup *ddr_setup, UINT64 iDramSize)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        MC_SignToChar                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  val - 0 is negative, else positive                                                     */
+/*                                                                                                         */
+/* Returns:         char                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine performs convert +- bit to char                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+static char MC_SignToChar (UINT32 val)
+{
+	if (val == 0)
+	{
+		return '-';
+	}
+	else
+	{
+		return '+';
+	}
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        MC_PrintOutleveling                                                                    */
 /*                                                                                                         */
 /* Parameters:      bIn - print input leveling   bOut - print output leveling                              */
@@ -1672,6 +1696,8 @@ static void MC_PrintLeveling(BOOLEAN bIn, BOOLEAN bOut)
 {
 	UINT32 ilane = 0;
 	UINT32 ibit = 0;
+	char sign;
+	
 
 	//---------------------------------------------------------------
 	if (bOut)
@@ -1700,14 +1726,9 @@ static void MC_PrintLeveling(BOOLEAN bIn, BOOLEAN bOut)
 			HAL_PRINT_DBG("DQS=0x%lx, ", (UINT8)(REG_READ(OP_DQ_DM_DQS_BITWISE_TRIM) & 0x7f));
 
 			REG_WRITE(PHY_LANE_SEL, (ilane * 6));
-			if (((REG_READ(PHY_DLL_INCR_TRIM_1) >> ilane) & 0x01) == 0x01)
-			{
-				HAL_PRINT_DBG(" dlls_trim_1 : +0x%lx , ", (UINT8)(REG_READ(PHY_DLL_TRIM_1) & 0x3f)); // output dqs timing with respect to output dq/dm signals
-			}
-			else
-			{
-				HAL_PRINT_DBG(" dlls_trim_1 : -0x%lx , ", (UINT8)(REG_READ(PHY_DLL_TRIM_1) & 0x3f));
-			}
+			sign = MC_SignToChar ((REG_READ(PHY_DLL_INCR_TRIM_1) >> ilane) & 0x01);
+			HAL_PRINT_DBG(" dlls_trim_1 : %c0x%lx , ", sign, (UINT8)(REG_READ(PHY_DLL_TRIM_1) & 0x3f)); // output dqs timing with respect to output dq/dm signals
+
 			REG_WRITE(PHY_LANE_SEL, (ilane * 5));
 			HAL_PRINT_DBG(" phase1: %d /64 cycle, ", READ_REG_FIELD(UNQ_ANALOG_DLL_3, UNQ_ANALOG_DLL_3_phase1)); // DQS delayed on the write side
 
@@ -1742,14 +1763,8 @@ static void MC_PrintLeveling(BOOLEAN bIn, BOOLEAN bOut)
 			HAL_PRINT_DBG("		DQ=0x%lx, ", READ_REG_FIELD(IP_DQ_DQS_BITWISE_TRIM, IP_DQ_DQS_BITWISE_TRIM_ip_dq_dqs_bitwise_trim_reg));
 
 			REG_WRITE(PHY_LANE_SEL, (ilane * 6));
-			if (((REG_READ(PHY_DLL_INCR_TRIM_3) >> ilane) & 0x01) == 0x01)
-			{
-				HAL_PRINT_DBG(" dlls_trim_3  +0x%lx, ", READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3));
-			}
-			else
-			{
-				HAL_PRINT_DBG(" dlls_trim_3  -0x%lx, ", READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3)); // input dqs timing with respect to input dq
-			}
+			sign = MC_SignToChar ((REG_READ(PHY_DLL_INCR_TRIM_3) >> ilane) & 0x01);
+			HAL_PRINT_DBG(" dlls_trim_3  %c0x%lx, ", sign, READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3));
 
 			REG_WRITE(PHY_LANE_SEL, (ilane * 5));
 			HAL_PRINT_DBG(" phase2 %d /64 cycle, ", READ_REG_FIELD(UNQ_ANALOG_DLL_3, UNQ_ANALOG_DLL_3_phase2));
@@ -1786,6 +1801,7 @@ static void MC_PrintTrim(BOOLEAN bIn, BOOLEAN bOut)
 	UINT32 ibit = 0;
 	UINT32 tmp;
 	int trim1[2], trim2[2], trim_clk, sqew;
+	char sign;
 
 	//---------------------------------------------------------------
 	if (bOut)
@@ -1797,13 +1813,10 @@ static void MC_PrintTrim(BOOLEAN bIn, BOOLEAN bOut)
 			REG_WRITE(PHY_LANE_SEL, (ilane * 6));
 			trim1[ilane] = REG_READ(PHY_DLL_TRIM_1) & 0x3f;
 
-			if (((REG_READ(PHY_DLL_INCR_TRIM_1) >> ilane) & 0x01) == 0x01)
+			sign = MC_SignToChar ((REG_READ(PHY_DLL_INCR_TRIM_1) >> ilane) & 0x01);
+			HAL_PRINT_DBG(" dlls_trim_1 : %c0x%lx , ", sign, trim1[ilane]); // output dqs timing with respect to output dq/dm signals
+			if (sign == '-')
 			{
-				HAL_PRINT_DBG(" dlls_trim_1 : +0x%lx , ", trim1[ilane]); // output dqs timing with respect to output dq/dm signals
-			}
-			else
-			{
-				HAL_PRINT_DBG(" dlls_trim_1 : -0x%lx , ", trim1[ilane]);
 				trim1[ilane] = 0 - trim1[ilane];
 			}
 
@@ -1829,14 +1842,9 @@ static void MC_PrintTrim(BOOLEAN bIn, BOOLEAN bOut)
 			HAL_PRINT_DBG("\t*Lane%d: ", ilane);
 
 			REG_WRITE(PHY_LANE_SEL, (ilane * 6));
-			if (((REG_READ(PHY_DLL_INCR_TRIM_3) >> ilane) & 0x01) == 0x01)
-			{
-				HAL_PRINT_DBG(" dlls_trim_3  +0x%lx, ", READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3)); // (UINT8) (REG_READ(PHY_DLL_TRIM_3) & 0x3f));
-			}
-			else
-			{
-				HAL_PRINT_DBG(" dlls_trim_3  -0x%lx, ", READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3)); // (UINT8) (REG_READ(PHY_DLL_TRIM_3) & 0x3f)); // input dqs timing with respect to input dq
-			}
+			sign = MC_SignToChar ((REG_READ(PHY_DLL_INCR_TRIM_3) >> ilane) & 0x01);
+			HAL_PRINT_DBG(" dlls_trim_3  %c0x%lx, ", sign, READ_REG_FIELD(PHY_DLL_TRIM_3, PHY_DLL_TRIM_3_dlls_trim_3));
+
 			REG_WRITE(PHY_LANE_SEL, (ilane * 5));
 			HAL_PRINT_DBG(" phase2 %d /64 cycle, ", READ_REG_FIELD(UNQ_ANALOG_DLL_3, UNQ_ANALOG_DLL_3_phase2)); // (UINT8) ((REG_READ(UNQ_ANALOG_DLL_3) >>8) & 0x1f));
 
@@ -1855,16 +1863,9 @@ static void MC_PrintTrim(BOOLEAN bIn, BOOLEAN bOut)
 		REG_WRITE(PHY_LANE_SEL, 0);
 		tmp = REG_READ(PHY_DLL_TRIM_CLK);
 		HAL_PRINT_DBG("\t*dlls_trim_clk: \t");
-		if ((tmp & 0x80) != 0)
-		{
-			HAL_PRINT_DBG("+"); // set to increment;
-		}
-		else
-		{
-			HAL_PRINT_DBG("-"); // decrement. (limited by the value of dlls_trim_2)
-		}
-		trim_clk = READ_REG_FIELD(PHY_DLL_TRIM_CLK, PHY_DLL_TRIM_CLK_dlls_trim_clk);
-		HAL_PRINT_DBG("%d (0x%x)\n", trim_clk, trim_clk);
+		sign = MC_SignToChar(READ_VAR_FIELD(tmp, PHY_DLL_TRIM_CLK_dlls_trim_clk_incr));
+		trim_clk = READ_VAR_FIELD(tmp, PHY_DLL_TRIM_CLK_dlls_trim_clk);
+		HAL_PRINT_DBG("%c%d (reg=0x%x)\n", sign, trim_clk, tmp);
 
 		// DQSn to CLK skew = dlls_trim_clk – (dlls_trim_2+dlls_trim_1).
 
@@ -1966,6 +1967,7 @@ void MC_PrintRegs (void)
 {
 	UINT32 TmpReg32 = 0;
 	UINT32 ilane = 0;
+	char sign;
 
 	HAL_PRINT_DBG("\n************\n");
 	HAL_PRINT_DBG("* MC	 Info *\n");
@@ -2014,43 +2016,23 @@ void MC_PrintRegs (void)
 	if ((TmpReg32 & 0x100) == 0)
 	{
 		HAL_PRINT_DBG("\t*dlls_trim_adrctl: ");
-		if (READ_VAR_FIELD(TmpReg32, PHY_DLL_ADRCTRL_incr_dly_adrctrl))
-		{
-			HAL_PRINT_DBG("+"); // set to increment; limited by 1/4 clock (i.e., from dlls_trim_clk)
-		}
-		else
-		{
-			HAL_PRINT_DBG("-"); // decrement; limited by dlls_trim_2 or 1/4 clock
-		}
-		HAL_PRINT_DBG("%d   .(pre-set)\n", READ_VAR_FIELD(TmpReg32, PHY_DLL_ADRCTRL_dlls_trim_adrctrl));
+		sign = MC_SignToChar(READ_VAR_FIELD(TmpReg32, PHY_DLL_ADRCTRL_incr_dly_adrctrl));
+		HAL_PRINT_DBG("%c%d   .(pre-set)\n", sign, READ_VAR_FIELD(TmpReg32, PHY_DLL_ADRCTRL_dlls_trim_adrctrl));
 	}
 	//---------------------------------------------------------------
-
-	HAL_PRINT_DBG("\n>PHY_DLL_RECALIB = %#010lx \n", REG_READ(PHY_DLL_RECALIB));
+	
+	TmpReg32 = REG_READ(PHY_DLL_RECALIB);
+	HAL_PRINT_DBG("\n>PHY_DLL_RECALIB = %#010lx \n", TmpReg32);
 	HAL_PRINT_DBG("\t*dlls_trim_adrctrl_ma: ");
-	if (READ_REG_FIELD(PHY_DLL_RECALIB, PHY_DLL_RECALIB_incr_dly_adrctrl_ma))
-	{
-		HAL_PRINT_DBG("+"); // set to increment; limited by 1/4 clock (i.e., from dlls_trim_clk)
-	}
-	else
-	{
-		HAL_PRINT_DBG("-"); // decrement; limited by dlls_trim_2 or 1/4 clock
-	}
-	HAL_PRINT_DBG("%d .(pre-set)\n", READ_REG_FIELD(PHY_DLL_RECALIB, PHY_DLL_RECALIB_dlls_trim_adrctrl_ma));
+	sign = MC_SignToChar(READ_VAR_FIELD(TmpReg32, PHY_DLL_RECALIB_incr_dly_adrctrl_ma));
+	HAL_PRINT_DBG("%c%d .(pre-set)\n", sign, READ_VAR_FIELD(TmpReg32, PHY_DLL_RECALIB_dlls_trim_adrctrl_ma));
 
 	//---------------------------------------------------------------
 	REG_WRITE(PHY_LANE_SEL, 0);
 	TmpReg32 = REG_READ(PHY_DLL_TRIM_CLK);
 	HAL_PRINT_DBG("\n>PHY_DLL_TRIM_CLK  = %#010lx \n\t*dlls_trim_clk: ", TmpReg32);
-	if ((TmpReg32 & 0x80) != 0)
-	{
-		HAL_PRINT_DBG("+"); // set to increment;
-	}
-	else
-	{
-		HAL_PRINT_DBG("-"); // decrement. (limited by the value of dlls_trim_2)
-	}
-	HAL_PRINT_DBG("%d .(pre-set)\n", READ_REG_FIELD(PHY_DLL_TRIM_CLK, PHY_DLL_TRIM_CLK_dlls_trim_clk));
+	sign = MC_SignToChar(READ_VAR_FIELD(TmpReg32, PHY_DLL_TRIM_CLK_dlls_trim_clk_incr));
+	HAL_PRINT_DBG("%c%d .(pre-set)\n", sign, READ_VAR_FIELD(TmpReg32, PHY_DLL_TRIM_CLK_dlls_trim_clk));
 
 	//---------------------------------------------------------------
 	HAL_PRINT_DBG("\n>PHY_DLL_RISE_FALL = %#010lx \n\t*rise_cycle_cnt = 0x%lx\n",
@@ -2060,31 +2042,31 @@ void MC_PrintRegs (void)
 	TmpReg32 = REG_READ(PHY_PAD_CTRL_1);
 	HAL_PRINT_DBG("\n>PHY_PAD_CTRL_1 = %#010lx \n", TmpReg32);
 	HAL_PRINT_DBG("\t*DQ and DQS input dynamic term(ODT): ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_1, PHY_PAD_CTRL_1_clk_drive_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_1_clk_drive_n));
 
 	HAL_PRINT_DBG("\t*DQ, DM and DQS output drive strength: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_1, PHY_PAD_CTRL_1_dq_dqs_drive_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_1_dq_dqs_drive_n));
 
 	HAL_PRINT_DBG("\t*Addr and ctrl output drive strength: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_1, PHY_PAD_CTRL_1_adrctrl_drive_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_1_adrctrl_drive_n));
 
 	HAL_PRINT_DBG("\t*Clock out drive strength: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_1, PHY_PAD_CTRL_1_clk_drive_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_1_clk_drive_n));
 
 	//---------------------------------------------------------------
 	TmpReg32 = REG_READ(PHY_PAD_CTRL_2);
 	HAL_PRINT_DBG("\n>PHY_PAD_CTRL_2 = %#010lx \n", TmpReg32);
 	HAL_PRINT_DBG("\t PHY_PAD_CTRL_2_dq_dqs_term_p: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_2, PHY_PAD_CTRL_2_dq_dqs_term_p));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_2_dq_dqs_term_p));
 
 	HAL_PRINT_DBG("\t*PHY_PAD_CTRL_2_dq_dqs_term_n: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_2, PHY_PAD_CTRL_2_dq_dqs_term_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_2_dq_dqs_term_n));
 
 	HAL_PRINT_DBG("\t*PHY_PAD_CTRL_2_adrctrl_term_p: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_2, PHY_PAD_CTRL_2_adrctrl_term_p));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_2_adrctrl_term_p));
 
 	HAL_PRINT_DBG("\t*PHY_PAD_CTRL_2_adrctrl_term_n: ");
-	MC_PrintOhm(READ_REG_FIELD(PHY_PAD_CTRL_2, PHY_PAD_CTRL_2_adrctrl_term_n));
+	MC_PrintOhm(READ_VAR_FIELD(TmpReg32, PHY_PAD_CTRL_2_adrctrl_term_n));
 
 	HAL_PRINT_DBG("\t*preamble_dly = ");
 	switch (READ_REG_FIELD(PHY_PAD_CTRL, PHY_PAD_CTRL_preamble_dly))
@@ -2293,7 +2275,7 @@ static UINT16 GetECCSyndrom(UINT32 readVal)
 static void MC_PrintPhy(void)
 {
 
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0);
 	HAL_PRINT_DBG(KNRM "Lane:                     %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("PHY_PAD_CTRL_1                 %#010lx  \n", REG_READ(PHY_PAD_CTRL_1));
 	HAL_PRINT_DBG("PHY_PAD_CTRL_2                 %#010lx  \n", REG_READ(PHY_PAD_CTRL_2));
@@ -2303,14 +2285,14 @@ static void MC_PrintPhy(void)
 	HAL_PRINT_DBG("PHY_PAD_CTRL_1                 %#010lx  \n", REG_READ(PHY_PAD_CTRL_1));
 	HAL_PRINT_DBG("PHY_PAD_CTRL_2                 %#010lx  \n", REG_READ(PHY_PAD_CTRL_2));
 	HAL_PRINT_DBG("PHY_PAD_CTRL_3                 %#010lx  \n", REG_READ(PHY_PAD_CTRL_3));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("PHY_PAD_CTRL                   %#010lx  \n", REG_READ(PHY_PAD_CTRL));
 	HAL_PRINT_DBG("UNIQUIFY_IO_1                  %#010lx  \n", REG_READ(UNIQUIFY_IO_1));
 	HAL_PRINT_DBG("UNIQUIFY_IO_2                  %#010lx  \n", REG_READ(UNIQUIFY_IO_2));
 	HAL_PRINT_DBG("UNIQUIFY_IO_3                  %#010lx  \n", REG_READ(UNIQUIFY_IO_3));
 	HAL_PRINT_DBG("UNIQUIFY_IO_4                  %#010lx  \n", REG_READ(UNIQUIFY_IO_4));
 	HAL_PRINT_DBG("UNIQUIFY_IO_5                  %#010lx  \n", REG_READ(UNIQUIFY_IO_5));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("SCL_START                      %#010lx  \n", REG_READ(SCL_START));
 	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x1);
@@ -2329,7 +2311,7 @@ static void MC_PrintPhy(void)
 	HAL_PRINT_DBG("PHY_DLL_RECALIB                %#010lx  \n", REG_READ(PHY_DLL_RECALIB));
 	HAL_PRINT_DBG("PHY_DLL_ADRCTRL                %#010lx  \n", REG_READ(PHY_DLL_ADRCTRL));
 	HAL_PRINT_DBG("PHY_DLL_TRIM_CLK               %#010lx  \n", REG_READ(PHY_DLL_TRIM_CLK));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, SLV_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, SLV_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("PHY_DLL_TRIM_1                 %#010lx  \n", REG_READ(PHY_DLL_TRIM_1));
 	HAL_PRINT_DBG("PHY_DLL_TRIM_2                 %#010lx  \n", REG_READ(PHY_DLL_TRIM_2));
@@ -2356,64 +2338,64 @@ static void MC_PrintPhy(void)
 	HAL_PRINT_DBG("WRLVL_ON_OFF                   %#010lx  \n", REG_READ(WRLVL_ON_OFF));
 	HAL_PRINT_DBG("WRLVL_STEP_SIZE                %#010lx  \n", REG_READ(WRLVL_STEP_SIZE));
 	HAL_PRINT_DBG("UNQ_ANALOG_DLL_1               %#010lx  \n", REG_READ(UNQ_ANALOG_DLL_1));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("UNQ_ANALOG_DLL_2               %#010lx  \n", REG_READ(UNQ_ANALOG_DLL_2));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000001);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("UNQ_ANALOG_DLL_2               %#010lx  \n", REG_READ(UNQ_ANALOG_DLL_2));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0x00000000);
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, MAS_DLY_WIDTH * 0);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("UNQ_ANALOG_DLL_3               %#010lx  \n", REG_READ(UNQ_ANALOG_DLL_3));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 0x00000001);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("UNQ_ANALOG_DLL_3               %#010lx  \n", REG_READ(UNQ_ANALOG_DLL_3));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 5 * 0);
 	HAL_PRINT_DBG("UNIQUIFY_ADDR_CTRL_LOOPBACK_1  %#010lx  \n", REG_READ(UNIQUIFY_ADDR_CTRL_LOOPBACK_1));
 	HAL_PRINT_DBG("UNIQUIFY_ADDR_CTRL_LOOPBACK_2  %#010lx  \n", REG_READ(UNIQUIFY_ADDR_CTRL_LOOPBACK_2));
 	HAL_PRINT_DBG("PHY_SCL_START_ADDR             %#010lx  \n", REG_READ(PHY_SCL_START_ADDR));
 	HAL_PRINT_DBG("PHY_DLL_RISE_FALL              %#010lx  \n", REG_READ(PHY_DLL_RISE_FALL));
 	HAL_PRINT_DBG("DSCL_CNT                       %#010lx  \n", REG_READ(DSCL_CNT));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (DQS_DLY_WIDTH) * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (DQS_DLY_WIDTH) * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("IP_DQ_DQS_BITWISE_TRIM         %#010lx  \n", REG_READ(IP_DQ_DQS_BITWISE_TRIM));
 	HAL_PRINT_DBG("OP_DQ_DM_DQS_BITWISE_TRIM      %#010lx  \n", REG_READ(OP_DQ_DM_DQS_BITWISE_TRIM));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (DQS_DLY_WIDTH) * 0x00000001);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (DQS_DLY_WIDTH) * 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("IP_DQ_DQS_BITWISE_TRIM         %#010lx  \n", REG_READ(IP_DQ_DQS_BITWISE_TRIM));
 	HAL_PRINT_DBG("OP_DQ_DM_DQS_BITWISE_TRIM      %#010lx  \n", REG_READ(OP_DQ_DM_DQS_BITWISE_TRIM));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (BITLVL_DLY_WIDTH + 1) * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, (BITLVL_DLY_WIDTH + 1) * 0);
 	HAL_PRINT_DBG("DYNAMIC_BIT_LVL                %#010lx  \n", REG_READ(DYNAMIC_BIT_LVL));
 	HAL_PRINT_DBG("SCL_WINDOW_TRIM                %#010lx  \n", REG_READ(SCL_WINDOW_TRIM));
 	HAL_PRINT_DBG("SCL_GATE_TIMING                %#010lx  \n", REG_READ(SCL_GATE_TIMING));
 	HAL_PRINT_DBG("DISABLE_GATING_FOR_SCL         %#010lx  \n", REG_READ(DISABLE_GATING_FOR_SCL));
 	HAL_PRINT_DBG("SCL_CONFIG_4                   %#010lx  \n", REG_READ(SCL_CONFIG_4));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("BIT_LVL_CONFIG                 %#010lx  \n", REG_READ(BIT_LVL_CONFIG));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 0x00000001);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("BIT_LVL_CONFIG                 %#010lx  \n", REG_READ(BIT_LVL_CONFIG));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, 0);
 	HAL_PRINT_DBG("DYNAMIC_WRITE_BIT_LVL          %#010lx  \n", REG_READ(DYNAMIC_WRITE_BIT_LVL));
 	HAL_PRINT_DBG("DYNAMIC_WRITE_BIT_LVL_EXT      %#010lx  \n", REG_READ(DYNAMIC_WRITE_BIT_LVL_EXT));
 	HAL_PRINT_DBG("DDR4_CONFIG_1                  %#010lx  \n", REG_READ(DDR4_CONFIG_1));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("VREF_TRAINING                  %#010lx  \n", REG_READ(VREF_TRAINING));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 0x00000001);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("VREF_TRAINING                  %#010lx  \n", REG_READ(VREF_TRAINING));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, VREF_WIDTH * 0);
 	HAL_PRINT_DBG("VREF_CA_TRAINING               %#010lx  \n", REG_READ(VREF_CA_TRAINING));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, BITLVL_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, BITLVL_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("VREF_TRAINING_WINDOWS          %#010lx  \n", REG_READ(VREF_TRAINING_WINDOWS));
 	REG_WRITE(PHY_LANE_SEL /*0x12c*/, BITLVL_DLY_WIDTH * 1);
 	HAL_PRINT_DBG("Lane:                          %#010lx  \n", REG_READ(PHY_LANE_SEL));
 	HAL_PRINT_DBG("VREF_TRAINING_WINDOWS          %#010lx  \n", REG_READ(VREF_TRAINING_WINDOWS));
-	REG_WRITE(PHY_LANE_SEL /*0x12c*/, BITLVL_DLY_WIDTH * 0x00000000);
+	REG_WRITE(PHY_LANE_SEL /*0x12c*/, BITLVL_DLY_WIDTH * 0);
 	HAL_PRINT_DBG("MRW_CTRL                       %#010lx  \n", REG_READ(MRW_CTRL));
 	HAL_PRINT_DBG("MRW_CTRL_DDR4                  %#010lx  \n", REG_READ(MRW_CTRL_DDR4));
 	HAL_PRINT_DBG("CA_TRAINING                    %#010lx  \n", REG_READ(CA_TRAINING));

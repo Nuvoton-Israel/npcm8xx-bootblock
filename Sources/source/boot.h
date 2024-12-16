@@ -94,7 +94,7 @@ typedef union BOOTBLOCK_HEADER_tag
 		UINT8   startTag[8];                   // 0            8           AA55_0850h, 424F_4F54h (‘BOOT’)
 		UINT8   signature[96];                 // 8            256         Boot Block ECC signature decrypted with Customer’s Private Key
 
-		UINT8   reserved[152];                 // 0x68         152         Reserved for future use, not signed
+		UINT8   reserved[152];                 // 0x68         152         Reserved for future use, signed.
 		//  Start signed area:
 		UINT32  version;                       // 0x100       4           Version (Major.Minor)
 		UINT32  vendor;                        // 0x104       4
@@ -113,7 +113,7 @@ typedef union BOOTBLOCK_HEADER_tag
 		UINT32  NoECC_Region_0_End;            // 0x124       4
 		UINT32  NoECC_Region_1_Start;          // 0x128       4
 		UINT32  NoECC_Region_1_End;            // 0x12C       4
-		UINT32  dram_max_size;                 // 0x130       4             added in version 0.0.6.
+		UINT32  dram_max_size;                 // 0x130       4
 		UINT8   mc_config;                     // 0x134       1
 		UINT8   host_if;                       // 0x135       1
 
@@ -145,7 +145,7 @@ typedef union BOOTBLOCK_HEADER_tag
 		UINT8   fiu1_divider;                   // 0x150       1
 		UINT8   fiu3_divider;                   // 0x151       1
 		UINT8   gmmap;                          // 0x152       1
-		UINT8   reservedSigned2;                // 0x153       1
+		UINT8   i3c_rc_divider;                 // 0x153       1
 		UINT32  baud;                           // 0x154       4
 
 		UINT32  fiu_cfg_drd_set[3];             // 0x158       4 * 3
@@ -166,8 +166,9 @@ typedef union BOOTBLOCK_HEADER_tag
 		UINT32  NoECC_Region_6_End;            // 0x18C       4
 		UINT32  NoECC_Region_7_Start;          // 0x190       4
 		UINT32  NoECC_Region_7_End;            // 0x194       4
+		UINT32  pll0_override;                 // 0x198       4
 		
-		UINT8   reservedSigned3[0x60];         // 0x198       0x60        Reserved for future use, signed.
+		UINT8   reservedSigned3[0x5C];         // 0x202       0x5C        Reserved for future use, signed.
 
  		UINT32  destAddr;                      // 0x1F8
  		UINT32  codeSize;                      // 0x1FC
@@ -245,6 +246,8 @@ UINT32          BOOTBLOCK_Get_CPU_freq (void);
 void            BOOTBLOCK_Get_DDR_Setup (DDR_Setup *ddr_setup);
 HOST_IF_T       BOOTBLOCK_Get_host_if (void);
 UINT8           BOOTBLOCK_Get_SPI_clk_divider (UINT spi);
+UINT8           BOOTBLOCK_Get_i3c_RC_clk_divider (void);
+UINT32          BOOTBLOCK_Get_pll0_override (void);
 UART_BAUDRATE_T BOOTBLOCK_GetUartBaud (void);
 UINT32          BOOTBLOCK_Get_FIU_DRD_CFG (UINT32 fiu);
 

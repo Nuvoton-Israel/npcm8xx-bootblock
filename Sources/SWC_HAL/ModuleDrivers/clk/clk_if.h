@@ -185,6 +185,17 @@ void CLK_ConfigureGMACClock (UINT32 ethNum);
 void CLK_ConfigureRootComplexClock (void);
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_Configure_I3C_Clock                                                                */
+/*                                                                                                         */
+/* Parameters:      div - value to divide the clock. Can be 1..16                                          */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures I3C clocks                                                     */
+/*---------------------------------------------------------------------------------------------------------*/
+void CLK_Configure_I3C_Clock (UINT8 div);
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ConfigureSDClock                                                                   */
 /*                                                                                                         */
 /* Parameters:                                                                                             */

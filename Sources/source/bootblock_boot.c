@@ -321,6 +321,46 @@ UINT8   BOOTBLOCK_Get_SPI_clk_divider (UINT spi)
 	return val_header;
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        BOOTBLOCK_Get_i3c_RC_clk_divider                                                       */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                                         */
+/* Returns:        get I3C and RC divder (shared) clk divider from header.                                 */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT8   BOOTBLOCK_Get_i3c_RC_clk_divider (void)
+{
+	UINT8 val_header = 0;
+
+	BOOTBLOCK_HEADER_T *bootBlockHeader = (BOOTBLOCK_HEADER_T*)BOOTBLOCK_HEADER_ADDR;
+
+	val_header = bootBlockHeader->header.i3c_rc_divider;
+
+	return val_header;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        BOOTBLOCK_Get_pll0_override                                                            */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                                         */
+/* Returns:        override PLL0. This is only possible if MC==CPU freq.                                   */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT32   BOOTBLOCK_Get_pll0_override (void)
+{
+	UINT32 val_header = 0;
+
+	BOOTBLOCK_HEADER_T *bootBlockHeader = (BOOTBLOCK_HEADER_T*)BOOTBLOCK_HEADER_ADDR;
+
+	val_header = bootBlockHeader->header.pll0_override;
+
+	if (val_header == 0xFFFFFFFF)
+	{
+		val_header = 0;
+	}
+
+	return val_header;
+}
 
 #undef BOOT_C
 

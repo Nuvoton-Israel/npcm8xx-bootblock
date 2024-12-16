@@ -42,9 +42,11 @@
 /* PLLCON0 and PLLCON2 possible values:                                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
 #define CLK_125MHZ_PLLCON0_2_REG_CFG    0x00284401
+#define CLK_325MHZ_PLLCON0_2_REG_CFG    0x003C2401
 #define CLK_333MHZ_PLLCON0_2_REG_CFG    0x00A02403
 #define CLK_500MHZ_PLLCON0_2_REG_CFG    0x00282201
 #define CLK_600MHZ_PLLCON0_2_REG_CFG    0x00302201
+#define CLK_625MHZ_PLLCON0_2_REG_CFG    0x00322201
 #define CLK_666MHZ_PLLCON0_2_REG_CFG    0x00A02203
 #define CLK_700MHZ_PLLCON0_2_REG_CFG    0x001C2101
 #define CLK_720MHZ_PLLCON0_2_REG_CFG    0x00902105
@@ -827,23 +829,21 @@ void CLK_ConfigureEMCClock (UINT32 ethNum)
 void CLK_ConfigureGMACClock (UINT32 ethNum)
 {
     UINT32 source = 0;
-	UINT32 div = 0;
-    UINT32 sel =  READ_REG_FIELD(CLKSEL, CLKSEL_RGSEL);
+    UINT32 div = 0;
 
-    switch (sel)
+    source = CLK_GetPll0Freq();
+
+    // use pll0 if it's a 125 multiplication. If it's set to something else - use pll1 and try to get to 125MHz
+    if ((source % (125 * _1MHz_)) == 0)
     {
-    case CLKSEL_RGSEL_PLL0:
-        source = CLK_GetPll0Freq();
-        break;
-    case CLKSEL_RGSEL_PLL1:
-        source = CLK_GetPll1Freq();
-        break;
-    case CLKSEL_RGSEL_CLKREF:
-        source = EXT_CLOCK_FREQUENCY_HZ;
-        break;
-    default:
-        ASSERT(0);
+        SET_REG_FIELD (CLKSEL, CLKSEL_RGSEL, CLKSEL_RGSEL_PLL0);
     }
+    else
+    {
+        source = CLK_GetPll1Freq();
+        SET_REG_FIELD (CLKSEL, CLKSEL_RGSEL, CLKSEL_RGSEL_PLL1);
+    }
+
     div = source / (125 * _1MHz_); // GMAC should be 125MHz always.
 
     SET_REG_FIELD(CLKDIV4, CLKDIV4_RGREFDIV, CLKDIV4_RGREFDIV_DIV(div)); 
@@ -866,13 +866,13 @@ void CLK_ConfigureRootComplexClock (void)
 
     switch (sel)
     {
-    case CLKSEL_RGSEL_PLL0:
+    case CLKSEL_RCPCKSEL_PLL0:
         source = CLK_GetPll0Freq();
         break;
-    case CLKSEL_RGSEL_PLL1:
+    case CLKSEL_RCPCKSEL_PLL1:
         source = CLK_GetPll1Freq();
         break;
-    case CLKSEL_RGSEL_CLKREF:
+    case CLKSEL_RCPCKSEL_CLKREF:
         source = EXT_CLOCK_FREQUENCY_HZ;
         break;
     default:
@@ -883,6 +883,20 @@ void CLK_ConfigureRootComplexClock (void)
     SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div)); 
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_Configure_I3C_Clock                                                                */
+/*                                                                                                         */
+/* Parameters:      div - value to divide the clock. Can be 1..16                                          */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures I3C clocks                                                     */
+/*---------------------------------------------------------------------------------------------------------*/
+void CLK_Configure_I3C_Clock (UINT8 div)
+{
+    div = MIN(div, 16);
+    SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div)); 
+}
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ConfigureSDClock                                                                   */
@@ -1999,7 +2013,8 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
     /*---------------------------------------------------------------------------------------------------------*/
     /* PLLCON 1 possible values (notice that PLL1 has a divider /2, so OTDV1 is smaller in half                */
     /*---------------------------------------------------------------------------------------------------------*/
-    if ( mcFreq <= 500000000)      pllcon1_L = CLK_500MHZ_PLLCON1_REG_CFG       ;
+    if      ( mcFreq <= 300000000)      pllcon1_L = CLK_300MHZ_PLLCON1_REG_CFG       ;
+	else if ( mcFreq <= 500000000)      pllcon1_L = CLK_500MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 666000000)      pllcon1_L = CLK_666MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 700000000)      pllcon1_L = CLK_700MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 720000000)      pllcon1_L = CLK_720MHZ_PLLCON1_REG_CFG       ;
@@ -2025,9 +2040,11 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
     /* PLLCON 0 possible values (notice that PLL1 in Z2 has a divider /2, so OTDV1 is smaller in half      */
     /*---------------------------------------------------------------------------------------------------------*/
     if ( pll0_freq_tmp <= 125000000 )  pllcon0_L = CLK_125MHZ_PLLCON0_2_REG_CFG ;
+	else if ( pll0_freq_tmp <= 325000000 )  pllcon0_L = CLK_325MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 333000000 )  pllcon0_L = CLK_333MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 500000000 )  pllcon0_L = CLK_500MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 600000000 )  pllcon0_L = CLK_600MHZ_PLLCON0_2_REG_CFG ;
+	else if ( pll0_freq_tmp <= 625000000 )  pllcon0_L = CLK_625MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 666000000 )  pllcon0_L = CLK_666MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 700000000 )  pllcon0_L = CLK_700MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 720000000 )  pllcon0_L = CLK_720MHZ_PLLCON0_2_REG_CFG ;
@@ -2078,9 +2095,9 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* PLL0 handling : Check if PLL is set to the value CPU is set: Notice:even if MC freq == CPU freq,    */
-    /* both will be connected to PLL1, and PLL0 will be turned off.                                        */
+    /* both will be connected to PLL1, and PLL0 will be turned off, unless pll0_override is set            */
     /*-----------------------------------------------------------------------------------------------------*/
-    if (pllcon0_L != (REG_READ(PLLCON0) & 0x7FFFFFFF) && (mcFreq != cpuFreq))
+    if (pllcon0_L != (REG_READ(PLLCON0) & 0x7FFFFFFF) && ((mcFreq != cpuFreq) || (pll0_freq != 0)))
     {
         clksel_now_l = REG_READ(CLKSEL);
 

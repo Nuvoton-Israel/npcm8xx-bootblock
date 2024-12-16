@@ -307,6 +307,7 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 	DEFS_STATUS status;
 	UINT32 straps = 0;
 	UINT32 clk4Freq;
+	UINT32 pll0_override = 0;
 	UINT8 div_50MHz;
 	UINT8 div;
 	volatile UINT cntfrq_val;
@@ -365,7 +366,19 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 			serial_printf("Change freq cpu %d mc %d\n", cpuFreq, mcFreq);
 			cpuFreq = cpuFreq * 1000000;
 			mcFreq = mcFreq * 1000000;
-			status = CLK_Configure_CPU_MC_Clock(mcFreq, cpuFreq, 0);
+
+			// if MC==CPU frequency, can change pll0 to other values according to header value:
+			if (cpuFreq == mcFreq)
+			{
+				pll0_override = BOOTBLOCK_Get_pll0_override();
+				if (pll0_override != 0)
+				{
+					serial_printf (KMAG "Override PLL0 to %d\n" KNRM, pll0_override);
+				}
+				pll0_override = pll0_override * 1000000;
+			}
+			
+			status = CLK_Configure_CPU_MC_Clock(mcFreq, cpuFreq, pll0_override);
 			if ((status != DEFS_STATUS_OK) && (status != DEFS_STATUS_SYSTEM_NOT_INITIALIZED))
 			{
 				serial_printf("can't set plls, stat = %d\n", status);
@@ -384,9 +397,22 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 		SET_REG_FIELD(AHBCKFI, AHBCKFI_AHB_CLK_FRQ, CLK_GetCPFreq() / _1MHz_);
 		serial_printf_init();
 
+		BOOTBLOCK_Get_pll0_override ();
+
 		CLK_ConfigureGMACClock(0);
-		CLK_ConfigureRootComplexClock();
 		CLK_SetPixelClock();
+
+		// override i3c\RC divider from header:
+		div = BOOTBLOCK_Get_i3c_RC_clk_divider();
+		if ((div != 0) && (div != 0xFF))
+		{
+			serial_printf ("Override i3c and RC clk div %d\nWarning: RC not supported anymore\n", div);
+			CLK_Configure_I3C_Clock (div);
+		}
+		else
+		{
+			CLK_ConfigureRootComplexClock();
+		}
 	}
 
 	//  Update FIU dividers:
@@ -512,7 +538,7 @@ static void bootblock_PrintClocks (void)
 	}
 
 	if (CLK_Get_RC_Phy_and_I3C_Clock() != 100000000) {
-		serial_printf(KRED "ERROR RC value not 100MHz\n" KNRM);
+		serial_printf(KMAG "warning RC value not 100MHz, PCI root complex not supported\n" KNRM);
 	}
 
 	return;

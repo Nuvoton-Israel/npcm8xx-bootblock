@@ -16,7 +16,7 @@
 
 #define SWC_HAL_MAJOR   4
 #define SWC_HAL_MINOR   0
-#define SWC_HAL_REV     5
+#define SWC_HAL_REV     6
 #define SWC_HAL_PATCH   0
 
 #define SWC_HAL_VERSION         MAKE32(MAKE16(SWC_HAL_PATCH, SWC_HAL_REV), MAKE16(SWC_HAL_MINOR, SWC_HAL_MAJOR))

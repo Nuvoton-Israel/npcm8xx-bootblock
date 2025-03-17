@@ -451,8 +451,7 @@
 #define WD0RCRB_FLM                           6,    1               /* 6 FLM (Flash Monitoring Reset Control Bit) */
 #define WD0RCRB_BMC_MS                        5,    1               /* 5 BMC_MS (BMC Modules Watchdog Reset Control Bit) */
 #define WD0RCRB_I3C                           4,    1               /* 4 I3C (I3C Modules Watchdog Reset Control Bit) */
-#define WD0RCRB_CP2_TIP_Z1                    3,    1               /* 3 CP2-TIP (Coprocessor 2 or Trusted Integrated Processor Watchdog Reset Control Bit) */
-#define WD0RCRB_SEC_REG_RST_A1                3,    1               /* 3 SEC_REG_RST (Secure Registers Reset Control Bit) */
+#define WD0RCRB_SEC_REG_RST                   3,    1               /* 3 SEC_REG_RST (Secure Registers Reset Control Bit) */
 #define WD0RCRB_BMCBUS                        2,    1               /* 2 BMCBUS (BMC Bus Watchdog Reset Control Bit) */
 #define WD0RCRB_SPI3                          1,    1               /* 1 CLK_SPI3 (FIU3 module and AHB3 Logic Watchdog Reset Control Bit) */
 #define WD0RCRB_USBH2                         0,    1               /* 0 USBH2 (USB Host 2 Watchdog Reset Control Bit) */

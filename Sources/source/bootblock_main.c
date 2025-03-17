@@ -399,7 +399,7 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 
 		BOOTBLOCK_Get_pll0_override ();
 
-		CLK_ConfigureGMACClock(0);
+		CLK_ConfigureGMACClock();
 		CLK_SetPixelClock();
 
 		// override i3c\RC divider from header:
@@ -530,7 +530,8 @@ static void bootblock_PrintClocks (void)
 	serial_printf("OHCI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_OHCI_Clock()));
 	serial_printf("UTMI  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUSB_UTMI_Clock()));
 	serial_printf("RC,I3C= %d.%d MHz \n", PRINT_FLOAT(CLK_Get_RC_Phy_and_I3C_Clock()));
-	serial_printf("UART  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUartClock()));
+	serial_printf("UART1  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUartClock(UART0_DEV)));
+	serial_printf("UART2  = %d.%d MHz \n", PRINT_FLOAT(CLK_GetUartClock(UART4_DEV)));
 	serial_printf("GMAC  = %d.%d MHz \n\n", PRINT_FLOAT(CLK_GetGMACClock()));
 
 	if (CLK_GetGMACClock() != 125000000) {
@@ -592,7 +593,12 @@ static void platform_reset()
 }
 #endif
 
-#define DIE_INFORMATION_ALL 168, 5, FUSE_ECC_NONE
+/*--------------------------------------------------------------------*/
+/* OTP values that bootblock reads and put in scrtachpads for the BMC */
+/*--------------------------------------------------------------------*/
+#define DIE_INFORMATION_ALL             168,        5,          FUSE_ECC_NONE
+#define ADC_CAL_INT_PROPERTY            40,         8,          FUSE_ECC_NIBBLE_PARITY
+#define ADC_CAL_EXT_PROPERTY            48,         8,          FUSE_ECC_NIBBLE_PARITY
 
 /*----------------------------------------------------------------------------*/
 /* Function:        bootblock_main                                            */
@@ -616,7 +622,11 @@ __attribute__((noreturn)) void bootblock_main (void)
 	HOST_IF_T eHostIf;
 	int resetNum;
 	uint64_t addr64 = 0;
-	UINT8 buff[8]     __attribute__((aligned(16))); 
+	UINT32 scrpad = 0;
+	UINT8 buff[8]     __attribute__((aligned(32)));
+	extern unsigned long _ram_start;
+	extern unsigned long _stack_start;
+
 	// clear notification status from TIP
 	REG_WRITE(CP2BST2, 0xFFFFFFFF);
 
@@ -636,22 +646,55 @@ __attribute__((noreturn)) void bootblock_main (void)
 	TMC_StopWatchDog(1);
 	TMC_StopWatchDog(2);
 
-	*(UINT32 *)buff = 0;
-	*(UINT32 *)(buff + 4) = 0;
-	
 	/*--------------------------------------------------------------------*/
 	/* Read Die information and send to OPTEE (HUK)                       */
 	/*--------------------------------------------------------------------*/
+	*(UINT32 *)buff = 0;
+	*(UINT32 *)(buff + 4) = 0;
 	status = FUSE_WRPR_get(DIE_INFORMATION_ALL, buff);
 
-	REG_WRITE(SCRPAD_42_73(30), *(UINT32 *)buff);
-	REG_WRITE(SCRPAD_42_73(31), *(UINT32 *)(buff + 4));
+	REG_WRITE(SCRPAD_32_63(30), *(UINT32 *)buff);
+	REG_WRITE(SCRPAD_32_63(31), *(UINT32 *)(buff + 4));
 
 	if (status == DEFS_STATUS_OK)
 	{
 		serial_printf(KCYN "DIE LOCATION: %#010lx %#010lx \n" KNRM,
-					  REG_READ(SCRPAD_42_73(30)), REG_READ(SCRPAD_42_73(31)));
+					  REG_READ(SCRPAD_32_63(30)), REG_READ(SCRPAD_32_63(31)));
 	}
+
+	/*--------------------------------------------------------------------*/
+	/* Read ADC int Calibration data for Linux ADC driver                 */
+	/*--------------------------------------------------------------------*/
+	scrpad = 60 - 32;
+	*(UINT32 *)buff = 0;
+	*(UINT32 *)(buff + 4) = 0;
+	status = FUSE_WRPR_get(ADC_CAL_INT_PROPERTY, buff);
+	REG_WRITE(SCRPAD_32_63(scrpad), *(UINT32 *)buff);
+	if (status == DEFS_STATUS_OK)
+	{
+		serial_printf(KCYN "ADC int calib: %#010lx (%#010lx)\n" KNRM,
+					  REG_READ(SCRPAD_32_63(scrpad)), REG_ADDR(SCRPAD_32_63(scrpad)));
+	}
+
+	/*--------------------------------------------------------------------*/
+	/* Read ADC ext Calibration data for Linux ADC driver                 */
+	/*--------------------------------------------------------------------*/
+	scrpad = 61 - 32;
+	*(UINT32 *)buff = 0;
+	*(UINT32 *)(buff + 4) = 0;
+	status = FUSE_WRPR_get(ADC_CAL_EXT_PROPERTY, buff);
+	REG_WRITE(SCRPAD_32_63(scrpad), *(UINT32 *)buff);
+	if (status == DEFS_STATUS_OK)
+	{
+		serial_printf(KCYN "ADC ext calib: %#010lx (%#010lx)\n" KNRM,
+					  REG_READ(SCRPAD_32_63(scrpad)), REG_ADDR(SCRPAD_32_63(scrpad)));
+	}
+
+	/*--------------------------------------------------------------------*/
+	/* write to scrpads 58 and 59 the memory range bootblock is using     */
+	/*--------------------------------------------------------------------*/
+	REG_WRITE(SCRPAD_32_63 (58 - 32), &_ram_start);
+	REG_WRITE(SCRPAD_32_63 (59 - 32), &_stack_start);
 
 	/*--------------------------------------------------------------------*/
 	/* identify board according to flash header                           */

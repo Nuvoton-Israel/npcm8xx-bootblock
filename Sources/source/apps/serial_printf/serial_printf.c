@@ -595,6 +595,15 @@ void serial_printf_init (void)
 	}
 
 	baud = BOOTBLOCK_GetUartBaud();
+	if (baud == UART_BAUDRATE_115200)
+	{
+		CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_CLKREF, 7);
+	}
+	else
+	{
+		CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_PLL2, 16);
+	}
+
 	UART_Init(gUartLog, UART_SKIP_MUX , baud);
 
 	CLK_Delay_MicroSec(1000);

@@ -25,6 +25,9 @@
 #include __MODULE_IF_HEADER_FROM_IF(fiu)
 #endif
 
+#if defined(UART_MODULE_TYPE)
+#include __MODULE_IF_HEADER_FROM_IF(uart)
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -89,21 +92,37 @@ void CLK_ConfigureClocks (UINT32 strp);
 
 #if defined (UART_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ConfigureUartClockEx                                                               */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  clkSelect     - Choose the UART clock source can be: CLKSEL_UARTCKSEL_CLKREF           */
+/*                                                                       CLKSEL_UARTCKSEL_PLL0             */
+/*                                                                       CLKSEL_UARTCKSEL_PLL1             */
+/*                                                                       CLKSEL_UARTCKSEL_PLL2             */
+/*                  uartDiv       - the divider og the selected clock                                      */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures the Uart clock source                                          */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT32 CLK_ConfigureUartClockEx (UINT8 clkSelect, UINT32 uartDiv);
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ConfigureUartClock                                                                 */
 /*                                                                                                         */
-/* Parameters:      freq - freq of the source clock                                                        */
-/*                  uartDiv - divisor for uart                                                             */
+/* Parameters:      none                                                                                   */
 /* Returns:                                                                                                */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine configures the Uart clock source to CLKREF (25MHZ), devider will be 7 so  */
 /*                  the uart clock will be 25Mhz/7 = 3.57Mhz, which is lower the default AHB clock.        */
 /*                  Configuring baudrate of 115200, will give actual baudrate of 111600 (3.32% off)        */
-/*                                                                                                         */
+/*                  for A3, in the case f fustrap1[9] = 1,  the uart clock will be 24Mhz                   */
+/*                  Configuring baudrate of 750000 from PLL2                                               */
 /*                  For PD optimization, the uart divisor and the uart clk (which is later been used to    */
 /*                  calculate the baudrate divisor) will always be set to minimum (1 and 0 accordingly)    */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS CLK_ConfigureUartClock (UINT32 freq, UINT32 uartDiv);
+UINT32 CLK_ConfigureUartClock (void);
 #endif // defined (UART_MODULE_TYPE)
 
 #if defined (USB_MODULE_TYPE)
@@ -163,15 +182,14 @@ void CLK_ConfigureEMCClock (UINT32 ethNum);
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ConfigureGMACClock                                                                 */
 /*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                  ethNum -  ethernet module number                                                       */
+/* Parameters:      none                                                                                   */
 /*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine configures GMAC clocks                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-void CLK_ConfigureGMACClock (UINT32 ethNum);
+void CLK_ConfigureGMACClock (void);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ConfigureRootComplexClock                                                          */
@@ -274,6 +292,29 @@ void CLK_ResetGMAC (UINT32 deviceNum);
 /*                  This routine performs SW reset of FIU                                                  */
 /*---------------------------------------------------------------------------------------------------------*/
 void CLK_ResetFIU (FIU_MODULE_T fiu);
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ConfigureFIUClock                                                                  */
+/*                                                                                                         */
+/* Parameters:      fiu - module (0, 3, X).                                                                */
+/*                  clkDiv - actual number to write to reg. The value is clkdDiv + 1)                      */
+/* Returns:         DEFS_STATUS                                                                            */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine config the FIU clock (according to the header )                           */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS CLK_ConfigureFIUClock (UINT fiu, UINT8 clkDiv);
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_GetFIUClockDiv                                                                     */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine config the FIU clock (according to the header )                           */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT8 CLK_GetFIUClockDiv (UINT fiu);
 #endif //#if defined (FIU_MODULE_TYPE)
 
 #if defined (UART_MODULE_TYPE)
@@ -304,6 +345,17 @@ void CLK_ResetAES (void);
 #endif //if defined (AES_MODULE_TYPE)
 
 #if defined (MC_MODULE_TYPE)
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ResetMC_async                                                                      */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine performs async reset of MC (IPSRST)                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+void CLK_ResetMC_async (void);
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ResetMC                                                                            */
 /*                                                                                                         */
@@ -630,29 +682,6 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
 /*                  This routine fix all the dividers after PLL change                                     */
 /*---------------------------------------------------------------------------------------------------------*/
 DEFS_STATUS CLK_Verify_and_update_dividers (void);
-    
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_ConfigureFIUClock                                                                  */
-/*                                                                                                         */
-/* Parameters:      fiu - module (0, 3, X).                                                                */
-/*                  clkDiv - actual number to write to reg. The value is clkdDiv + 1)                      */
-/* Returns:         DEFS_STATUS                                                                            */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                  This routine config the FIU clock (according to the header )                           */
-/*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS CLK_ConfigureFIUClock (UINT fiu, UINT8 clkDiv);
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_GetFIUClockDiv                                                                     */
-/*                                                                                                         */
-/* Parameters:      none                                                                                   */
-/* Returns:         none                                                                                   */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                  This routine config the FIU clock (according to the header )                           */
-/*---------------------------------------------------------------------------------------------------------*/
-UINT8 CLK_GetFIUClockDiv (UINT fiu);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_GetClkoutFreq                                                                      */
@@ -721,16 +750,18 @@ UINT32 CLK_GetUSB_UTMI_Clock (void);
 /*---------------------------------------------------------------------------------------------------------*/
 UINT32 CLK_Get_RC_Phy_and_I3C_Clock (void);
 
+#if defined(UART_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_GetUartClock                                                                       */
 /*                                                                                                         */
-/* Parameters:      none                                                                                   */
+/* Parameters:      devNum - UART nubmer.                                                                  */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                 This routine returns configuration of UART clock                                        */
+/*                 This routine returns configuration of UART clock. UARTs 0-3 share DIV1. 4-6 use DIV2    */
 /*---------------------------------------------------------------------------------------------------------*/
-UINT32 CLK_GetUartClock (void);
+UINT32 CLK_GetUartClock (UART_DEV_T devNum);
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_GetGMACClock                                                                       */

@@ -16,6 +16,7 @@
 #ifndef _FUSE_WRAPPER_
 #define _FUSE_WRAPPER_
 
+#include "defs.h"
 
 
 DEFS_STATUS FUSE_WRPR_get            (UINT16 fuse_address, UINT16 fuse_length, FUSE_ECC_TYPE_T fuse_ecc, UINT8* value);

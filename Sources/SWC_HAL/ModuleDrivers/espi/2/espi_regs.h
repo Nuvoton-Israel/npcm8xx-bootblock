@@ -46,6 +46,10 @@
 #define ESPI_PBMTXWRHEAD        (ESPI_BASE_ADDR + 0x044), ESPI_ACCESS, 32
 #define ESPI_PERCFG             (ESPI_BASE_ADDR + 0x048), ESPI_ACCESS, 32
 #define ESPI_PERCTL             (ESPI_BASE_ADDR + 0x04C), ESPI_ACCESS, 32
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPI_PERCTLBW           (ESPI_BASE_ADDR + 0x054), ESPI_ACCESS, 32
+#define ESPI_PSMRXRDHEAD        (ESPI_BASE_ADDR + 0x058), ESPI_ACCESS, 32
+#endif
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 #ifdef ESPI_CAPABILITY_HOST_STATUS
 #define ESPI_STATUS_IMG         (ESPI_BASE_ADDR + 0x050), ESPI_ACCESS, 16
@@ -60,6 +64,7 @@
 /*                                      Virtual Wire Channel Registers                                     */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_VWEVSM(n)          (ESPI_BASE_ADDR + 0x100 + (4*(n))), ESPI_ACCESS, 32
+#define ESPI_VWSWIRQ            (ESPI_BASE_ADDR + 0x13C),           ESPI_ACCESS, 32
 #define ESPI_VWEVMS(n)          (ESPI_BASE_ADDR + 0x140 + (4*(n))), ESPI_ACCESS, 32
 #ifdef ESPI_CAPABILITY_VW_GPIO_SUPPORT
 #define ESPI_VWGPSM(n)          (ESPI_BASE_ADDR + 0x180 + (4*(n))), ESPI_ACCESS, 32
@@ -82,7 +87,6 @@
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_FLASHRXBUF(n)      (ESPI_BASE_ADDR + 0x400 + (4*(n))), ESPI_ACCESS, 32
 #define ESPI_FLASHTXBUF(n)      (ESPI_BASE_ADDR + 0x480 + (4*(n))), ESPI_ACCESS, 32
-#define ESPI_FLASHBASE          (ESPI_BASE_ADDR + 0x4F0),           ESPI_ACCESS, 32
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*                                        Peripheral Channel buffers                                       */
@@ -92,18 +96,26 @@
 #define ESPI_PBMTXBUF(n)        (ESPI_BASE_ADDR + 0x580 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 18
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 
+#ifdef ESPI_CAPABILITY_TAF
 /*---------------------------------------------------------------------------------------------------------*/
-/*                                  Slave Attached Flash Access Registers                                  */
+/*                                  Target Attached Flash Access Registers                                 */
 /*---------------------------------------------------------------------------------------------------------*/
-#ifdef ESPI_CAPABILITY_SAF
-#define ESPI_FLASH_SAF_PROT_MEM_NUM     16
-#define ESPI_FLASH_SAF_TAG_RANGE_NUM    8
-#define ESPI_FLASH_SAF_BUFF_NUM         8
 #define ESPI_FLASH_PRTR_BADDRn(n)       (ESPI_BASE_ADDR + 0x600 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 15
-#define ESPI_FLASH_PRTR_HADDRn(n)       (ESPI_BASE_ADDR + 0x640 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 15
+#define ESPI_FLASH_PRTR_TADDRn(n)       (ESPI_BASE_ADDR + 0x640 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 15
 #define ESPI_FLASH_FLASH_RGN_TAG_OVRn(n)(ESPI_BASE_ADDR + 0x680 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 7
-#define ESPI_FLASHRDTXBUF(buf)(n)       (ESPI_BASE_ADDR + 0x700 + ((buf) * 0x40) + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 15
-#endif // ESPI_CAPABILITY_SAF
+#define ESPI_RDFLASHTXBUF0(n)           (ESPI_BASE_ADDR + 0x700 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 16
+#define ESPI_RDFLASHTXBUF1(n)           (ESPI_BASE_ADDR + 0x780 + (4*(n))), ESPI_ACCESS, 32 // n = 0 - 16
+#define ESPI_FLASH_RPMC_CFG_1           (ESPI_BASE_ADDR + 0x800),           ESPI_ACCESS, 32
+#define ESPI_FLASH_RPMC_CFG_2           (ESPI_BASE_ADDR + 0x804),           ESPI_ACCESS, 32
+#define ESPI_RMAP_FLASH_OFFS            (ESPI_BASE_ADDR + 0x808),           ESPI_ACCESS, 32
+#define ESPI_RMAP_DST_BASE              (ESPI_BASE_ADDR + 0x80C),           ESPI_ACCESS, 32
+#define ESPI_RMAP_WIN_SIZE              (ESPI_BASE_ADDR + 0x810),           ESPI_ACCESS, 32
+#define ESPI_FLASHBASE                  (ESPI_BASE_ADDR + 0x814),           ESPI_ACCESS, 32
+#define ESPI_FLRLCK                     (ESPI_BASE_ADDR + 0x818),           ESPI_ACCESS, 32
+#define ESPI_FLASH_TAF_PROT_MEM_NUM     16
+#define ESPI_FLASH_TAF_TAG_RANGE_NUM    8
+#define ESPI_FLASH_TAF_BUFF_NUM         17
+#endif // ESPI_CAPABILITY_TAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*                                                 Fields                                                  */
@@ -152,23 +164,30 @@
 #define ESPISTS_BERR            2,  1
 #define ESPISTS_OOBRX           3,  1
 #define ESPISTS_FLASHRX         4,  1
-#define ESPISTS_SFLASHRD        5,  1
+#define ESPISTS_FLNACS          5,  1
 #define ESPISTS_PERACC          6,  1
 #define ESPISTS_DFRD            7,  1
 #define ESPISTS_VWUPD           8,  1
 #define ESPISTS_ESPIRST         9,  1
 #define ESPISTS_PLTRST          10, 1
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPISTS_BMWBURSTQEMP    11, 1
+#endif // ESPI_CAPABILITY_PC_BM_BURST_WRITE
 #ifdef ESPI_CAPABILITY_VW_FLOATING_EVENTS
 #define ESPISTS_VW1             11, 1
 #define ESPISTS_VW2             12, 1
 #define ESPISTS_VW3             13, 1
 #define ESPISTS_VW4             14, 1
 #endif // ESPI_CAPABILITY_VW_FLOATING_EVENTS
+#ifdef ESPI_CAPABILITY_TAF
+#define ESPISTS_FLASHAUTORDREQ  14, 1
+#endif // ESPI_CAPABILITY_TAF
 #define ESPISTS_AMERR           15, 1
 #define ESPISTS_AMDONE          16, 1
 #ifdef ESPI_CAPABILITY_VW_WAKEUP
 #define ESPISTS_VWUPDW          17, 1
 #endif
+#define ESPISTS_FLNPRQS         18, 1
 #ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 #define ESPISTS_BMTXDONE        19, 1
 #define ESPISTS_PBMRX           20, 1
@@ -179,10 +198,17 @@
 #ifdef ESPI_CAPABILITY_ESPI_RST_LEVEL_INDICATION
 #define ESPISTS_ESPIRST_LVL     24, 1
 #endif // ESPI_CAPABILITY_ESPI_RST_LEVEL_INDICATION
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 #define ESPISTS_FLASHPRTERR     25, 1
-#endif // ESPI_CAPABILITY_SAF
-
+#define ESPISTS_FLAUTORDSTR     26, 1
+#define ESPISTS_FLAUTORDPND     27, 1
+#define ESPISTS_FLAUTORDQEMP    28, 1
+#define ESPISTS_AUTO_RD_DIS_STS 29, 1
+#endif // ESPI_CAPABILITY_TAF
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPISTS_BMWBURSTERR     30, 1
+#define ESPISTS_BMWBURSTDONE    31, 1
+#endif // ESPI_CAPABILITY_PC_BM_BURST_WRITE
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_ESPIIE fields                                                                                      */
@@ -192,7 +218,7 @@
 #define ESPIIE_BERRIE           2,  1
 #define ESPIIE_OOBRXIE          3,  1
 #define ESPIIE_FLASHRXIE        4,  1
-#define ESPIIE_SFLASHRDIE       5,  1
+#define ESPIIE_FLNACSIE         5,  1
 #define ESPIIE_PERACCIE         6,  1
 #define ESPIIE_DFRDIE           7,  1
 #define ESPIIE_VWUPDIE          8,  1
@@ -206,19 +232,54 @@
 #endif // ESPI_CAPABILITY_VW_FLOATING_EVENTS
 #define ESPIIE_AMERRIE          15, 1
 #define ESPIIE_AMDONEIE         16, 1
+#define ESPIIE_FLNPRQSIE        18, 1
 #ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 #define ESPIIE_BMTXDONEIE       19, 1
 #define ESPIIE_PBMRXIE          20, 1
 #define ESPIIE_PMSGRXIE         21, 1
 #define ESPIIE_BMBURSTERRIE     22, 1
 #define ESPIIE_BMBURSTDONEIE    23, 1
-#ifdef ESPI_CAPABILITY_SAF
-#define ESPIIE_FLASHPRTERRIE    25, 1
-#endif // ESPI_CAPABILITY_SAF
-#define ESPIIE_ALL              0, 25
-#else
-#define ESPIIE_ALL              0, 17
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
+#ifdef ESPI_CAPABILITY_TAF
+#define ESPIIE_FLASHPRTERRIE    25, 1
+#define ESPIIE_FLAUTORDSTRIE    26, 1
+#define ESPIIE_FLAUTORDPNDIE    27, 1
+#define ESPIIE_FLAUTORDQEMPIE   28, 1
+#define ESPIIE_FLAUTORDDISIE    29, 1
+#endif // ESPI_CAPABILITY_TAF
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPIIE_BMWBURSTERRIE    30, 1
+#define ESPIIE_BMWBURSTDONEIE   31, 1
+#endif // ESPI_CAPABILITY_PC_BM_BURST_WRITE
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* ESPI_ESPIIE Mask                                                                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPIIE_GENERAL          0, 11
+#ifdef ESPI_CAPABILITY_VW_FLOATING_EVENTS
+#define ESPIIE_VW               11, 4
+#else
+#define ESPIIE_VW               0,  0
+#endif
+#define ESPIIE_AM               15, 2
+#ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
+#define ESPIIE_PC_BM            19, 5
+#else
+#define ESPIIE_PC_BM            0,  0
+#endif
+#ifdef ESPI_CAPABILITY_SAF
+#define ESPIIE_SAF              25, 5
+#else
+#define ESPIIE_SAF              0,  0
+#endif
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPIIE_PC_BM_BW         30, 2
+#else
+#define ESPIIE_PC_BM_BW         0,  0
+#endif
+#define ESPIIE_ALL              (MASK_FIELD(ESPIIE_GENERAL)   | MASK_FIELD(ESPIIE_VW)    | MASK_FIELD(ESPIIE_AM)  | \
+                                 MASK_FIELD(ESPIIE_FLNPRQSIE) | MASK_FIELD(ESPIIE_PC_BM) | MASK_FIELD(ESPIIE_SAF) | \
+                                 MASK_FIELD(ESPIIE_PC_BM_BW))
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_ESPIWE fields                                                                                      */
@@ -228,27 +289,32 @@
 #define ESPIWE_BERRWE               2,  1
 #define ESPIWE_OOBRXWE              3,  1
 #define ESPIWE_FLASHRXWE            4,  1
-#define ESPIWE_SFLASHRDWE           5,  1
 #define ESPIWE_PERACCWE             6,  1
 #define ESPIWE_DFRDWE               7,  1
 #define ESPIWE_VWUPDWE              8,  1
-
 #ifdef ESPI_CAPABILITY_ESPI_RST_WAKEUP_SUPPORT
 #define ESPIWE_ESPIRSTWE            9,  1
 #endif // ESPI_CAPABILITY_ESPI_RST_WAKEUP_SUPPORT
-
 #ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 #define ESPIWE_PBMRXWE              20, 1
 #define ESPIWE_PMSGRXWE             21, 1
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 
-#ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
-#define ESPIWE_ALL                  0, 22
-#elif defined (ESPI_CAPABILITY_ESPI_RST_WAKEUP_SUPPORT)
-#define ESPIWE_ALL                  0, 10
+/*---------------------------------------------------------------------------------------------------------*/
+/* ESPI_ESPIWE Mask                                                                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPIWE_GENERAL              0,  9
+#ifdef ESPI_CAPABILITY_ESPI_RST_WAKEUP_SUPPORT
+#define ESPIWE_ESPIRST_WU           9,  1
 #else
-#define ESPIWE_ALL                  0,  9
+#define ESPIWE_ESPIRST_WU           0,  0
 #endif
+#ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
+#define ESPIWE_PC_BM                20, 2
+#else
+#define ESPIWE_PC_BM                0,  0
+#endif
+#define ESPIWE_ALL                  (MASK_FIELD(ESPIWE_GENERAL) | MASK_FIELD(ESPIWE_ESPIRST_WU)  | MASK_FIELD(ESPIWE_PC_BM))
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_VWREGIDX fields                                                                                    */
@@ -271,16 +337,15 @@
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_FLASHCFG fields                                                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 #define FLASHCFG_FLASHREQSUP        0,  3
-#endif // ESPI_CAPABILITY_SAF
+#endif // ESPI_CAPABILITY_TAF
 #define FLASHCFG_FLASHBLERSSIZE     7,  3
 #define FLASHCFG_FLASHPLSIZE        10, 3
 #define FLASHCFG_FLASHREQSIZE       13, 3
-#ifdef ESPI_CAPABILITY_SAF
-#define FLASHCFG_FLASHCAPA          16, 2
-#define FLASHCFG_TRGFLASHEBLKSIZE   18, 8
-#define FLASHCFG_TRGRPMCSUPP        26, 6
+#ifdef ESPI_CAPABILITY_TAF
+#define FLASHCFG_TRGFLEBLKSIZE      16, 8
+#define FLASHCFG_FLCAPA             24, 2
 #endif // ESPI_CAPABILITY_SAF
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -296,10 +361,11 @@
 #define FLASHCTL_CHKSUMSEL          15, 1
 #define FLASHCTL_AMTEN              16, 1
 #define FLASHCTL_AMTBFULL           17, 1
-#ifdef ESPI_CAPABILITY_SAF
-#define FLASHCTL_SAF_AUTO_READ      18, 1
-#define FLASHCTL_SAF_PROT_LOCK      19, 1
-#endif // ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
+#define FLASHCTL_TAF_AUTO_READ      18, 1
+#define FLASHCTL_AUTO_RD_DIS_CTL    19, 1
+#define FLASHCTL_BLK_FLASH_NP_FREE  20, 1
+#endif // ESPI_CAPABILITY_TAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_ESPIERR fields                                                                                     */
@@ -351,7 +417,7 @@
 /* ESPI_PERCTL fields                                                                                      */
 /*---------------------------------------------------------------------------------------------------------*/
 #define PERCTL_PER_PC_FREE          0,  1
-#ifdef ESPI_CAPABILITY_PC_BM_WRITE_DMA
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
 #define PERCTL_BMDMA_TR_SL          1,  1
 #endif
 #define PERCTL_BMSTRPHDR            2,  1
@@ -365,6 +431,17 @@
 #define PERCTL_BM_PC_AVAIL          20, 1
 #define PERCTL_BM_MSG_AVAIL         21, 1
 #define PERCTL_BMPKT_LEN            24, 8
+
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+/*---------------------------------------------------------------------------------------------------------*/
+/* ESPI_PERCTLBW fields                                                                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+#define PERCTLBW_BMWDMATHRESH       3,  2
+#define PERCTLBW_BMWBURSTSIZE       5,  8
+#define PERCTLBW_BMWBRSTEN          16, 1
+#define PERCTLBW_BMWBURST_BEMPTY    17, 1
+#endif
+
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 
 #ifdef ESPI_CAPABILITY_HOST_STATUS
@@ -380,10 +457,10 @@
 #define STATUS_IMG_VWIRE_AVAIL      6,  1
 #define STATUS_IMG_OOB_AVAIL        7,  1
 #define STATUS_IMG_FLASH_C_FREE     8,  1
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 #define STATUS_IMG_FLASH_NP_FREE    9,  1
 #define STATUS_IMG_FLASH_C_AVAIL    12, 1
-#endif // ESPI_CAPABILITY_SAF
+#endif // ESPI_CAPABILITY_TAF
 #define STATUS_IMG_FLASH_NP_AVAIL   13, 1
 
 #define STATUS_IMG_RST_VAL          0x30F
@@ -531,34 +608,68 @@
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_FLASHRXBUF fields                                                                                  */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASHRXBUF_NUM                17
+#define ESPI_FLASHRXBUF_NUM                             17
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 /*---------------------------------------------------------------------------------------------------------*/
-/* ESPI_FLASHBASE fields                                                                                   */
+/*                                  Target Attached Flash Access Registers                                 */
 /*---------------------------------------------------------------------------------------------------------*/
-#define FLASHBASE_FLBASE_LOW               0, 16
-#define FLASHBASE_FLBASE_HIGH              16,11
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_FLASH_PRTR_BADDRn(n) fields                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_PRTR_BADDRn_BADDR       12,15
-#define ESPI_FLASH_PRTR_BADDRn_FRGN_RPR    30, 1
-#define ESPI_FLASH_PRTR_BADDRn_FRGN_WPR    31, 1
+#define ESPI_FLASH_PRTR_BADDRn_BADDR                    12,15
+#define ESPI_FLASH_PRTR_BADDRn_FRNG_WPR                 29, 1
+#define ESPI_FLASH_PRTR_BADDRn_FRNG_RPR                 30, 1
+#define ESPI_FLASH_PRTR_BADDRn_TAF_PROT_LCK             31, 1
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* ESPI_FLASH_PRTR_HADDRn(n) fields                                                                        */
+/* ESPI_FLASH_PRTR_TADDRn(n) fields                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_PRTR_HADDRn_HADDR       12,15
+#define ESPI_FLASH_PRTR_TADDRn_TADDR                    12,15
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_FLASH_FLASH_RGN_TAG_OVRn(n) fields                                                                 */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR       0 ,16
-#define ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_RPR_TOVR       16,16
+#define ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR     0 ,16
+#define ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_RPR_TOVR     16,16
 
-#endif // ESPI_CAPABILITY_SAF
+/*---------------------------------------------------------------------------------------------------------*/
+/* FLASH_RPMC_CFG_1 fields                                                                                 */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_1               0, 4
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_1                4, 8
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_2               12, 4
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_2                16, 8
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_DEV_SUPP             24, 2
+#define ESPI_FLASH_RPMC_CFG_1_TRGRPMCSUPP               26, 6
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* FLASH_RPMC_CFG_2 fields                                                                                 */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_3               0, 4
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_3                4, 8
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_4               12, 4
+#define ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_4                16, 8
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* RMAP_WIN_SIZE fields                                                                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_RMAP_WIN_SIZE_TAF_RMAP_LCK                 0, 1
+#define ESPI_RMAP_WIN_SIZE_RMAP_WIN_SZ                  11, 18
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* FLASHBASE fields                                                                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASHBASE_FLBASE_LCK                       0, 1
+#define ESPI_FLASHBASE_FLBASE_ADDR                      12, 15
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* FLRLCK fields                                                                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLRLCK_TAF_PROT_RGLK                       0, 8
+#define ESPI_FLRLCK_TAF_RMAP_RGLK                       8, 8
+#endif // ESPI_CAPABILITY_TAF
 
 #endif /* _ESPI_REGS_H */
 

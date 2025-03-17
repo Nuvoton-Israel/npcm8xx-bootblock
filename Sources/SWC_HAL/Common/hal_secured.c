@@ -62,6 +62,96 @@
 /*---------------------------------------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        HAL_SEC_memcmp_action                                                                  */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  ptr1                  - Pointer to a block of memory                                   */
+/*                  ptr2                  - Pointer to a block of memory                                   */
+/*                  n                     - Number of bytes to be compared.                                */
+/*                  secure_error_callback - Callbak function in case of a security error detection.        */
+/*                                                                                                         */
+/* Returns:         SECURED_BOOLEAN_T                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This function compares the first n bytes of memory pointed by ptr1 to the first n      */
+/*                  bytes pointed by ptr2, returns SECURED_TRUE if they all match or SECURED_FALSE if not  */
+/*                  If the function detects an attempt to glitch the code it will call the                 */
+/*                  secure_error_callback function (if not NULL)                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+SECURED_BOOLEAN_T HAL_SEC_memcmp_action (const void* ptr1, const void* ptr2, UINT n,
+                                         SecureErrorCallback secure_error_callback)
+{
+    volatile SECURED_BOOLEAN_T  retVal1 = SECURED_FALSE;
+    volatile SECURED_BOOLEAN_T  retVal2 = SECURED_FALSE;
+    volatile UINT8              result  = 0;
+    volatile UINT               count   = 0;
+    UINT                        i;
+
+    DEFS_FLOW_MONITOR_DECLARE(0);
+
+    for (i = 0; i < n; i++)
+    {
+        result |= (((UINT8*)ptr1)[i] ^ ((UINT8*)ptr2)[i]);
+        count++;
+    }
+
+    DEFS_FLOW_MONITOR_INCREMENT();
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* OR operand where 'count' and 'result' are volatile will not be optimized.                           */
+    /* If at one point 'count' will be different than 'n' or 'result' will not be zero,                    */
+    /* the following if statements will not enter.                                                         */
+    /*lint -e564 suppress variable 'count'/'result' depends on order of evaluation"                        */
+    /*-----------------------------------------------------------------------------------------------------*/
+
+    if (0 == ((count ^ n) | (count ^ n)))
+    {
+        DEFS_FLOW_MONITOR_INCREMENT();
+    }
+    else
+    {
+        EXECUTE_FUNC(secure_error_callback, (DEFS_STATUS_SECURITY_ERROR, __LINE__));
+    }
+
+    if (0 == ((count ^ n) | (count ^ n)))
+    {
+        DEFS_FLOW_MONITOR_INCREMENT();
+    }
+    else
+    {
+        EXECUTE_FUNC(secure_error_callback, (DEFS_STATUS_SECURITY_ERROR, __LINE__));
+    }
+
+    if (0 == (result | result))
+    {
+        retVal1 = SECURED_TRUE;
+    }
+
+    if (0 == (result | result))
+    {
+        retVal2 = SECURED_TRUE;
+    }
+
+    if (retVal1 == retVal2)
+    {
+        DEFS_FLOW_MONITOR_INCREMENT();
+    }
+    else
+    {
+        EXECUTE_FUNC(secure_error_callback, (DEFS_STATUS_SECURITY_ERROR, __LINE__));
+    }
+
+    //lint -e527 suppress 'Unreachable code at token ;'
+    DEFS_FLOW_MONITOR_COMPARE_ACTION(4,
+        {
+            EXECUTE_FUNC(secure_error_callback, (DEFS_STATUS_SECURITY_ERROR, __LINE__));
+            return SECURED_FALSE;
+        } );
+
+    return retVal2;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        HAL_SEC_memcmp                                                                         */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
@@ -75,56 +165,9 @@
 /*                  This function compares the first n bytes of memory pointed by ptr1 to the first n      */
 /*                  bytes pointed by ptr2, returns SECURED_TRUE if they all match or SECURED_FALSE if not  */
 /*---------------------------------------------------------------------------------------------------------*/
-SECURED_BOOLEAN_T HAL_SEC_memcmp (const UINT8* ptr1, const UINT8* ptr2, UINT n)
+SECURED_BOOLEAN_T HAL_SEC_memcmp (const void* ptr1, const void* ptr2, UINT n)
 {
-    volatile SECURED_BOOLEAN_T  retVal = SECURED_FALSE;
-    volatile SECURED_BOOLEAN_T  result = SECURED_TRUE;
-    UINT                        i;
-    const volatile UINT8*       ptr1_l = ptr1; // so DEFS_SEC_TRIPLE_OR will not optimize
-    const volatile UINT8*       ptr2_l = ptr2; // so DEFS_SEC_TRIPLE_OR will not optimize
-
-    DEFS_FLOW_MONITOR_DECLARE(0);
-
-    for (i = 0; i < n; i++)
-    {
-        if (HAL_SEC_TRIPLE_OR(ptr1_l[i] != ptr2_l[i]))
-        {
-            result = SECURED_FALSE;
-        }
-    }
-
-    DEFS_FLOW_MONITOR_INCREMENT();
-
-    if (i != n)
-    {
-        result = SECURED_FALSE;
-    }
-    if (i != n)
-    {
-        result = SECURED_FALSE;
-    }
-    if (i != n)
-    {
-        result = SECURED_FALSE;
-    }
-
-    DEFS_FLOW_MONITOR_INCREMENT();
-
-    if (HAL_SEC_TRIPLE_AND(result == SECURED_TRUE))
-    {
-        DEFS_FLOW_MONITOR_INCREMENT();
-        retVal = SECURED_TRUE;
-    }
-
-    if (HAL_SEC_TRIPLE_AND(result == SECURED_TRUE))
-    {
-        DEFS_FLOW_MONITOR_INCREMENT();
-        retVal = SECURED_TRUE;
-    }
-
-    DEFS_FLOW_MONITOR_COMPARE_ACTION(4, return SECURED_FALSE);
-
-    return retVal;
+    return HAL_SEC_memcmp_action(ptr1, ptr2, n, NULL);
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -147,7 +190,7 @@ void* HAL_SEC_memcpy8 (UINT8* dest, const UINT8* src, UINT n, UINT rnd)
     UINT start;
     UINT i;
 
-    if (dest == NULL || n == 0)
+    if (dest == NULL || src == NULL || n == 0)
     {
         return dest;
     }
@@ -190,7 +233,7 @@ void* HAL_SEC_memcpy32 (UINT32* dest, const UINT32* src, UINT n, UINT rnd)
     UINT start;
     UINT i;
 
-    if (dest == NULL || dwordNum == 0)
+    if (dest == NULL || src == NULL || dwordNum == 0)
     {
         return dest;
     }

@@ -289,12 +289,7 @@ void update_reset_indication (void)
 		SET_VAR_FIELD (rcr1, WD0RCR_PCIMBX, 0);
 		SET_VAR_FIELD (rcr1, WD0RCR_CP1, 0);
 
-		if (CHIP_Get_Version() >= 0x04 ) {
-			SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST_A1, 0);
-		} else {
-			/* for Z1 only. In A1 this bit is locked by ROM, except for TIP RESET (TIPRSTCB) */
-			SET_VAR_FIELD (rcr2, WD0RCRB_CP2_TIP_Z1, 1);
-		}
+		SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST, 0);
 
 		SET_VAR_FIELD (rcr2, WD0RCRB_HGPIO, 0);
 		SET_VAR_FIELD (rcr2, WD0RCRB_FLM, 0);
@@ -329,12 +324,7 @@ void update_reset_indication (void)
 		SET_VAR_FIELD (rcr1, WD0RCR_SPIBMC, 1);
 		SET_VAR_FIELD (rcr1, WD0RCR_CP1, 1);
 
-		if (CHIP_Get_Version () >= 0x04 ) { 
-			SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST_A1, 1);
-		} 
-		else {
-			SET_VAR_FIELD (rcr2, WD0RCRB_CP2_TIP_Z1, 1);
-		}
+		SET_VAR_FIELD (rcr2, WD0RCRB_SEC_REG_RST, 1);
 		
 		REG_WRITE (TIPRSTC, rcr1);
 		REG_WRITE (TIPRSTCB, rcr2);

@@ -75,9 +75,10 @@
 #define __MODULE_HEADER(moduleType, moduleVer)       STRINGX(../moduleType/moduleVer/moduleType##_drv.h)
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Include module drivers registers from hal_regs                                                          */
+/* Include module drivers registers from hal_regs/driver                                                   */
 /*---------------------------------------------------------------------------------------------------------*/
-#define __MODULE_REGS_HEADER(moduleType, moduleVer)  STRINGX(ModuleDrivers/moduleType/moduleVer/moduleType##_regs.h)
+#define __MODULE_REGS_HEADER(moduleType, moduleVer)     STRINGX(ModuleDrivers/moduleType/moduleVer/moduleType##_regs.h)
+#define __MODULE_REGS_FROM_DRV(moduleType, moduleVer)   STRINGX(../../../ModuleDrivers/moduleType/moduleVer/moduleType##_regs.h)
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Include chip files                                                                                      */

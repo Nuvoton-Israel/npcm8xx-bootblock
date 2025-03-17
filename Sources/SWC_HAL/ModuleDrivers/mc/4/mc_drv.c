@@ -1436,7 +1436,7 @@ static DEFS_STATUS MC_ConfigureDDR_l (DDR_Setup *ddr_setup, unsigned int try)
 
 	NUM_OF_LANES = 2;
 
-	CLK_ResetMC();
+	CLK_ResetMC_async();
 
 	MC_ClearInterrupts();
 

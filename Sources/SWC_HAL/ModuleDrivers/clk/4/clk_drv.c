@@ -657,49 +657,84 @@ void CLK_ConfigureClocks (UINT32 strp)
 
 #if defined (UART_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_ConfigureUartClock                                                                 */
+/* Function:        CLK_ConfigureUartClockEx                                                               */
 /*                                                                                                         */
-/* Parameters:      freq - freq of the source clock                                                        */
-/*                  uartDiv - divisor for uart                                                             */
+/* Parameters:                                                                                             */
+/*                  clkSelect     - Choose the UART clock source can be: CLKSEL_UARTCKSEL_CLKREF           */
+/*                                                                       CLKSEL_UARTCKSEL_PLL0             */
+/*                                                                       CLKSEL_UARTCKSEL_PLL1             */
+/*                                                                       CLKSEL_UARTCKSEL_PLL2             */
+/*                  uartDiv       - the divider og the selected clock                                      */
 /* Returns:                                                                                                */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine configures the Uart clock source to CLKREF (25MHZ), devider will be 7 so  */
-/*                  the uart clock will be 25Mhz/7 = 3.57Mhz, which is lower the default AHB clock.        */
-/*                  Configuring baudrate of 115200, will give actual baudrate of 111600 (3.32% off)        */
-/*                                                                                                         */
-/*                  For PD optimization, the uart divisor and the uart clk (which is later been used to    */
-/*                  calculate the baudrate divisor) will always be set to minimum (1 and 0 accordingly)    */
+/*                  This routine configures the Uart clock source                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS CLK_ConfigureUartClock (UINT32 freq, UINT32 uartDiv)
+UINT32 CLK_ConfigureUartClockEx (UINT8 clkSelect, UINT32 uartDiv)
 {
+    UINT32 uart_clk;
+
+    switch (clkSelect)
+    {
+        case CLKSEL_UARTCKSEL_PLL0:
+             uart_clk = CLK_GetPll0Freq();
+             break;
+        case CLKSEL_UARTCKSEL_PLL1:
+             uart_clk = CLK_GetPll1Freq();
+             break;
+        case CLKSEL_UARTCKSEL_PLL2:
+             uart_clk = CLK_GetPll2Freq();
+             break;
+        case CLKSEL_UARTCKSEL_CLKREF:
+             // fall through
+        default:
+             uart_clk = EXT_CLOCK_FREQUENCY_HZ;
+             clkSelect = CLKSEL_UARTCKSEL_CLKREF;
+             break;
+    }
+
+    uart_clk = uart_clk / uartDiv;
+
+    /*-------------------------------------------------------------------------------------------------*/
+    /* Choose CLKREF as a source:                                                                      */
+    /*-------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(CLKSEL, CLKSEL_UARTCKSEL, clkSelect);
+
     /*-------------------------------------------------------------------------------------------------*/
     /* Set divider                                                                                     */
     /*-------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(CLKDIV1, CLKDIV1_UARTDIV1, CLKDIV1_UARTDIV1_DIV(uartDiv));
     SET_REG_FIELD(CLKDIV3, CLKDIV3_UARTDIV2, CLKDIV3_UARTDIV2_DIV(uartDiv));
 
-    /*-------------------------------------------------------------------------------------------------*/
-    /* Choose CLKREF as a source:                                                                      */
-    /*-------------------------------------------------------------------------------------------------*/
-    if (freq == EXT_CLOCK_FREQUENCY_HZ)
-    {
-        SET_REG_FIELD(CLKSEL, CLKSEL_UARTCKSEL, CLKSEL_UARTCKSEL_CLKREF);
-    }
-    else
-    {
-        SET_REG_FIELD(CLKSEL, CLKSEL_UARTCKSEL, CLKSEL_UARTCKSEL_PLL2);
-    }
-
     /*-----------------------------------------------------------------------------------------------------*/
     /* Wait for 200 clock cycles between clkDiv change and clkSel change, for clockref it 8us              */
     /*-----------------------------------------------------------------------------------------------------*/
     CLK_Delay_MicroSec(20);
 
-    //for( uart = UART0_DEV; uart <= UART7_DEV; uart++)
-    //  UART_ResetFIFOs(uart, TRUE, TRUE);
+    return uart_clk;
+}
 
-    return DEFS_STATUS_OK;
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ConfigureUartClock                                                                 */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures the Uart clock source to CLKREF (25MHZ), devider will be 7 so  */
+/*                  the uart clock will be 25Mhz/7 = 3.57Mhz, which is lower the default AHB clock.        */
+/*                  Configuring baudrate of 115200, will give actual baudrate of 111600 (3.32% off)        */
+/*                  for A3, in the case f fustrap1[9] = 1,  the uart clock will be 24Mhz                   */
+/*                  Configuring baudrate of 750000 from PLL2                                               */
+/*                  For PD optimization, the uart divisor and the uart clk (which is later been used to    */
+/*                  calculate the baudrate divisor) will always be set to minimum (1 and 0 accordingly)    */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT32 CLK_ConfigureUartClock (void)
+{
+    UINT32 uartDiv;
+
+    uartDiv = 7; //  25MHz / 7 = 3.57MHz
+    return CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_CLKREF, uartDiv);
 }
 #endif // defined (UART_MODULE_TYPE)
 
@@ -720,7 +755,6 @@ DEFS_STATUS CLK_ConfigureUSBClock (void)
     UINT32  choosenPllFreq;
     UINT32  divider;
 
-    choosenPllFreq = EXT_CLOCK_FREQUENCY_HZ;
     // Find a PLL that can create an exact 48MHz value:
     if (CLK_GetPll2Freq() % (SU48_DESIRED_FREQUENCY *_1MHz_) == 0)
     {
@@ -826,7 +860,7 @@ void CLK_ConfigureEMCClock (UINT32 ethNum)
 /* Description:                                                                                            */
 /*                  This routine configures GMAC clocks                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-void CLK_ConfigureGMACClock (UINT32 ethNum)
+void CLK_ConfigureGMACClock (void)
 {
     UINT32 source = 0;
     UINT32 div = 0;
@@ -846,7 +880,7 @@ void CLK_ConfigureGMACClock (UINT32 ethNum)
 
     div = source / (125 * _1MHz_); // GMAC should be 125MHz always.
 
-    SET_REG_FIELD(CLKDIV4, CLKDIV4_RGREFDIV, CLKDIV4_RGREFDIV_DIV(div)); 
+    SET_REG_FIELD(CLKDIV4, CLKDIV4_RGREFDIV, CLKDIV4_RGREFDIV_DIV(div));
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -861,7 +895,7 @@ void CLK_ConfigureGMACClock (UINT32 ethNum)
 void CLK_ConfigureRootComplexClock (void)
 {
     UINT32 source = 0;
-	UINT32 div = 0;
+    UINT32 div = 0;
     UINT32 sel =  READ_REG_FIELD(CLKSEL, CLKSEL_RCPCKSEL);
 
     switch (sel)
@@ -880,7 +914,7 @@ void CLK_ConfigureRootComplexClock (void)
     }
     div = source / (100 * _1MHz_); // RC should be 100MHz always.
 
-    SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div)); 
+    SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div));
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -895,7 +929,7 @@ void CLK_ConfigureRootComplexClock (void)
 void CLK_Configure_I3C_Clock (UINT8 div)
 {
     div = MIN(div, 16);
-    SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div)); 
+    SET_REG_FIELD(CLKDIV4, CLKDIV4_RCPREFDIV, CLKDIV4_RCPREFDIV_DIV(div));
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -1197,6 +1231,106 @@ void CLK_ResetFIU (FIU_MODULE_T fiu)
 }
 #endif //#if defined (FIU_MODULE_TYPE)
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ConfigureFIUClock                                                                  */
+/*                                                                                                         */
+/* Parameters:      fiu - module (0, 3, X).                                                                */
+/*                  clkDiv - actual number to write to reg. The value is clkdDiv + 1)                      */
+/* Returns:         DEFS_STATUS                                                                            */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine config the FIU clock (according to the header )                           */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS CLK_ConfigureFIUClock (UINT fiu, UINT8 clkDiv)
+{
+     /*----------------------------------------------------------------------------------------------------*/
+     /* Defines the clock divide ratio from AHB to FIU0 clock.                                             */
+     /*----------------------------------------------------------------------------------------------------*/
+     UINT32  ratio = 0;
+
+     /*----------------------------------------------------------------------------------------------------*/
+     /* Ignored if FIU_Clk_Divider is either 0 or 0FFh.                                                    */
+     /*----------------------------------------------------------------------------------------------------*/
+     if (fiu != FIU_MODULE_1)
+     {
+          /*----------------------------------------------------------------------------------------------------*/
+          /* Ignored if FIU_Clk_Divider is either 0 or 0FFh.                                                    */
+          /*----------------------------------------------------------------------------------------------------*/
+          if ( (clkDiv == 0) || (clkDiv > 0x20))
+          {
+               return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
+          }
+     }
+     else  /* FIU1 */
+     {
+          if (clkDiv == 0)
+          {
+               return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
+          }
+     }
+
+     /* set SPIn clk div */
+     switch (fiu)
+     {
+        case FIU_MODULE_0:
+            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPI0CKDIV,  (CLKDIV3_SPI0CKDIV_DIV(clkDiv) & 0x1F));
+            break;
+        case FIU_MODULE_1:
+            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPI1CKDIV,  (CLKDIV3_SPI1CKDIV_DIV(clkDiv) & 0xFF));
+            break;
+        case FIU_MODULE_2:
+            // fallthrough
+        case FIU_MODULE_3:
+            SET_REG_FIELD(CLKDIV1, CLKDIV1_AHB3CKDIV, (CLKDIV1_AHB3CKDIV_DIV(clkDiv)  & 0x1F));
+            break;
+        case FIU_MODULE_X:
+            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPIXCKDIV,  (CLKDIV3_SPIXCKDIV_DIV(clkDiv) & 0x1F));
+            break;
+        default:
+            return DEFS_STATUS_INVALID_PARAMETER;
+     }
+
+     /*----------------------------------------------------------------------------------------------------*/
+     /* After changing this field, ensure a delay of 250 CLK_SPI0 clock cycles before changing CPUCKSEL    */
+     /* field in CLKSEL register or accessing the AHB18 bus.                                               */
+     /*----------------------------------------------------------------------------------------------------*/
+     ratio = 2 * READ_REG_FIELD(CLKDIV1, CLKDIV1_CLK4DIV) * clkDiv;
+
+     /* delay is according to ratio. */
+     CLK_Delay_Cycles(250 * ratio);
+
+     return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_GetFIUClockDiv                                                                     */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine config the FIU clock (according to the header )                           */
+/*---------------------------------------------------------------------------------------------------------*/
+UINT8 CLK_GetFIUClockDiv (UINT fiu)
+{
+     /*----------------------------------------------------------------------------------------------------*/
+     /* Defines the clock divide ratio from AHB to FIU0 clock.1                                            */
+     /*----------------------------------------------------------------------------------------------------*/
+     switch (fiu)
+     {
+        case FIU_MODULE_0:
+            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPI0CKDIV) + 1;
+        case FIU_MODULE_1:
+            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPI1CKDIV) + 1;
+        case FIU_MODULE_3:
+            return READ_REG_FIELD(CLKDIV1, CLKDIV1_AHB3CKDIV) + 1;
+        case FIU_MODULE_X:
+            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPIXCKDIV) + 1;
+        default:
+            return 0xFF;
+     }
+}
+
 #if defined (UART_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_ResetUART                                                                          */
@@ -1237,15 +1371,15 @@ void CLK_ResetAES (void)
 
 #if defined (MC_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_ResetMC                                                                            */
+/* Function:        CLK_ResetMC_async                                                                      */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine performs SW reset of MC                                                   */
+/*                  This routine performs async reset of MC (IPSRST)                                       */
 /*---------------------------------------------------------------------------------------------------------*/
-void CLK_ResetMC (void)
+void CLK_ResetMC_async (void)
 {
     HAL_PRINT("MC reset\n");
 
@@ -1256,6 +1390,35 @@ void CLK_ResetMC (void)
 
     /* Force re-training of DDR (because DDR module is reinitialized*/
     SET_REG_FIELD(INTCR2, INTCR2_MC_INIT, 0);
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CLK_ResetMC                                                                            */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine performs SW reset of MC                                                   */
+/*---------------------------------------------------------------------------------------------------------*/
+void CLK_ResetMC (void)
+{
+    UINT32 rcr_backup = REG_READ (SWRSTC3);
+    UINT32 rcr_backup_b = REG_READ (SWRSTC3B);
+
+    HAL_PRINT ("MC reset\n");
+
+    /* reset synchronously MC only */
+    REG_WRITE (SWRSTC3, 0x00000020);
+    REG_WRITE (SWRSTC3B, 0x00000000);
+
+    CLK_Delay_MicroSec (1000);
+    SET_REG_FIELD (SWRSTR, SWRSTR_SWRST3, 1);
+    CLK_Delay_MicroSec (1000);
+    SET_REG_FIELD (RESSR, RESSR_SWRST3, 1);
+
+    REG_WRITE (SWRSTC3, rcr_backup);
+    REG_WRITE (SWRSTC3B, rcr_backup_b);
 }
 #endif // #if defined (MC_MODULE_TYPE)
 
@@ -1851,8 +2014,8 @@ void CLK_ConfigurePCIClock (void)
     }
     else
     {
-        divider =  DIV_ROUND(CLK_GetPll1Freq(), 125000000);
-        SET_REG_FIELD(CLKSEL, CLKSEL_PCIGFXCKSEL,  CLKSEL_PCIGFXCKSEL_PLL1);
+        divider =  DIV_ROUND(CLK_GetPll0Freq(), 125000000);
+        SET_REG_FIELD(CLKSEL, CLKSEL_PCIGFXCKSEL,  CLKSEL_PCIGFXCKSEL_PLL0);
         CLK_Delay_MicroSec(200);
 
         SET_REG_FIELD(CLKDIV1, CLKDIV1_PCICKDIV,  CLKDIV1_PCICKDIV_DIV(divider));
@@ -2014,7 +2177,7 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
     /* PLLCON 1 possible values (notice that PLL1 has a divider /2, so OTDV1 is smaller in half                */
     /*---------------------------------------------------------------------------------------------------------*/
     if      ( mcFreq <= 300000000)      pllcon1_L = CLK_300MHZ_PLLCON1_REG_CFG       ;
-	else if ( mcFreq <= 500000000)      pllcon1_L = CLK_500MHZ_PLLCON1_REG_CFG       ;
+    else if ( mcFreq <= 500000000)      pllcon1_L = CLK_500MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 666000000)      pllcon1_L = CLK_666MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 700000000)      pllcon1_L = CLK_700MHZ_PLLCON1_REG_CFG       ;
     else if ( mcFreq <= 720000000)      pllcon1_L = CLK_720MHZ_PLLCON1_REG_CFG       ;
@@ -2040,11 +2203,11 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
     /* PLLCON 0 possible values (notice that PLL1 in Z2 has a divider /2, so OTDV1 is smaller in half      */
     /*---------------------------------------------------------------------------------------------------------*/
     if ( pll0_freq_tmp <= 125000000 )  pllcon0_L = CLK_125MHZ_PLLCON0_2_REG_CFG ;
-	else if ( pll0_freq_tmp <= 325000000 )  pllcon0_L = CLK_325MHZ_PLLCON0_2_REG_CFG ;
+    else if ( pll0_freq_tmp <= 325000000 )  pllcon0_L = CLK_325MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 333000000 )  pllcon0_L = CLK_333MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 500000000 )  pllcon0_L = CLK_500MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 600000000 )  pllcon0_L = CLK_600MHZ_PLLCON0_2_REG_CFG ;
-	else if ( pll0_freq_tmp <= 625000000 )  pllcon0_L = CLK_625MHZ_PLLCON0_2_REG_CFG ;
+    else if ( pll0_freq_tmp <= 625000000 )  pllcon0_L = CLK_625MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 666000000 )  pllcon0_L = CLK_666MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 700000000 )  pllcon0_L = CLK_700MHZ_PLLCON0_2_REG_CFG ;
     else if ( pll0_freq_tmp <= 720000000 )  pllcon0_L = CLK_720MHZ_PLLCON0_2_REG_CFG ;
@@ -2061,7 +2224,7 @@ DEFS_STATUS CLK_Configure_CPU_MC_Clock (UINT32 mcFreq, UINT32 cpuFreq, UINT32 pl
 
 
     if (( pllcon0_L == (REG_READ(PLLCON0) & 0x7FFFFFFF)) &&
-    	( pllcon1_L == (REG_READ(PLLCON1) & 0x7FFFFFFF)) &&
+        ( pllcon1_L == (REG_READ(PLLCON1) & 0x7FFFFFFF)) &&
         (pll0_freq == 0))
     {
         HAL_PRINT(KGRN "CLK: already set to requested values, no need to reset\n" KNRM);
@@ -2393,112 +2556,10 @@ DEFS_STATUS CLK_Verify_and_update_dividers (void)
     CLK_ConfigureSDClock(SD2_DEV);
 
 
-	// change CLKDIV4_RGREFDIV_DIV  125MHz
+    // change CLKDIV4_RGREFDIV_DIV  125MHz
 
     return DEFS_STATUS_OK;
 }
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_ConfigureFIUClock                                                                  */
-/*                                                                                                         */
-/* Parameters:      fiu - module (0, 3, X).                                                                */
-/*                  clkDiv - actual number to write to reg. The value is clkdDiv + 1)                      */
-/* Returns:         DEFS_STATUS                                                                            */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                  This routine config the FIU clock (according to the header )                           */
-/*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS CLK_ConfigureFIUClock (UINT fiu, UINT8 clkDiv)
-{
-     /*----------------------------------------------------------------------------------------------------*/
-     /* Defines the clock divide ratio from AHB to FIU0 clock.                                             */
-     /*----------------------------------------------------------------------------------------------------*/
-     UINT32  ratio = 0;
-
-     /*----------------------------------------------------------------------------------------------------*/
-     /* Ignored if FIU_Clk_Divider is either 0 or 0FFh.                                                    */
-     /*----------------------------------------------------------------------------------------------------*/
-     if (fiu != FIU_MODULE_1)
-     {
-          /*----------------------------------------------------------------------------------------------------*/
-          /* Ignored if FIU_Clk_Divider is either 0 or 0FFh.                                                    */
-          /*----------------------------------------------------------------------------------------------------*/
-          if ( (clkDiv == 0) || (clkDiv > 0x20))
-          {
-               return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
-          }
-     }
-     else  /* FIU1 */
-     {
-          if (clkDiv == 0) 
-          {
-               return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
-          }
-     }
-
-     /* set SPIn clk div */
-     switch (fiu)
-     {
-        case FIU_MODULE_0:
-            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPI0CKDIV,  (CLKDIV3_SPI0CKDIV_DIV(clkDiv) & 0x1F));
-            break;
-        case FIU_MODULE_1:
-            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPI1CKDIV,  (CLKDIV3_SPI1CKDIV_DIV(clkDiv) & 0xFF));
-            break;
-        case FIU_MODULE_2:
-            // fallthrough
-        case FIU_MODULE_3:
-            SET_REG_FIELD(CLKDIV1, CLKDIV1_AHB3CKDIV, (CLKDIV1_AHB3CKDIV_DIV(clkDiv)  & 0x1F));
-            break;
-        case FIU_MODULE_X:
-            SET_REG_FIELD(CLKDIV3, CLKDIV3_SPIXCKDIV,  (CLKDIV3_SPIXCKDIV_DIV(clkDiv) & 0x1F));
-            break;
-        default:
-            return DEFS_STATUS_INVALID_PARAMETER;
-     }
-
-     /*----------------------------------------------------------------------------------------------------*/
-     /* After changing this field, ensure a delay of 250 CLK_SPI0 clock cycles before changing CPUCKSEL    */
-     /* field in CLKSEL register or accessing the AHB18 bus.                                               */
-     /*----------------------------------------------------------------------------------------------------*/
-     ratio = 2 * READ_REG_FIELD(CLKDIV1, CLKDIV1_CLK4DIV) * clkDiv;
-
-     /* delay is according to ratio. */
-     CLK_Delay_Cycles(250 * ratio);
-
-     return DEFS_STATUS_OK;
-}
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        CLK_GetFIUClockDiv                                                                     */
-/*                                                                                                         */
-/* Parameters:      none                                                                                   */
-/* Returns:         none                                                                                   */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                  This routine config the FIU clock (according to the header )                           */
-/*---------------------------------------------------------------------------------------------------------*/
-UINT8 CLK_GetFIUClockDiv (UINT fiu)
-{
-     /*----------------------------------------------------------------------------------------------------*/
-     /* Defines the clock divide ratio from AHB to FIU0 clock.1                                            */
-     /*----------------------------------------------------------------------------------------------------*/
-     switch (fiu)
-     {
-        case FIU_MODULE_0:
-            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPI0CKDIV) + 1;
-        case FIU_MODULE_1:
-            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPI1CKDIV) + 1;
-        case FIU_MODULE_3:
-            return READ_REG_FIELD(CLKDIV1, CLKDIV1_AHB3CKDIV) + 1;
-        case FIU_MODULE_X:
-            return READ_REG_FIELD(CLKDIV3, CLKDIV3_SPIXCKDIV) + 1;
-        default:
-            return 0xFF;
-     }
-}
-
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_GetClkoutFreq                                                                      */
@@ -2682,13 +2743,13 @@ UINT32 CLK_Get_RC_Phy_and_I3C_Clock (void)
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        CLK_GetUartClock                                                                       */
 /*                                                                                                         */
-/* Parameters:      none                                                                                   */
+/* Parameters:      devNum - UART nubmer.                                                                  */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                 This routine returns configuration of UART clock                                        */
+/*                 This routine returns configuration of UART clock. UARTs 0-3 share DIV1. 4-6 use DIV2    */
 /*---------------------------------------------------------------------------------------------------------*/
-UINT32 CLK_GetUartClock (void)
+UINT32 CLK_GetUartClock (UART_DEV_T devNum)
 {
     UINT32 source = 0;
     UINT32 sel =  READ_REG_FIELD(CLKSEL, CLKSEL_UARTCKSEL);
@@ -2712,7 +2773,14 @@ UINT32 CLK_GetUartClock (void)
         break;
     }
 
-    return source / ( READ_REG_FIELD(CLKDIV1, CLKDIV1_UARTDIV1) + 1);
+    if (devNum <= UART3_DEV)
+    {
+        return source / ( READ_REG_FIELD(CLKDIV1, CLKDIV1_UARTDIV1) + 1);
+    }
+    else
+    {
+        return source / ( READ_REG_FIELD(CLKDIV3, CLKDIV3_UARTDIV2) + 1);
+    }
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

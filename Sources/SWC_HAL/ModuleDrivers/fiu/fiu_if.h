@@ -281,9 +281,25 @@ typedef enum FIU_DIRECTION_MODE_T
 #define FIU_MASTER_INT_GRANT_ASR              0x04
 
 typedef void (*FIU_SLAVE_INT_HANDLER)(UINT8 status);
-
 #endif // FIU_CAPABILITY_MASTER
 
+#ifdef FIU_CAPABILITY_PROTECTION
+#ifndef SW_HANDLER_T
+typedef void (*SW_HANDLER_T)(UINT16 int_num);
+#endif
+/*---------------------------------------------------------------------------------------------------------*/
+/*                                      FIU protection settings structure.                                 */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef struct FIU_PROTECTION_SETTING_tag
+{
+    UINT cs_enable[FIU_NUM_OF_DEVICES];
+    UINT cs_value[FIU_NUM_OF_DEVICES];
+    UINT io2_enable;
+    UINT io2_value;
+    SW_HANDLER_T *handler;
+    BOOLEAN otherCommandsAllowed;
+} FIU_PROTECTION_SETTING_T;
+#endif // FIU_CAPABILITY_PROTECTION
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -409,6 +425,7 @@ void FIU_ConfigFlashSize (FIU_MODULE_T fiu_module, FIU_DEV_SIZE_T flash_size);
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  fiu_module  - fiu module number. Value is ignored if only one FIU module on chip       */
+/*                  chipSelect  - Select the CS on the given flash device.                                 */
 /*                  cmd         - SPI flash command byte                                                   */
 /*                  enable      - Boolean indicating whether to enable or disable this feature.            */
 /*                                                                                                         */
@@ -419,13 +436,14 @@ void FIU_ConfigFlashSize (FIU_MODULE_T fiu_module, FIU_DEV_SIZE_T flash_size);
 /*                  If "enable" == TRUE , any FIU read transaction will use the "cmd" data byte as the     */
 /*                  SPI read transaction command byte                                                      */
 /*---------------------------------------------------------------------------------------------------------*/
-void FIU_DirectRead_SetCommadCode (FIU_MODULE_T fiu_module, UINT8 cmd, BOOLEAN enable);
+void FIU_DirectRead_SetCommadCode (FIU_MODULE_T fiu_module, FIU_CS_T chipSelect, UINT8 cmd, BOOLEAN enable);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        FIU_DirectWrite_SetCommadCode                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  fiu_module  - fiu module number.                                                       */
+/*                  chipSelect  - Select the CS on the given flash device.                                 */
 /*                  cmd         - SPI flash command byte                                                   */
 /*                  enable      - Boolean indicating whether to enable or disable this feature.            */
 /*                                                                                                         */
@@ -436,7 +454,7 @@ void FIU_DirectRead_SetCommadCode (FIU_MODULE_T fiu_module, UINT8 cmd, BOOLEAN e
 /*                  If "enable" == TRUE , any FIU direct write transaction will use the "cmd" data byte as */
 /*                  the SPI write transaction command byte                                                 */
 /*---------------------------------------------------------------------------------------------------------*/
-void FIU_DirectWrite_SetCommadCode (FIU_MODULE_T fiu_module, UINT8 cmd, BOOLEAN enable);
+void FIU_DirectWrite_SetCommadCode (FIU_MODULE_T fiu_module, FIU_CS_T chipSelect, UINT8 cmd, BOOLEAN enable);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        FIU_ConfigReadMode                                                                     */
@@ -775,10 +793,10 @@ DEFS_STATUS FIU_UMA_ioctl (  FIU_MODULE_T            fiu_module,
                             UINT                    cmd_bits,
                             UINT                    addr_bits,
                             UINT                    data_wr_bits,
-                            UINT                    data_rd_bits,                           
+                            UINT                    data_rd_bits,
                             UINT32                  timeout,
                             UINT                    dummy_bytes);
-                            
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        FIU_PageWrite                                                                          */
 /*                                                                                                         */
@@ -1264,6 +1282,62 @@ void FIU_SlaveRegisterCallback (FIU_SLAVE_INT_HANDLER fiuMasterCallback);
 /*---------------------------------------------------------------------------------------------------------*/
 void FIU_SlaveUMABlock (BOOLEAN block);
 #endif
+
+#ifdef FIU_CAPABILITY_PROTECTION
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_SetProtectionRegion                                                                */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  fiu -  FIU module                                                                      */
+/*                  index -  region index, up to 6                                                         */
+/*                  startAddr - start addresses of range.                                                  */
+/*                  endAddr - end addresses off range.                                                     */
+/*                  csUse - 0 invalid, 1 CS0, 2 CS1, 3 - both CS.                                          */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS                                                                            */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sets a region in the flash protection.                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_SetProtectionRegion (FIU_MODULE_T fiu, UINT index, UINT32 startAddr, UINT32 endAddr, UINT csUse);
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_SetProtectionCommand                                                               */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  addrBits - 1/2/4 bits                                                                  */
+/*                  addrBytes - 4/3 bytes. For commands relevant for entire chip field is don't care.      */
+/*                  cmdBits - 1/2/4                                                                        */
+/*                  command - command byte                                                                 */
+/*                  com_index - up to 40 commands are supported.                                           */
+/*                  fiu -  FIU module                                                                      */
+/*                  range_ind - index of range where cmd is blocked. 6 - lock of entire flash. 7 - always OK */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sets a command to enable or block.                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_SetProtectionCommand (FIU_MODULE_T fiu, UINT com_index, UINT range_ind, UINT8 command,
+                                      UINT addrBytes, UINT addrBits, UINT cmdBits);
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_ConfigProtection                                                                   */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  bEnable - enable\disable. (disable only if not previously locked)                      */
+/*                  devSize - size of flash                                                                */
+/*                  fiu -  fiu module                                                                      */
+/*                  lock - lock the flash protection.                                                      */
+/*                  settings - handler for various parameters required for flash protecton.                */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure flas protection.                                                */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_ConfigProtection (FIU_MODULE_T fiu, BOOLEAN lock, BOOLEAN bEnable, UINT32 devSize, FIU_PROTECTION_SETTING_T *settings);
+#endif // FIU_CAPABILITY_PROTECTION
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        FIU_PrintRegs                                                                          */

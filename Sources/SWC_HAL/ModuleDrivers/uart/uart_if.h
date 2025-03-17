@@ -72,6 +72,7 @@ typedef enum
     UART_BAUDRATE_230400    = 230400,
     UART_BAUDRATE_380400    = 380400,
     UART_BAUDRATE_460800    = 460800,
+    UART_BAUDRATE_750000    = 750000,
 } UART_BAUDRATE_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -300,14 +301,13 @@ DEFS_STATUS UART_SetBitsPerChar (UART_DEV_T devNum, UINT32 bits);
 /* Parameters:                                                                                             */
 /*                  baudrate -                                                                             */
 /*                  devNum -                                                                               */
-/*                  uartDiv                                                                                */
 /*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine sets new baudrate                                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS UART_SetBaudrate(UART_DEV_T devNum, UART_BAUDRATE_T baudrate);
+DEFS_STATUS UART_SetBaudrate (UART_DEV_T devNum, UART_BAUDRATE_T baudrate);
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        UART_SetDivisor                                                                        */
@@ -321,7 +321,7 @@ DEFS_STATUS UART_SetBaudrate(UART_DEV_T devNum, UART_BAUDRATE_T baudrate);
 /* Description:                                                                                            */
 /*                  This routine sets new baudrate                                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS UART_SetDivisor(UART_DEV_T devNum, INT32 divisor);
+DEFS_STATUS UART_SetDivisor (UART_DEV_T devNum, INT32 divisor);
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -335,7 +335,7 @@ DEFS_STATUS UART_SetDivisor(UART_DEV_T devNum, INT32 divisor);
 /* Description:                                                                                            */
 /*                  This routine gets the baudrate                                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-UINT32 UART_GetBaudrate(UART_DEV_T devNum);
+UINT32 UART_GetBaudrate (UART_DEV_T devNum);
 
 
 /*---------------------------------------------------------------------------------------------------------*/

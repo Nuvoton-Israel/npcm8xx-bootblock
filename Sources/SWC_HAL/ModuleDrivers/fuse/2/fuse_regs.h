@@ -127,6 +127,10 @@
 #define FUSTRAP1_OHINDDIS                     14,   1               /* 14 OHINDDIS (Host Independence Disable) */
 #define FUSTRAP1_OCPU23STOP1                  12,   1               /* 12 OCPU23STOP1 (CPU2 and CPU 3 Stop 1) */
 #define FUSTRAP1_OCPU23STOP2                  11,   1               /* 11 OCPU23STOP2 (CPU2 and CPU3 Stop 2) */
+#define FUSTRAP1_oLMS_AUTH_EN                 10,   1               /* 10 oLMS_AUTH_EN whether LMS is enabled */
+#define FUSTRAP1_oFAST_UART                   9 ,   1               /* 9  oFAST_UART whether which uart to choose, fast (750Kb\sec) or normal (115.2Kb/sec) */
+#define FUSTRAP1_oCOP_NO_RESET                8 ,   1               /* 8  oCOP_NO_RESET when set COP will not reset with TIP while not compromizing secrets */
+#define FUSTRAP1_oCOP_NO_RESET_DIS            7 ,   1               /* 7  permanently disable the oCOP_NO_RESET option selection */
 #define FUSTRAP1_CKFRQ                        0,    2               /* 0-1 CKFRQ (FUSTRAP2-1: Clock Frequency) */
 
 /***********************************************************************************************************/

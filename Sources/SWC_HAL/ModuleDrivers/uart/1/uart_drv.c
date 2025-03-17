@@ -109,16 +109,6 @@ DEFS_STATUS UART_Init (UART_DEV_T devNum, UART_REDIRECTION_T mode, UART_BAUDRATE
     REG_WRITE(LCR(devNum), 0);            // prepare to Init UART
     REG_WRITE(IER(devNum), 0x0);          // Disable all UART interrupt
 
-    if (baudRate == UART_BAUDRATE_115200)
-    {
-        ret += CLK_ConfigureUartClock(EXT_CLOCK_FREQUENCY_HZ, 7);
-    }
-    else
-    {
-        ret += CLK_ConfigureUartClock(30 * _1MHz_, 16);
-    }
-
-
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set baudrate                                                                                        */
     /*-----------------------------------------------------------------------------------------------------*/
@@ -571,7 +561,6 @@ DEFS_STATUS UART_SetBaudrate(UART_DEV_T devNum, UART_BAUDRATE_T baudrate)
 {
     INT32       divisor     = 0;
     UINT32      uart_clock  = 0;
-    DEFS_STATUS  ret         = DEFS_STATUS_OK;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Parameters check                                                                                    */
@@ -581,7 +570,7 @@ DEFS_STATUS UART_SetBaudrate(UART_DEV_T devNum, UART_BAUDRATE_T baudrate)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Get UART clock                                                                                      */
     /*-----------------------------------------------------------------------------------------------------*/
-    uart_clock = CLK_GetUartClock();
+    uart_clock = CLK_GetUartClock(devNum);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Computing the divisor for the given baudrate.                                                       */
@@ -667,7 +656,7 @@ UINT32 UART_GetBaudrate(UART_DEV_T devNum)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Configuring UART clock                                                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    uart_clock = CLK_GetUartClock();
+    uart_clock = CLK_GetUartClock(devNum);
 
     SET_REG_FIELD(LCR(devNum), LCR_DLAB, 1);    // prepare to access Divisor
     divisor = (UINT32)(REG_READ(DLL(devNum)) & 0x000000FF) | (((UINT32)(REG_READ(DLM(devNum)) & 0x000000FF)) << 8);
@@ -886,8 +875,7 @@ void UART_PrintRegs (void)
 /*                  This routine prints the module instance registers                                      */
 /*lint -e{715}      Suppress 'devNum' not referenced                                                       */
 /*---------------------------------------------------------------------------------------------------------*/
-#ifdef HAL_PRINT_CAPABILITY
-void UART_PrintModuleRegs (UART_DEV_T devNum)
+void UART_PrintModuleRegs (_UNUSED_ UART_DEV_T devNum)
 {
     ASSERT(devNum < UART_NUM_OF_MODULES);
 
@@ -906,7 +894,6 @@ void UART_PrintModuleRegs (UART_DEV_T devNum)
 
     HAL_PRINT("\n");
 }
-#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        UART_PrintVersion                                                                      */

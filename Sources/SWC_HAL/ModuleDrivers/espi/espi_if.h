@@ -95,6 +95,9 @@ typedef enum
     ESPI_INT_PC_BM_BURST_MODE_TRANS_ERR     = 22,
     ESPI_INT_PC_BM_BURST_MODE_TRANS_DONE    = 23,
     ESPI_INT_FLASH_FLASH_NP_AVAIL_SENT      = 24,
+#ifdef ESPI_CAPABILITY_TAF
+    ESPI_INT_FLASH_TAF_REQ_HANDELED         = 25,
+#endif // ESPI_CAPABILITY_TAF
 }ESPI_INT_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -246,7 +249,11 @@ typedef enum
     ESPI_PC_BM_REQ_READ_MANUAL,
     ESPI_PC_BM_REQ_READ_AUTO,
     ESPI_PC_BM_REQ_READ_DMA,
-    ESPI_PC_BM_REQ_WRITE,
+    ESPI_PC_BM_REQ_WRITE_MANUAL,
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    ESPI_PC_BM_REQ_WRITE_AUTO,
+    ESPI_PC_BM_REQ_WRITE_DMA,
+#endif
     ESPI_PC_BM_REQ_MSG_LTR, //Do not change order, define extra message types after this definition
 } ESPI_PC_BM_REQ_T;
 
@@ -470,6 +477,11 @@ typedef void (*ESPI_RST_T)(void);
 /*---------------------------------------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Flash General Definitions                                                                               */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASH_PROGRAM_PAGE_DEFAULT_SIZE    256
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Flash user events                                                                                       */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
@@ -496,8 +508,8 @@ typedef enum
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_FLASH_ACCESS_MASTER_ATTCH,     //(default)
-    ESPI_FLASH_ACCESS_SLAVE_ATTCH,
+    ESPI_FLASH_ACCESS_CONTROLLER_ATTCH,     //(default)
+    ESPI_FLASH_ACCESS_TARGET_ATTCH,
 } ESPI_FLASH_ACCESS_MODE;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -567,36 +579,32 @@ typedef enum
     ESPI_FLASH_DMA_THRESHOLD_16B     = 3,
 } ESPI_FLASH_DMA_THRESHOLD_SIZE;
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 /*---------------------------------------------------------------------------------------------------------*/
 /* Flash Access Channel Maximum Read Request Size Supported                                                */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_FLASH_SAF_MAX_READ_REQ_64B            = 0,
-    ESPI_FLASH_SAF_MAX_READ_REQ_64B_DEF        = 1, //(default)
-    ESPI_FLASH_SAF_MAX_READ_REQ_128B           = 2,
-    ESPI_FLASH_SAF_MAX_READ_REQ_256B           = 3,
-    ESPI_FLASH_SAF_MAX_READ_REQ_512B           = 4,
-    ESPI_FLASH_SAF_MAX_READ_REQ_1024B          = 5,
-    ESPI_FLASH_SAF_MAX_READ_REQ_2048B          = 6,
-    ESPI_FLASH_SAF_MAX_READ_REQ_4096B          = 7,
-} ESPI_FLASH_SAF_MAX_READ_REQ;
+    ESPI_FLASH_TAF_MAX_READ_REQ_64B            = 0,
+    ESPI_FLASH_TAF_MAX_READ_REQ_64B_DEF        = 1, //(default)
+    ESPI_FLASH_TAF_MAX_READ_REQ_128B           = 2,
+    ESPI_FLASH_TAF_MAX_READ_REQ_256B           = 3,
+    ESPI_FLASH_TAF_MAX_READ_REQ_512B           = 4,
+    ESPI_FLASH_TAF_MAX_READ_REQ_1024B          = 5,
+    ESPI_FLASH_TAF_MAX_READ_REQ_2048B          = 6,
+    ESPI_FLASH_TAF_MAX_READ_REQ_4096B          = 7,
+} ESPI_FLASH_TAF_MAX_READ_REQ;
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Target Flash Erase Block Size For Master’s Regions                                                      */
+/* Target Flash Erase Block Size For Masters Regions                                                       */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_1KB        = 0,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_2KB        = 1,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_4KB        = 2, //(default)
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_8KB        = 3,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_16KB       = 4,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_32KB       = 5,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_64KB       = 6,
-    ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_128KB      = 7,
-} ESPI_FLASH_SAF_ERASE_BLOCK_SIZE;
+    ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_4KB        = 0x4, //(default)
+    ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_32KB       = 0x20,
+    ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_64KB       = 0x40,
+    ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_128KB      = 0x80,
+} ESPI_FLASH_TAF_ERASE_BLOCK_SIZE;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Flash Sharing Capability Support                                                                        */
@@ -605,16 +613,19 @@ typedef enum
 {
     ESPI_FLASH_SHARING_CAP_SUPP_MAF_DEF        = 0, //(default)
     ESPI_FLASH_SHARING_CAP_SUPP_MAF            = 1,
-    ESPI_FLASH_SHARING_CAP_SUPP_SAF            = 2,
-    ESPI_FLASH_SHARING_CAP_SUPP_SAF_AND_MAF    = 3,
+    ESPI_FLASH_SHARING_CAP_SUPP_TAF            = 2,
+    ESPI_FLASH_SHARING_CAP_SUPP_TAF_AND_MAF    = 3,
 } ESPI_FLASH_SHARING_CAP_SUPP;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* MAX Target Replay Protected Monotonic Counters(RPMC) Supported                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_SAF_MAX_TAR_RPMC_SUPP        64
+#define ESPI_FLASH_TAF_MAX_TAR_RPMC_SUPP        64
 
-#endif // ESPI_CAPABILITY_SAF
+#define ESPI_FLASH_TAF_MAX_RPMC_DEV_SUPP        4
+#define ESPI_FLASH_TAF_MAX_RPMC_COUNTER         16
+
+#endif // ESPI_CAPABILITY_TAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* FLASH user handler                                                                                      */
@@ -868,19 +879,25 @@ void                ESPI_FLASH_ResetReqTrans        (void);
 DEFS_STATUS         ESPI_FLASH_GetStatus            (void);
 BOOLEAN             ESPI_FLASH_TransmitQueueFull    (void);
 
-#ifdef ESPI_CAPABILITY_SAF
-DEFS_STATUS         ESPI_FLASH_SAF_Config           (ESPI_FLASH_SAF_MAX_READ_REQ maxReadSizeSupp,
+#ifdef ESPI_CAPABILITY_TAF
+DEFS_STATUS         ESPI_FLASH_TAF_Config           (ESPI_FLASH_TAF_MAX_READ_REQ maxReadSizeSupp,
                                                      ESPI_FLASH_SHARING_CAP_SUPP flashSharingCapSupp,
-                                                     ESPI_FLASH_SAF_ERASE_BLOCK_SIZE eraseBlockSize,
-                                                     UINT8 targetRPMCsupp);
-DEFS_STATUS         ESPI_FLASH_SAF_SetRWprotect     (UINT8 index, UINT16 baseAddr, UINT16 highAddr, BOOLEAN readProt,
-                                                     BOOLEAN writeProt, UINT16 readTagOvr, UINT16 writeTagOvr);
-DEFS_STATUS         ESPI_FLASH_SAF_ClearRWprotect   (UINT8 index);
-BOOLEAN             ESPI_FLASH_SAF_IsPendingReq     (void);
-void                ESPI_FLASH_SAF_HandleReq        (void);
-DEFS_STATUS         ESPI_FLASH_SAF_GetStatus        (UINT8* status);
-BOOLEAN             ESPI_FLASH_SAF_IsPendingRes     (void);
-DEFS_STATUS         ESPI_FLASH_SAF_SendRes          (void);
+                                                     UINT8 eraseBlockSize,
+                                                     UINT8 targetRPMCsupp,
+                                                     UINT8 RPMCdevsupp);
+DEFS_STATUS         ESPI_FLASH_TAF_EnableAutoRead   (BOOLEAN autoRead);
+DEFS_STATUS         ESPI_FLASH_TAF_SetRpmcOpcode    (UINT8 targetRPMC, UINT8 rpmc_op, UINT8 rpm_cntr);
+DEFS_STATUS         ESPI_FLASH_TAF_SetFlashBase     (UINT32 baseAddr, BOOLEAN Lock);
+DEFS_STATUS         ESPI_FLASH_TAF_RemapConfig      (UINT32 flash_offs, UINT32 dst_base, UINT32 win_szie, BOOLEAN Lock);
+DEFS_STATUS         ESPI_FLASH_TAF_SetRWprotect     (UINT8 index, UINT32 baseAddr, UINT32 highAddr, BOOLEAN readProt,
+                                                     BOOLEAN writeProt, UINT16 readTagOvr, UINT16 writeTagOvr, BOOLEAN protLock);
+DEFS_STATUS         ESPI_FLASH_TAF_ClearRWprotect   (UINT8 index);
+void                ESPI_FLASH_TAF_HandleReq        (void);
+DEFS_STATUS         ESPI_FLASH_TAF_GetStatus        (void);
+BOOLEAN             ESPI_FLASH_TAF_IsPendingRes     (void);
+DEFS_STATUS         ESPI_FLASH_TAF_SendRes          (void);
+DEFS_STATUS         ESPI_FLASH_TAF_PreventHostAccess(void);
+DEFS_STATUS         ESPI_FLASH_TAF_ReenableHostAccess(void);
 #endif // ESPI_CAPABILITY_SAF
 
 /*---------------------------------------------------------------------------------------------------------*/

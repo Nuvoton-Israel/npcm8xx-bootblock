@@ -293,6 +293,9 @@
 #define MFSEL7_TPGPIO1SEL                     1,    1               /* 1 TPGPIO1SEL (TIP GPIO1 Select) */
 #define MFSEL7_TPGPIO0SEL                     0,    1               /* 0 TPGPIO0SEL (TIP GPIO0 Select) */
 
+#define MFSEL7_TPGPIOSEL_A(n)                   (n),  1           /* range 0-7: MFSEL7_TPGPIO0SEL, MFSEL7_TPGPIO1SEL, ... MFSEL7_TPGPIO7SEL */
+#define MFSEL7_TPGPIOSEL_B(n)                   ((n) + 8),  1     /* range 0-2: MFSEL7_TPGPIO0BSEL, MFSEL7_TPGPIO1BSEL, MFSEL7_TPGPIO2BSEL */
+
 /***********************************************************************************************************/
 /*    Multiple Function Selection Lock Registers 1-7 (MFSEL_LK1-7)                                         */
 /***********************************************************************************************************/
@@ -1132,10 +1135,223 @@
 #define SCRPAD_10_41_SP                       0,    32               /* 0-31 SP (Scratch Pad) */
 
 /***********************************************************************************************************/
-/*    Scratch Pad Register 42-73 (SCRPAD_42-73)                                                            */
+/*    Protection Module Control Registers (MCRn_n)                                                          */
 /***********************************************************************************************************/
-#define SCRPAD_42_73(n)                      (GCR_BASE_ADDR + (n == 0 ? 0xE80 : (n == 1 ? 0xE84 : (n == 2 ? 0xE88 : (n == 3 ? 0xE8C : (n == 4 ? 0xE90 : (n == 5 ? 0xE94 : (n == 6 ? 0xE98 : (n == 7 ? 0xE9C : (n == 8 ? 0xEA0 : (n == 9 ? 0xEA4 : (n == 10 ? 0xEA8 : (n == 11 ? 0xEAC : (n == 12 ? 0xEB0 : (n == 13 ? 0xEB4 : (n == 14 ? 0xEB8 : (n == 15 ? 0xEBC : (n == 16 ? 0xEC0 : (n == 17 ? 0xEC4 : (n == 18 ? 0xEC8 : (n == 19 ? 0xECC : (n == 20 ? 0xED0 : (n == 21 ? 0xED54 : (n == 22 ? 0xED8 : (n == 23 ? 0xEDC : (n == 24 ? 0xEE0 : (n == 25 ? 0xEE4 : (n == 26 ? 0xEE8 : (n == 27 ? 0xEE6C : (n == 28 ? 0xEF0 : (n == 29 ? 0xEF4 : (n == 30 ? 0xEF8 : 0xEFC)))))))))))))))))))))))))))))))),  MEM,    32         /* Offset: E80h-EFCh */
-#define SCRPAD_42_73_SP                       0,    32               /* 0-31 SP (Scratch Pad) */
+#define MCRn(n)                            (GCR_BASE_ADDR + (0x800 + (4 * n))),  MEM,    32         /* Offset: E00h-E7Ch */
+#define MCRn_LK_INTALOC                       26,    1               /* R/W1S LK_INTALOC (Lock Bit 16-18 of this register). This bit should be written as 1 with the correct value for bits 16-18.  */
+#define MCRn_LK_TZONE                         25,    1               /* R/W1S LK_TZONE (Lock Bit 15 of this register). This bit should be written as 1 with the correct value for bit 15. */
+#define MCRn_LK_MASTERS                       24,    1               /* R/W1S LK_MASTERS (Lock Bits 0-14 of this register). This bit should be written as 1 with the correct value for bits 0-14.  */
+#define MCRn_S_INT_ALOC                       16,    3               /* R/W   S_INT_ALOC (Set Interrupt Allocation). Defined the interrupt signal destination for the module protected by this register. */
+#define MCRn_MDSP_TZONE                       15,    1               /* R/W   MDSP_TZONE (Master Disable Slave Protection on BMC). Defines if a Slave (Address range of MCRn_XXX register) belongs to a Secure area (TrustZone) */
+#define MCRn_MDSP_ESPI                        12,    1               /* R/W   MDSP_ESPI (Master Disable Slave Protection on ESPI). When set, disables access of ESPI module to protected range.  */
+#define MCRn_MDSP_SHM                         11,    1               /* R/W   MDSP_SHM (Master Disable Slave Protection on SHM). When set, disables access of SHM to protected range.  */
+#define MCRn_MDSP_DEBUG                       10,    1               /* R/W   MDSP_DEBUG (Master Disable Slave Protection on DEBUG). When set, disables access of ARM Debug port to protected range. . */
+#define MCRn_MDSP_ETH                         9,     1               /* R/W   MDSP_ETH (Master Disable Slave Protection on GMAC Ethernet controllers). When set, disables access of Ethernet controllers to protected range. . */
+#define MCRn_MDSP_SDHC                        8,     1               /* R/W   MDSP_SDHC (Master Disable Slave Protection on SDHC). When set, disables access of SDHC2 eMMC Controller to protected range. . */
+#define MCRn_MDSP_USBH                        7,     1               /* R/W   MDSP_USBH (Master Disable Slave Protection on USB Hosts). When set, disables access of USB hosts to protected range. . */
+#define MCRn_MDSP_USBD                        6,     1               /* R/W   MDSP_USBD (Master Disable Slave Protection on USB Devices). When set, disables access of USB devices to protected range.  */
+#define MCRn_MDSP_VDMA                        5,     1               /* R/W   MDSP_VDMA (Master Disable Slave Protection on VDMA). When set, disables access of VDMA to protected range.  */
+#define MCRn_MDSP_GDMA                        4,     1               /* R/W   MDSP_GDMA (Master Disable Slave Protection on GDMA). When set, disables access of GDMA to protected range.  */
+#define MCRn_MDSP_TIP                         2,     1               /* R/W   MDSP_TIP (Master Disable Slave Protection on TIP). When set, disables access of TIP to protected range.  */
+#define MCRn_MDSP_COP1                        1,     1               /* R/W   MDSP_COP1 (Master Disable Slave Protection on COP). When set, disables access of COP to protected range. . */
+#define MCRn_MDSP_BMC                         0,     1               /* R/W   MDSP_BMC (Master Disable Slave Protection on BMC). When set, disables access of BMC CPU to protected range. . */
+
+#define MCR_UART0                       0  // UART0 registers, offset 0x000 protects 0xF0000000-0xF0000FFF
+#define MCR_UART1                       1  // UART1 registers, offset 0x004 protects 0xF0001000-0xF0001FFF
+#define MCR_UART2                       2  // UART2 registers, offset 0x008 protects 0xF0002000-0xF0002FFF
+#define MCR_UART3                       3  // UART3 registers, offset 0x00C protects 0xF0003000-0xF0003FFF
+#define MCR_UART4                       4  // UART4 registers, offset 0x010 protects 0xF0004000-0xF0004FFF
+#define MCR_UART5                       5  // UART5 registers, offset 0x014 protects 0xF0005000-0xF0005FFF
+#define MCR_UART6                       6  // UART6 registers, offset 0x018 protects 0xF0006000-0xF0006FFF
+#define MCR_KCS                         7  // KCS registers (includes KBCI and BPCF), offset 0x01C protects 0xF0007000-0xF0007FFF
+#define MCR_TIMER_0                     8  // Timer Module 0 registers, offset 0x020 protects 0xF0008000-0xF0008FFF
+#define MCR_TIMER_0_WATCHDOG            9  // Timer Module 0 Watchdog interrupt, offset 0x024 bits 0-15 not used
+#define MCR_TIMER_1                    10  // Timer Module 1 registers, offset 0x028 protects 0xF0009000-0xF0009FFF
+#define MCR_TIMER_1_WATCHDOG           11  // Timer Module 1 Watchdog interrupt, offset 0x02C bits 0-15 not used
+#define MCR_TIMER_2                    12  // Timer Module 2 registers, offset 0x030 protects 0xF000A000-0xF000AFFF
+#define MCR_TIMER_2_WATCHDOG           13  // Timer Module 2 Watchdog interrupt, offset 0x034 bits 0-15 not used
+#define MCR_RNG                        14  // RNG, offset 0x038 protects 0xF000B000-0xF000BFFF
+#define MCR_ADC                        15  // ADC registers, offset 0x03C protects 0xF000C000-0xF000CFFF
+#define MCR_WATCHDOG                   16  // Full System Watchdog registers, offset 0x040 protects 0xF000F000-0xF000FFFF
+#define MCR_BLOCK_TRANSFER_1           17  // Block Transfer 1, offset 0x044 protects 0xF0030000-0xF0030FFF
+#define MCR_BLOCK_TRANSFER_2           18  // Block Transfer 2 Place holder, offset 0x048 protects 0xF0031000-0xF0031FFF
+#define MCR_GRAPHICS_CORE              19  // Graphics Core information registers, offset 0x04C bits 0-15 not used protects 0xF000E000-0xF000EFFF
+#define MCR_GPIO0                      20  // GPIO0 module registers, offset 0x050 protects 0xF0010000-0xF0010FFF
+#define MCR_GPIO1                      21  // GPIO1 module registers, offset 0x054 protects 0xF0011000-0xF0011FFF
+#define MCR_GPIO2                      22  // GPIO2 module registers, offset 0x058 protects 0xF0012000-0xF0012FFF
+#define MCR_GPIO3                      23  // GPIO3 module registers, offset 0x05C protects 0xF0013000-0xF0013FFF
+#define MCR_GPIO4                      24  // GPIO4 module registers, offset 0x060 protects 0xF0014000-0xF0014FFF
+#define MCR_GPIO5                      25  // GPIO5 module registers, offset 0x064 protects 0xF0015000-0xF0015FFF
+#define MCR_GPIO6                      26  // GPIO6 module registers, offset 0x068 protects 0xF0016000-0xF0016FFF
+#define MCR_GPIO7                      27  // GPIO7 module registers, offset 0x06C protects 0xF0017000-0xF0017FFF
+#define MCR_GPIO8                      28  // GPIO8 Module Register Place holder, offset 0x070 protects 0xF0018000-0xF0018FFF
+#define MCR_GPIO9                      29  // GPIO9 Module registers Place holder, offset 0x074 protects 0xF0019000-0xF0019FFF
+#define MCR_UART7                      30  // UART7 Place holder, offset 0x078 protects 0xF0020000-0xF0020FFF
+#define MCR_UART8                      31  // UART8 Place holder, offset 0x07C protects 0xF0021000-0xF0021FFF
+#define MCR_UART9                      32  // UART9 Place holder, offset 0x080 protects 0xF0022000-0xF0022FFF
+#define MCR_UART10                     33  // UART10 Place holder, offset 0x084 protects 0xF0023000-0xF0023FFF
+#define MCR_UART11                     34  // UART11 Place holder, offset 0x088 protects 0xF0024000-0xF0024FFF
+#define MCR_SMBUS_0                    35  // SMBus 0 module registers, offset 0x08C protects 0xF0080000-0xF0080FFF
+#define MCR_SMBUS_1                    36  // SMBus 1 module registers, offset 0x090 protects 0xF0081000-0xF0081FFF
+#define MCR_SMBUS_2                    37  // SMBus 2 module registers, offset 0x094 protects 0xF0082000-0xF0082FFF
+#define MCR_SMBUS_3                    38  // SMBus 3 module registers, offset 0x098 protects 0xF0083000-0xF0083FFF
+#define MCR_SMBUS_4                    39  // SMBus 4 module registers, offset 0x09C protects 0xF0084000-0xF0084FFF
+#define MCR_SMBUS_5                    40  // SMBus 5 module registers, offset 0x0A0 protects 0xF0085000-0xF0085FFF
+#define MCR_SMBUS_6                    41  // SMBus 6 module registers, offset 0x0A4 protects 0xF0086000-0xF0086FFF
+#define MCR_SMBUS_7                    42  // SMBus 7 module registers, offset 0x0A8 protects 0xF0087000-0xF0087FFF
+#define MCR_SMBUS_8                    43  // SMBus 8 module registers, offset 0x0AC protects 0xF0088000-0xF0088FFF
+#define MCR_SMBUS_9                    44  // SMBus 9 module registers, offset 0x0B0 protects 0xF0089000-0xF0089FFF
+#define MCR_SMBUS_10                   45  // SMBus 10 module registers, offset 0x0B4 protects 0xF008A000-0xF008AFFF
+#define MCR_SMBUS_11                   46  // SMBus 11 module registers, offset 0x0B8 protects 0xF008B000-0xF008BFFF
+#define MCR_SMBUS_12                   47  // SMBus 12 module registers, offset 0x0BC protects 0xF008C000-0xF008CFFF
+#define MCR_SMBUS_13                   48  // SMBus 13 module registers, offset 0x0C0 protects 0xF008D000-0xF008DFFF
+#define MCR_SMBUS_14                   49  // SMBus 14 module registers, offset 0x0C4 protects 0xF008E000-0xF008EFFF
+#define MCR_SMBUS_15                   50  // SMBus 15 module registers, offset 0x0C8 protects 0xF008F000-0xF008FFFF
+#define MCR_ESPI                       51  // eSPI module registers, offset 0x0CC protects 0xF009F000-0xF009FFFF
+#define MCR_PECI                       52  // PECI module registers, offset 0x0D0 protects 0xF0100000-0xF0100FFF
+#define MCR_SERIAL_GPIO_EXP_1          53  // Serial GPIO Expansion 1 module registers, offset 0x0D4 protects 0xF0101000-0xF0101FFF
+#define MCR_SERIAL_GPIO_EXP_2          54  // Serial GPIO Expansion 2 module registers, offset 0x0D8 protects 0xF0102000-0xF0102FFF
+#define MCR_PWM_0                      55  // PWM module 0 registers, offset 0x0DC protects 0xF0103000-0xF0103FFF
+#define MCR_PWM_1                      56  // PWM module 1 registers, offset 0x0E0 protects 0xF0104000-0xF0104FFF
+#define MCR_PWM_2                      57  // PWM module 2 registers, offset 0x0E4 protects 0xF0105000-0xF0105FFF
+#define MCR_TACHOMETER_MFT_0           58  // Tachometer MFT 0 registers, offset 0x0E8 protects 0xF0180000-0xF0180FFF
+#define MCR_TACHOMETER_MFT_1           59  // Tachometer MFT 1 registers, offset 0x0EC protects 0xF0181000-0xF0181FFF
+#define MCR_TACHOMETER_MFT_2           60  // Tachometer MFT 2 registers, offset 0x0F0 protects 0xF0182000-0xF0182FFF
+#define MCR_TACHOMETER_MFT_3           61  // Tachometer MFT 3 registers, offset 0x0F4 protects 0xF0183000-0xF0183FFF
+#define MCR_TACHOMETER_MFT_4           62  // Tachometer MFT 4 registers, offset 0x0F8 protects 0xF0184000-0xF0184FFF
+#define MCR_TACHOMETER_MFT_5           63  // Tachometer MFT 5 registers, offset 0x0FC protects 0xF0185000-0xF0185FFF
+#define MCR_TACHOMETER_MFT_6           64  // Tachometer MFT 6 registers, offset 0x100 protects 0xF0186000-0xF0186FFF
+#define MCR_TACHOMETER_MFT_7           65  // Tachometer MFT 7 registers, offset 0x104 protects 0xF0187000-0xF0187FFF
+#define MCR_THERMAL_SENSOR             66  // Thermal Sensor, offset 0x108 protects 0xF0188000-0xF0188FFF
+#define MCR_OTP1_ROM                   67  // OTP1 ROM, offset 0x10C protects 0xF0189000-0xF018907F
+#define MCR_OTP2_ROM                   68  // OTP2 ROM Spare / place holder, offset 0x110 protects 0xF018A000-0xF018A07F
+#define MCR_APB2SIB                    69  // APB2SIB Spare/place holder, offset 0x114 protects 0xF018C000-0xF018C07F
+#define MCR_GMAC1_PCS                  70  // GMAC1 PCS, offset 0x118 protects 0xF0780000-0xF07BFFFF
+#define MCR_PERIPHERAL_SPI             71  // Peripheral SPI registers, offset 0x11C protects 0xF0201000-0xF0201FFF
+#define MCR_RESERVED_VIRTUAL_UART1     72  // Reserved Virtual UART1, offset 0x120 protects 0xF0204000-0xF0204FFF
+#define MCR_RESERVED_VIRTUAL_UART2     73  // Reserved Virtual UART2, offset 0x124 protects 0xF0205000-0xF0205FFF
+#define MCR_JTAG_MASTER_1              74  // JTAG Master 1, offset 0x128 protects 0xF0208000-0xF0208FFF
+#define MCR_JTAG_MASTER_2              75  // JTAG Master 2, offset 0x12C protects 0xF0209000-0xF0209FFF
+#define MCR_L2                         76  // L2 registers, offset 0x130 Maybe not possible to control protects 0xF03FC000-0xF03FDFFF
+#define MCR_CPU                        77  // CPU registers, offset 0x134 Maybe not possible to control protects 0xF03FE000-0xF03FFFFF
+#define MCR_AHB_TO_PCI_BRIDGE          78  // AHB to PCI bridge, offset 0x138 protects 0xF0400000-0xF04FFFFF
+#define MCR_A35_DEBUG_ACCESS_PORT      79  // A35 Debug Access Port Slave APB6, offset 0x13C protects 0xF0500000-0xF05EFFFF
+#define MCR_MEMORY_PHY                 80  // Memory Controller PHY registers, offset 0x140 protects 0xF05F0000-0xF05FFFFF
+#define MCR_SYSTEM_GLOBAL              81  // System Global Registers - main registers only, offset 0x144 protects 0xF0800000-0xF080025F and 0xF08002E0-0xF08007FF
+#define MCR_CLOCK                      82  // Clock Control Registers, offset 0x148 protects 0xF0801000-0xF0801FFF and 0xF080E000-0xF080EFFF
+#define MCR_ETHERNET_GMAC_1            83  // Ethernet GMAC 1 registers, offset 0x14C protects 0xF0802000-0xF0803FFF
+#define MCR_ETHERNET_GMAC_2            84  // Ethernet GMAC 2 registers, offset 0x150 protects 0xF0804000-0xF0805FFF
+#define MCR_ETHERNET_GMAC_3            85  // Ethernet GMAC 3 registers, offset 0x154 protects 0xF0806000-0xF0807FFF
+#define MCR_ETHERNET_GMAC_4            86  // Ethernet GMAC 4 registers, offset 0x158 protects 0xF0808000-0xF0809FFF
+#define MCR_VCD                        87  // VCD control registers, offset 0x15C protects 0xF0810000-0xF081FFFF
+#define MCR_ECE                        88  // ECE Video Compression, offset 0x160 protects 0xF0820000-0xF0821FFF
+#define MCR_VDMA                       89  // VDMA, offset 0x164 protects 0xF0822000-0xF0822FFF
+#define MCR_MEMORY_CONTROLLER          90  // Memory Controller Registers, offset 0x168 protects 0xF0824000-0xF0825FFF
+#define MCR_USB_HOST_1                 91  // USB Host 1 registers, offset 0x16C protects 0xF0828000-0xF0829FFF
+#define MCR_USB_HOST_2                 92  // USB Host 2 registers, offset 0x170 protects 0xF082A000-0xF082BFFF
+#define MCR_USB_DEVICE_0               93  // USB (2.0) Device 0 registers, offset 0x174 protects 0xF0830000-0xF0830FFF
+#define MCR_USB_DEVICE_1               94  // USB (2.0) Device 1 registers, offset 0x178 protects 0xF0831000-0xF0831FFF
+#define MCR_USB_DEVICE_2               95  // USB (2.0) Device 2 registers, offset 0x17C protects 0xF0832000-0xF0832FFF
+#define MCR_USB_DEVICE_3               96  // USB (2.0) Device 3 registers, offset 0x180 protects 0xF0833000-0xF0833FFF
+#define MCR_USB_DEVICE_4               97  // USB (2.0) Device 4 registers, offset 0x184 protects 0xF0834000-0xF0834FFF
+#define MCR_USB_DEVICE_5               98  // USB (2.0) Device 5 registers, offset 0x188 protects 0xF0835000-0xF0835FFF
+#define MCR_USB_DEVICE_6               99  // USB (2.0) Device 6 registers, offset 0x18C protects 0xF0836000-0xF0836FFF#define MCR_UART0   0  // UART0 registers, offset 0x000 protects 0xF0000000-0xF0000FFF
+#define MCR_USB_DEVICE_7              100  // USB (2.0) Device 7 registers, offset 0x190 protects 0xF0837000-0xF0837FFF
+#define MCR_USB_DEVICE_8              101  // USB (2.0) Device 8 registers, offset 0x194 protects 0xF0838000-0xF0838FFF
+#define MCR_USB_DEVICE_9              102  // USB (2.0) Device 9 registers, offset 0x198 protects 0xF0839000-0xF0839FFF
+#define MCR_COP_COMMUNICATION         103  // COP Control and communication registers, offset 0x19C bits 16-18 not used protects 0xF080C000-0xF080CFFF
+#define MCR_MMC                       104  // MMC Controller registers SDHC2, offset 0x1A0 protects 0xF0842000-0xF0843FFF
+#define MCR_PCI_MBX_1                 105  // PCI MBX 1 with PCI, offset 0x1A4 protects 0xF0848000-0xF084FFFF
+#define MCR_GDMA0                     106  // GDMA0, offset 0x1A8 protects 0xF0850000-0xF0850FFF
+#define MCR_GDMA1                     107  // GDMA1, offset 0x1AC protects 0xF0851000-0xF0851FFF
+#define MCR_GDMA2                     108  // GDMA2, offset 0x1B0 protects 0xF0852000-0xF0852FFF
+#define MCR_TIP_COMMUNICATION         109  // TIP Control and communication registers bits 16-18 not used, offset 0x1B4 protects 0xF080D000-0xF080DFFF
+#define MCR_AES                       110  // AES bits 16-18 not used, offset 0x1B8 protects 0xF0858000-0xF0858FFF
+#define MCR_3DES                      111  // 3DES bits 16-18 not used, offset 0x1BC protects 0xF0859000-0xF0859FFF
+#define MCR_SHA                       112  // SHA bits 16-18 not used, offset 0x1C0 protects 0xF085A000-0xF085AFFF
+#define MCR_RESERVED                  113  // Reserved, offset 0x1C4 protects 0xF085B000-0xF085BFFF
+#define MCR_SECACC                    113  // SECACC (PKA), offset 0x1C4 protects 0xF085B000-0xF085BFFF
+#define MCR_PCI_MBX_2                 114  // PCI MBX 2 with PCI, offset 0x1C8 protects 0xF0868000-0xF086FFFF
+#define MCR_VDMX                      115  // VDMX, offset 0x1CC protects 0xE0800000-0xE0FFFFFF
+#define MCR_PCIE_ROOT_COMPLEX_WINDOW  116  // PCIe Root Complex window mapping into PCIe space bits 16-18 not used, offset 0x1D0 protects 0xE8000000-0xEFFFFFFF
+#define MCR_PCIE_ROOT_COMPLEX_CONFIG  117  // PCIe Root Complex configuration registers TBD if used, offset 0x1D4 protects 0xE1000000-0xE100FFFF
+#define MCR_SPI3_CS0                  118  // SPI3 direct access CS0, offset 0x1D8 protects 0xA0000000-0xA7FFFFFF
+#define MCR_SPI3_CS1                  119  // SPI3 direct access CS1, offset 0x1DC protects 0xA8000000-0xAFFFFFFF
+#define MCR_SPI3_CS2                  120  // SPI3 direct access CS2, offset 0x1E0 protects 0xB0000000-0xB7FFFFFF
+#define MCR_SPI3_CS3                  121  // SPI3 direct access CS3, offset 0x1E4 protects 0xB8000000-0xBFFFFFFF
+#define MCR_SPI3                      122  // SPI3 registers, offset 0x1E8 protects 0xC0000000-0xC0000FFF
+#define MCR_SHM                       123  // SHM registers, offset 0x1EC protects 0xC0001000-0xC0001FFF
+#define MCR_SAFSFIU                   124  // SAFSFIU registers place holder, offset 0x1F0 protects 0xC0007000-0xC0007FFF
+#define MCR_RAM3                      125  // RAM3 bits 16-18 not used, offset 0x1F4 protects 0xC0008000-0xC000BFFF
+#define MCR_SPI0_CS0                  126  // SPI0 direct access CS0, offset 0x1F8 protects 0x80000000-0x87FFFFFF
+#define MCR_SPI0_CS1                  127  // SPI0 direct access CS1, offset 0x1FC protects 0x88000000-0x8FFFFFFF
+#define MCR_SPI1_CS0                  128  // SPI1 direct access CS0, offset 0x200 protects 0x90000000-0x90FFFFFF
+#define MCR_SPI1_CS1                  129  // SPI1 direct access CS1, offset 0x204 protects 0x91000000-0x91FFFFFF
+#define MCR_SPI1_CS2                  130  // SPI1 direct access CS2, offset 0x208 protects 0x92000000-0x92FFFFFF
+#define MCR_SPI1_CS3                  131  // SPI1 direct access CS3, offset 0x20C protects 0x93000000-0x93FFFFFF
+#define MCR_SPIX_CS0                  132  // SPIX direct access CS0, offset 0x210 protects 0xF8000000-0xF8FFFFFF
+#define MCR_SPIX_CS1                  133  // SPIX direct access CS1, offset 0x214 protects 0xF9000000-0xF9FFFFFF
+#define MCR_SPI0                      134  // SPI0 registers, offset 0x218 protects 0xFB000000-0xFB000FFF
+#define MCR_SPIX                      135  // SPIX registers, offset 0x21C protects 0xFB001000-0xFB001FFF
+#define MCR_SPI1                      136  // SPI1 registers, offset 0x220 protects 0xFB002000-0xFB002FFF
+#define MCR_SMBUS_16                  137  // SMBus 16 module registers, offset 0x224 protects 0xFFF00000-0xFFF00FFF
+#define MCR_SMBUS_17                  138  // SMBus 17 module registers, offset 0x228 protects 0xFFF01000-0xFFF01FFF
+#define MCR_SMBUS_18                  139  // SMBus 18 module registers, offset 0x22C protects 0xFFF02000-0xFFF02FFF
+#define MCR_SMBUS_19                  140  // SMBus 19 module registers, offset 0x230 protects 0xFFF03000-0xFFF03FFF
+#define MCR_SMBUS_20                  141  // SMBus 20 module registers, offset 0x234 protects 0xFFF04000-0xFFF04FFF
+#define MCR_SMBUS_21                  142  // SMBus 21 module registers, offset 0x238 protects 0xFFF05000-0xFFF05FFF
+#define MCR_SMBUS_22                  143  // SMBus 22 module registers, offset 0x23C protects 0xFFF06000-0xFFF06FFF
+#define MCR_SMBUS_23                  144  // SMBus 23 module registers, offset 0x240 protects 0xFFF07000-0xFFF07FFF
+#define MCR_SMBUS_24                  145  // SMBus 24 module registers, offset 0x244 protects 0xFFF08000-0xFFF08FFF
+#define MCR_SMBUS_25                  146  // SMBus 25 module registers, offset 0x248 protects 0xFFF09000-0xFFF09FFF
+#define MCR_SMBUS_26                  147  // SMBus 26 module registers, offset 0x24C protects 0xFFF0A000-0xFFF0AFFF
+#define MCR_SMBUS_27                  148  // SMB27 place holder, offset 0x250 protects 0xFFF0B000-0xFFF0BFFF
+#define MCR_SMBUS_28                  149  // SMB28 place holder, offset 0x254 protects 0xFFF0C000-0xFFF0CFFF
+#define MCR_SMBUS_29                  150  // SMB29 place holder, offset 0x258 protects 0xFFF0D000-0xFFF0DFFF
+#define MCR_SMBUS_30                  151  // SMB30 place holder, offset 0x25C protects 0xFFF0E000-0xFFF0EFFF
+#define MCR_SMBUS_31                  152  // SMB31 place holder, offset 0x260 protects 0xFFF0F000-0xFFF0FFFF
+#define MCR_I3C0                      153  // I3C0, offset 0x264 protects 0xFFF10000-0xFFF10FFF
+#define MCR_I3C1                      154  // I3C1, offset 0x268 protects 0xFFF11000-0xFFF11FFF
+#define MCR_I3C2                      155  // I3C2, offset 0x26C protects 0xFFF12000-0xFFF12FFF
+#define MCR_I3C3                      156  // I3C3, offset 0x270 protects 0xFFF13000-0xFFF13FFF
+#define MCR_I3C4                      157  // I3C4, offset 0x274 protects 0xFFF14000-0xFFF14FFF
+#define MCR_I3C5                      158  // I3C5, offset 0x278 protects 0xFFF15000-0xFFF15FFF
+#define MCR_I3C6                      159  // I3C6 place holder, offset 0x27C protects 0xFFF16000-0xFFF16FFF
+#define MCR_I3C7                      160  // I3C7 place holder, offset 0x280 protects 0xFFF17000-0xFFF17FFF
+#define MCR_PLACE_HOLDER              161  // place holder, offset 0x284 protects 0xF0868000-0xF086FFFF
+#define MCR_ROM                       162  // ROM both areas included. The range FFFF_00XXh is not included when FLOCKR1.RAMV=1. bits 16-18 not used, offset 0x288 protects 0xFFFF0000-0xFFFFFFFF and 0xFFF40000-0xFFF4FFFF
+#define MCR_RAM2_AREA_0               163  // RAM2 Area 0. The range FFFF_00XXh is included only when FLOCKR1.RAMV=1. bits 16-18 not used, offset 0x28C protects 0xFFFB0000-0xFFFB7FFF and 0xFFFF0000-0xFFFF00FF
+#define MCR_RAM2_AREA_1               164  // RAM2 Area 1 bits 16-18 not used, offset 0x290 protects 0xFFFB8000-0xFFFBFFFF
+#define MCR_RAM2_AREA_2               165  // RAM2 Area 2 bits 16-18 not used, offset 0x294 protects 0xFFFC0000-0xFFFC7FFF
+#define MCR_RAM2_AREA_3               166  // RAM2 Area 3 bits 16-18 not used, offset 0x298 protects 0xFFFC8000-0xFFFCFFFF
+#define MCR_RAM2_AREA_4               167  // RAM2 Area 4 bits 16-18 not used, offset 0x29C protects 0xFFFD0000-0xFFFD7FFF
+#define MCR_RAM2_AREA_5               168  // RAM2 Area 5 bits 16-18 not used, offset 0x2A0 protects 0xFFFD8000-0xFFFDFFFF
+#define MCR_RAM2_AREA_6               169  // RAM2 Area 6 bits 16-18 not used, offset 0x2A4 protects 0xFFFE0000-0xFFFE7FFF
+#define MCR_RAM2_AREA_7               170  // RAM2 Area 7 bits 16-18 not used, offset 0x2A8 protects 0xFFFE8000-0xFFFEFFFF
+#define MCR_MODULE_PROTECTION         171  // Module Control Registers in GCR bits 16-18 not used, offset 0x2AC protects 0xF0800800-0xF0800AFF
+#define MCR_MULTIPLEXING              172  // Multiplexing control registers in GCR bits 16-18 not used, offset 0x2B0 protects 0xF0800260-0xF08002DF
+#define MCR_SPARE                     173  // Spare, offset 0x2B4 protects 0xF0800C00-0xF0800DFF
+#define MCR_SCRATCHPAD                174  // Scratchpad registers 00-63 in GCR bits 16-18 not used, offset 0x2B8 protects 0xF0800E00-0xF0800EFF
+#define MCR_SEMAPHORE                 175  // Semaphore Registers 00-31 in GCR bits 16-18 not used, offset 0x2BC protects 0xF0800F00-0xF0800FFF
+#define MCR_FLASH_MONITORING_0        176  // Flash Monitoring module 0 (FLM0), offset 0x2C0 protects 0xF0210000-0xF0210FFF
+#define MCR_FLASH_MONITORING_1        177  // Flash Monitoring module 1 (FLM1), offset 0x2C4 protects 0xF0211000-0xF0211FFF
+#define MCR_FLASH_MONITORING_2        178  // Flash Monitoring module 2 (FLM2), offset 0x2C8 protects 0xF0212000-0xF0212FFF
+#define MCR_FLASH_MONITORING_3        179  // Flash Monitoring module 3 (FLM3), offset 0x2CC protects 0xF0213000-0xF0213FFF
+#define MCR_TSGEN_TIMER_SECURE_ACCESS 180  // TSGEN Timer Secure Access bits 16-18 not used, offset 0x2D0 protects 0xF07FC000-0xF07FCFFF
+#define MCR_TSGEN_TIMER_READ_ONLY     181  // TSGEN Timer Read Only bits 16-18 not used, offset 0x2D4 protects 0xF07FD000-0xF07FDFFF
+#define MCR_SPARE_PLACE_HOLDER        182  // Spare place holder, offset 0x2D8 protects 0xF07FE000-0xF07FEFFF
+#define MCR_FSI3_PLACE_HOLDER         183  // FSI3 Place holder, offset 0x2DC protects 0xE5800000-0xE5FFFFFF
+#define MCR_GPIO231                   184  // GPIO231 Only bits 16-18 used for interrupt allocation, offset 0x2E0 protects None
+#define MCR_GPIO233                   185  // GPIO233 Only bits 16-18 used for interrupt allocation, offset 0x2E4 protects None
+#define MCR_GPIO234                   186  // GPIO234 Only bits 16-18 used for interrupt allocation, offset 0x2E8 protects None
+#define MCR_GPIO93                    187  // GPIO93 Only bits 16-18 used for interrupt allocation, offset 0x2EC protects None
+#define MCR_GPIO94                    188  // GPIO94 Only bits 16-18 used for interrupt allocation, offset 0x2F0 protects None
+
+/***********************************************************************************************************/
+/*    Scratch Pad Register 32-63 (SCRPAD_32-63), index 0 is SCRPAD32 etc.                                  */
+/***********************************************************************************************************/
+#define SCRPAD_32_63(n)                      (GCR_BASE_ADDR + (n == 0 ? 0xE80 : (n == 1 ? 0xE84 : (n == 2 ? 0xE88 : (n == 3 ? 0xE8C : (n == 4 ? 0xE90 : (n == 5 ? 0xE94 : (n == 6 ? 0xE98 : (n == 7 ? 0xE9C : (n == 8 ? 0xEA0 : (n == 9 ? 0xEA4 : (n == 10 ? 0xEA8 : (n == 11 ? 0xEAC : (n == 12 ? 0xEB0 : (n == 13 ? 0xEB4 : (n == 14 ? 0xEB8 : (n == 15 ? 0xEBC : (n == 16 ? 0xEC0 : (n == 17 ? 0xEC4 : (n == 18 ? 0xEC8 : (n == 19 ? 0xECC : (n == 20 ? 0xED0 : (n == 21 ? 0xED54 : (n == 22 ? 0xED8 : (n == 23 ? 0xEDC : (n == 24 ? 0xEE0 : (n == 25 ? 0xEE4 : (n == 26 ? 0xEE8 : (n == 27 ? 0xEEC : (n == 28 ? 0xEF0 : (n == 29 ? 0xEF4 : (n == 30 ? 0xEF8 : 0xEFC)))))))))))))))))))))))))))))))),  MEM,    32         /* Offset: E80h-EFCh */
+#define SCRPAD_32_63_SP                       0,    32               /* 0-31 SP (Scratch Pad) */
 
 /***********************************************************************************************************/
 /*    Semaphore Register 00-31 (GP_SEMFR_00-31)                                                            */

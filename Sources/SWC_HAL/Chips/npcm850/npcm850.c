@@ -302,7 +302,19 @@ DEFS_STATUS CHIP_MuxFIU (   FIU_MODULE_T      devNum,
                 SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS3SEL, 1);
                 SET_REG_BIT(GPnOSRC(6), 0); // fast slew rate GPIO192
             }
-            // Note: no quad mode on FIU1
+            else
+            {
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS3SEL, 0);
+            }
+
+            if (quadMode == TRUE)
+            {
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS2SEL, 0);
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS3SEL, 0);
+                SET_REG_FIELD(MFSEL5, MFSEL5_SPI1D23SEL, 1);
+                SET_REG_FIELD(MFSEL6, MFSEL6_FM1SEL, 0);
+                SET_REG_FIELD(MFSEL7, MFSEL7_SMB15SELB, 0);
+            }
 
             break;
 
@@ -614,32 +626,6 @@ UINT32 CHIP_PowerOn_GetMemorySize(void)
 /*---------------------------------------------------------------------------------------------------------*/
 void CHIP_Mux_GPIO(UINT gpio_num)
 {
-    //TODO:GPIO_MUX_REGID_T    mux_reg1, mux_reg2;
-    //TODO:GPIO_MUX_FIELD_T    mux1, mux2;
-
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Getting Mux information from GPIO module                                                            */
-    /*-----------------------------------------------------------------------------------------------------*/
-    //TODO: GPIO_GetMuxInfo(gpio_num, &mux_reg1, &mux1, &mux_reg2, &mux2);
-
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Bypass for using DEFS.H macros                                                                      */
-    /*-----------------------------------------------------------------------------------------------------*/
-    //TODO:#define GCR_GPIO_MUX_FIELD1  mux1.position, mux1.size
-    //TODO:#define GCR_GPIO_MUX_FIELD2  mux2.position, mux2.size
-
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Muxing                                                                                              */
-    /*-----------------------------------------------------------------------------------------------------*/
-    //TODO:if (mux1.size != 0)
-    //TODO:{
-    //TODO:    SET_REG_FIELD(MFSEL(mux_reg1), GCR_GPIO_MUX_FIELD1, mux1.value);
-    //TODO:}
-
-    //TODO:if (mux2.size != 0)
-    //TODO:{
-    //TODO:    SET_REG_FIELD(MFSEL(mux_reg2), GCR_GPIO_MUX_FIELD2, mux2.value);
-    //TODO:}
     if ( gpio_num == 169)
     {
         SET_REG_FIELD(MFSEL3, MFSEL3_SCISEL, 0);
@@ -673,9 +659,150 @@ void CHIP_Mux_GPIO(UINT gpio_num)
     {
         SET_REG_FIELD(FLOCKR1, FLOCKR1_PSMISEL, 1);
     }
-
-    // TODO: need to finish this table :(
 }
+
+#if defined (FLM_MODULE_TYPE)
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CHIP_MuxFLM                                                                            */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  flm_module - FLM Module number                                                         */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine selects the FLM function to the corresponding pin.                        */
+/*                                                                                                            */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS            CHIP_MuxFLM(FLM_MODULE_T flm_module, BOOLEAN quad_en)
+{
+        switch (flm_module)
+        {
+            case FLM_MODULE_0:
+                SET_REG_FIELD(MFSEL6, MFSEL6_FM0SEL, 1);
+
+                SET_REG_FIELD(I2CSEGSEL , I2CSEGSEL_S0SBSEL, 0);
+                SET_REG_FIELD(I2CSEGSEL , I2CSEGSEL_S0SCSEL, 0);
+                SET_REG_FIELD(I2CSEGSEL , I2CSEGSEL_S0SDSEL, 0);
+                SET_REG_FIELD(I2CSEGSEL , I2CSEGSEL_S0DESEL, 0);
+            break;
+            case FLM_MODULE_1:
+                SET_REG_FIELD(MFSEL6, MFSEL6_FM1SEL, 1);
+
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS1SEL, 0);
+                SET_REG_FIELD(MFSEL5, MFSEL5_SPI1D23SEL, 0);
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS2SEL, 0);
+                SET_REG_FIELD(MFSEL5, MFSEL5_NSPI1CS3SEL, 0);
+
+                SET_REG_FIELD(MFSEL3, MFSEL3_SPI1SEL, 1);
+                SET_REG_FIELD(MFSEL3, MFSEL3_FIN1916SEL, 0);
+
+                SET_REG_FIELD(MFSEL7, MFSEL7_SMB15SELB, 0);
+            break;
+            case FLM_MODULE_2:
+                SET_REG_FIELD(MFSEL6, MFSEL6_FM2SEL, 1);
+                SET_REG_FIELD(MFSEL4, MFSEL4_SXCS1SEL, 0);
+                SET_REG_FIELD(MFSEL4, MFSEL4_SPXSEL, 0);
+
+            break;
+            case FLM_MODULE_3:
+                SET_REG_FIELD(MFSEL6, MFSEL6_GPIO1836SEL, 0);
+                // De sellecte SPI3
+                 SET_REG_FIELD(MFSEL4, MFSEL4_SP3SEL, 0);
+                 SET_REG_FIELD(MFSEL4, MFSEL4_S3CS1SEL, 0);
+                 SET_REG_FIELD(MFSEL4, MFSEL4_S3CS2SEL, 0);
+                 SET_REG_FIELD(MFSEL4, MFSEL4_S3CS3SEL, 0);
+                 if (quad_en == TRUE)
+                 {
+                    SET_REG_FIELD(MFSEL4, MFSEL4_SP3QSEL, 0);
+                 }
+            break;
+            default:
+            break;
+        }
+     return DEFS_STATUS_OK;
+}
+#endif
+
+#if defined (JTM_MODULE_TYPE)
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CHIP_MuxJTM                                                                            */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  jtm_module - JTM Module number                                                         */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine selects the JTM function to the corresponding pin.                        */
+/*                                                                                                            */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS            CHIP_MuxJTM(JTM_MODULE_T jtm_module)
+{
+    // Reset Module and enable clocks
+    if(jtm_module == 0)
+    {
+         SET_REG_FIELD(CLKEN4, CLKEN4_JTM1, 1);
+         SET_REG_FIELD(MFSEL5, MFSEL5_JM1SEL, 1);
+    }
+    else  if(jtm_module == 1)
+    {
+        SET_REG_FIELD(CLKEN4, CLKEN4_JTM2, 1);
+        SET_REG_FIELD(MFSEL5, MFSEL5_JM2SEL, 1);
+    }
+    else
+    {
+        return DEFS_STATUS_INVALID_PARAMETER;
+    }
+     return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        CHIP_ResetJTM                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  jtm_module - JTM Module number                                                         */
+/*                    state     TRUE - reset, FALSE - enable                                               */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine clears of asserts the reset of the JTM Module.                            */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS            CHIP_ResetJTM(JTM_MODULE_T jtm_module, BOOLEAN state)
+{
+    UINT32 val;
+
+    // Reset Module and enable clocks
+    if(jtm_module == 0)
+    {
+        if (state == TRUE)
+        {
+            CLEAR_REG_BIT(IPSRST4, IPSRST4_JTM1);
+        }
+        else
+        {
+            SET_REG_BIT(IPSRST4, IPSRST4_JTM1);
+        }
+    }
+    else   if(jtm_module == 1)
+    {
+       if (state == TRUE)
+        {
+            CLEAR_REG_BIT(IPSRST4, IPSRST4_JTM2);
+        }
+        else
+        {
+            SET_REG_BIT(IPSRST4, IPSRST4_JTM2);
+        }
+    }
+    else
+    {
+        return DEFS_STATUS_INVALID_PARAMETER;
+    }
+
+    return DEFS_STATUS_OK;
+}
+#endif
 
 #if defined (SD_MODULE_TYPE)
 /*---------------------------------------------------------------------------------------------------------*/
@@ -1584,67 +1711,67 @@ void CHIP_Mux_Segment (SMB_MODULE_T smb_module, UINT32 segment, BOOLEAN bEnable)
 DEFS_STATUS CHIP_SMB_GetGpioNumbers (SMB_MODULE_T smb_module, UINT segment, INT* ret_scl_gpio, INT* ret_sda_gpio)
 {
     const INT SMB_SCL_GPIO[SMB_NUM_OF_MODULES][SMB_NUM_OF_SEGMENT] = {
-	/*  SMB0   */ {114, 194, 196, 199},
-	/*  SMB1   */ {116, 127, 125, 5},
-	/*  SMB2   */ {118, 123, 121, 7},
-	/*  SMB3   */ {31, 40, 38, 60},
-	/*  SMB4   */ {29, 23, 21, 23},
-	/*  SMB5   */ {27, 12, 14, 93},
-	/*  SMB6   */ {171, 3, 1, 10},
-	/*  SMB7   */ {173, 141  , 24, 142},
-	/*  SMB8   */ {128,     -1, -1, -1},
-	/*  SMB9   */ {130,     -1, -1, -1},
-	/*  SMB10  */ {132,     -1, -1, -1},
-	/*  SMB11  */ {134,     -1, -1, -1},
-	/*  SMB12  */ {220,     -1, -1, -1},
-	/*  SMB13  */ {222,     -1, -1, -1},
-	/*  SMB14  */ { 23,     32, -1, -1},
-	/*  SMB15  */ { 21,    192, -1, -1},
-	/*  SMB16  */ { 10,    218, -1, -1},
-	/*  SMB17  */ {  3,     -1, -1, -1},
-	/*  SMB18  */ {  1,     -1, -1, -1},
-	/*  SMB19  */ { 60,     -1, -1, -1},
-	/*  SMB20  */ {234,     -1, -1, -1},
-	/*  SMB21  */ {169,     -1, -1, -1},
-	/*  SMB22  */ { 40,     -1, -1, -1},
-	/*  SMB23  */ { 38,    134, -1, -1},
-	/*  SMB24  */ {128,     -1, -1, -1},
-	/*  SMB25  */ {130,     -1, -1, -1},
-	/*  SMB26  */ {132,     -1, -1, -1}
-	};
+    /*  SMB0   */ {114, 194, 196, 199},
+    /*  SMB1   */ {116, 127, 125, 5},
+    /*  SMB2   */ {118, 123, 121, 7},
+    /*  SMB3   */ {31, 40, 38, 60},
+    /*  SMB4   */ {29, 23, 21, 23},
+    /*  SMB5   */ {27, 12, 14, 93},
+    /*  SMB6   */ {171, 3, 1, 10},
+    /*  SMB7   */ {173, 141  , 24, 142},
+    /*  SMB8   */ {128,     -1, -1, -1},
+    /*  SMB9   */ {130,     -1, -1, -1},
+    /*  SMB10  */ {132,     -1, -1, -1},
+    /*  SMB11  */ {134,     -1, -1, -1},
+    /*  SMB12  */ {220,     -1, -1, -1},
+    /*  SMB13  */ {222,     -1, -1, -1},
+    /*  SMB14  */ { 23,     32, -1, -1},
+    /*  SMB15  */ { 21,    192, -1, -1},
+    /*  SMB16  */ { 10,    218, -1, -1},
+    /*  SMB17  */ {  3,     -1, -1, -1},
+    /*  SMB18  */ {  1,     -1, -1, -1},
+    /*  SMB19  */ { 60,     -1, -1, -1},
+    /*  SMB20  */ {234,     -1, -1, -1},
+    /*  SMB21  */ {169,     -1, -1, -1},
+    /*  SMB22  */ { 40,     -1, -1, -1},
+    /*  SMB23  */ { 38,    134, -1, -1},
+    /*  SMB24  */ {128,     -1, -1, -1},
+    /*  SMB25  */ {130,     -1, -1, -1},
+    /*  SMB26  */ {132,     -1, -1, -1}
+    };
 
 
 
 
 
     const INT SMB_SDA_GPIO[SMB_NUM_OF_MODULES][SMB_NUM_OF_SEGMENT] = {
-	/*  SMB0   */ {115, 195 ,202, 198},
-	/*  SMB1   */ {117, 126 ,124 , 4},
-	/*  SMB2   */ {119, 122 ,120, 6},
-	/*  SMB3   */ {30, 396, 37, 59},
-	/*  SMB4   */ {28, 22, 20,  22},
-	/*  SMB5   */ {26, 13, 15, 94},
-	/*  SMB6   */ {172, 2, 0, 11},
-	/*  SMB7   */ {174, 16, 25,  143},
-	/*  SMB8   */ {129,     -1, -1, -1},
-	/*  SMB9   */ {131,     -1, -1, -1},
-	/*  SMB10  */ {133,     -1, -1, -1},
-	/*  SMB11  */ {135,     -1, -1, -1},
-	/*  SMB12  */ {221,     -1, -1, -1},
-	/*  SMB13  */ {223,     -1, -1, -1},
-	/*  SMB14  */ { 22,    187, -1, -1},
-	/*  SMB15  */ { 20,    191, -1, -1},
-	/*  SMB16  */ { 11,    219, -1, -1},
-	/*  SMB17  */ {  2,     -1, -1, -1},
-	/*  SMB18  */ {  0,     -1, -1, -1},
-	/*  SMB19  */ { 59,     -1, -1, -1},
-	/*  SMB20  */ {235,     -1, -1, -1},
-	/*  SMB21  */ {170,     -1, -1, -1},
-	/*  SMB22  */ { 39,     -1, -1, -1},
-	/*  SMB23  */ { 37,    135, -1, -1},
-	/*  SMB24  */ {129,     -1, -1, -1},
-	/*  SMB25  */ {131,     -1, -1, -1},
-	/*  SMB26  */ {133,     -1, -1, -1}};
+    /*  SMB0   */ {115, 195 ,202, 198},
+    /*  SMB1   */ {117, 126 ,124 , 4},
+    /*  SMB2   */ {119, 122 ,120, 6},
+    /*  SMB3   */ {30, 396, 37, 59},
+    /*  SMB4   */ {28, 22, 20,  22},
+    /*  SMB5   */ {26, 13, 15, 94},
+    /*  SMB6   */ {172, 2, 0, 11},
+    /*  SMB7   */ {174, 16, 25,  143},
+    /*  SMB8   */ {129,     -1, -1, -1},
+    /*  SMB9   */ {131,     -1, -1, -1},
+    /*  SMB10  */ {133,     -1, -1, -1},
+    /*  SMB11  */ {135,     -1, -1, -1},
+    /*  SMB12  */ {221,     -1, -1, -1},
+    /*  SMB13  */ {223,     -1, -1, -1},
+    /*  SMB14  */ { 22,    187, -1, -1},
+    /*  SMB15  */ { 20,    191, -1, -1},
+    /*  SMB16  */ { 11,    219, -1, -1},
+    /*  SMB17  */ {  2,     -1, -1, -1},
+    /*  SMB18  */ {  0,     -1, -1, -1},
+    /*  SMB19  */ { 59,     -1, -1, -1},
+    /*  SMB20  */ {235,     -1, -1, -1},
+    /*  SMB21  */ {170,     -1, -1, -1},
+    /*  SMB22  */ { 39,     -1, -1, -1},
+    /*  SMB23  */ { 37,    135, -1, -1},
+    /*  SMB24  */ {129,     -1, -1, -1},
+    /*  SMB25  */ {131,     -1, -1, -1},
+    /*  SMB26  */ {133,     -1, -1, -1}};
 
 
     INT ret_val = 0;

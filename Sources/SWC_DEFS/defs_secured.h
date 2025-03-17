@@ -820,6 +820,67 @@ typedef enum
 
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Delay computing for condition flow 1: takes 3 bits of (x) number from an offset that is based on (n)    */
+/*---------------------------------------------------------------------------------------------------------*/
+#define DEFS_SEC_COND_FLOW_3_DELAY(x,n)   (((x) >> ((n) * 3)) & 0x07)
+
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Macro:           DEFS_SEC_COND_FLOW_3                                                                   */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  x           - a 9 bits variable used for increment operations                          */
+/*                  cond        - a condition to check                                                     */
+/*                  action      - action done if condition is eventually met                               */
+/*                  failureFunc - a function that should be called in case the flow has been compromised.  */
+/*                                The function receives a variable number of parameters                    */
+/*                  ...         - parameters to the failure function                                       */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:    This macro defines its own flowCounter                                                 */
+/* Description:                                                                                            */
+/*                  This macro checks a condition according to the "secured condition 1" flow,             */
+/*                  and executes 'Yes' path accordingly.                                                   */
+/*                                                                                                         */
+/* Example:                                                                                                */
+/*                                                                                                         */
+/*    void FailureFunc (arg1, arg2, ..., argn);                                                            */
+/*                                                                                                         */
+/*    {                                                                                                    */
+/*        ...                                                                           // Some code       */
+/*        DEFS_SEC_COND_FLOW_1( x, cond, action, FailureFunc, arg1, arg2, ..., argn )   // Call macro      */
+/*        ...                                                                                              */
+/*    }                                                                                                    */
+/*                                                                                                         */
+/*lint -esym(578,flowCounter)                                                                              */
+/*    Suppress declaration of symbol 'flowCounter' hides symbol 'flowCounter' (from earlier code)          */
+/*---------------------------------------------------------------------------------------------------------*/
+#define DEFS_SEC_COND_FLOW_3(x, cond, action, failureFunc, ...)                                            \
+{                                                                                                          \
+    volatile UINT8 __d;                                                                                    \
+                                                                                                           \
+    DEFS_FLOW_MONITOR_DECLARE(0);                                                                          \
+                                                                                                           \
+    __d = 2 + DEFS_SEC_COND_FLOW_3_DELAY(x, 0);                                                            \
+    DEFS_SEC_COND_CHECK_DELAY_LOOP(__d, cond, failureFunc, (__VA_ARGS__));                                 \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
+                                                                                                           \
+    __d =  2 + DEFS_SEC_COND_FLOW_3_DELAY(x, 1);                                                           \
+    DEFS_SEC_COND_CHECK_DELAY_LOOP(__d, cond, failureFunc, (__VA_ARGS__));                                 \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
+                                                                                                           \
+    __d =  2 + DEFS_SEC_COND_FLOW_3_DELAY(x, 2);                                                           \
+    DEFS_SEC_COND_CHECK_DELAY_LOOP(__d, cond, failureFunc, (__VA_ARGS__));                                 \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
+                                                                                                           \
+    DEFS_FLOW_MONITOR_COMPARE(3, failureFunc, __VA_ARGS__);                                                \
+    action;     /* Execute 'Yes' path */                                                                   \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
+    DEFS_FLOW_MONITOR_COMPARE(4, failureFunc, __VA_ARGS__);                                                \
+}
+
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Macro:           DEFS_SEC_BRANCH_ADDRESS_CHECK                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */

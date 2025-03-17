@@ -24,7 +24,13 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* NVIC Module Driver                                                                                      */
+/*---------------------------------------------------------------------------------------------------------*/
+#if defined NVIC_MODULE_TYPE
+#include __MODULE_IF_HEADER_FROM_DRV(nvic)
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Include FIU driver definitions                                                                          */
@@ -44,6 +50,8 @@
 /* Verbose prints                                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 #define FIU_MSG_DEBUG(fmt,args...)
+#define FIU_PROT_MSG_DEBUG(fmt,args...)
+
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
 /*                                     LOCAL FUNCTIONS IMPLEMENTATION                                      */
@@ -235,11 +243,11 @@ void FIU_ConfigFlashSize (FIU_MODULE_T fiu_module, FIU_DEV_SIZE_T flash_size)
     /*-----------------------------------------------------------------------------------------------------*/
     if ( flash_size <= FIU_DEV_SIZE_16MB )
     {
-        FIU_Config4ByteAddress(fiu_module, 0, 0, FALSE);
+        FIU_Config4ByteAddress(fiu_module, FIU_CS_0, FIU_CS_0, FALSE); // both FIU_CS_0 are ignored
     }
     else
     {
-        FIU_Config4ByteAddress(fiu_module, 0, 0, TRUE);
+        FIU_Config4ByteAddress(fiu_module, FIU_CS_0, FIU_CS_0, TRUE); // both FIU_CS_0 are ignored
     }
 #endif
 }
@@ -490,7 +498,7 @@ DEFS_STATUS FIU_ManualWrite ( FIU_MODULE_T            fiu_module,
                               UINT8 *                 data,
                               UINT32                  data_size)
 {
-    UINT8   uma_cfg  = 0x0;
+    UINT32  uma_cfg  = 0x0;
     UINT32  num_data_chunks;
     UINT32  remain_data;
     UINT32  idx = 0;
@@ -582,7 +590,7 @@ DEFS_STATUS FIU_UMA_Read (  FIU_MODULE_T            fiu_module,
 
     UINT32 uma_cfg = 0;
 
-    DEFS_STATUS ret = DEFS_STATUS_OK;
+    DEFS_STATUS ret;
 
     UINT32 data_reg[4] = {0xAAAAAAAA, 0xAAAAAAAA, 0xAAAAAAAA, 0xAAAAAAAA};
 
@@ -729,7 +737,7 @@ DEFS_STATUS FIU_UMA_Write ( FIU_MODULE_T            fiu_module,
     UINT32 uma_cfg;
     // UINT32 fiu_dwr_cfg;
     UINT32 chunk_data[FIU_MAX_UMA_DATA_SIZE/sizeof(UINT32)];
-    DEFS_STATUS ret = DEFS_STATUS_OK;
+    DEFS_STATUS ret;
     FIU_READ_MODE_T readMode = FIU_GetReadMode(fiu_module); // assumption: read and write mode are symetric.
     UINT32 bitsPerCycle = 0; // One command bit per clock (default)
 
@@ -807,7 +815,10 @@ DEFS_STATUS FIU_UMA_Write ( FIU_MODULE_T            fiu_module,
     /* Set the UMA data registers - FIU_UMA_DW0-3                                                          */
     /*-----------------------------------------------------------------------------------------------------*/
     memset(chunk_data, 0, sizeof(chunk_data));
-    memcpy(chunk_data, data, data_size);
+    if (data_size <= sizeof(chunk_data))
+        memcpy(chunk_data, data, data_size);
+    else
+        return DEFS_STATUS_FAIL;
     REG_WRITE(FIU_UMA_DW(fiu_module, 0), chunk_data[0]);
     REG_WRITE(FIU_UMA_DW(fiu_module, 1), chunk_data[1]);
     REG_WRITE(FIU_UMA_DW(fiu_module, 2), chunk_data[2]);
@@ -898,18 +909,17 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
                             UINT32                  timeout,
                             UINT                    dummy_bytes)
 {
-
     UINT32 data_reg[4];
-
 
     UINT32 uma_cfg = REG_READ(FIU_UMA_CFG(fiu_module));
 
     UINT32 offset = 0;
     UINT32 size = data_rd_size;
     if (data_wr_size)
-    	size = data_wr_size;
+        size = data_wr_size;
 
     DEFS_STATUS ret = DEFS_STATUS_OK;
+    const UINT32 bits_log[6] = {0, 0, 1, 1, 2, 2};
 
     DEFS_STATUS_COND_CHECK(cmd_bits > 0, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
     DEFS_STATUS_COND_CHECK(addr_bits > 0, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
@@ -921,23 +931,17 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
     DEFS_STATUS_COND_CHECK(data_wr_bits < 5, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
     DEFS_STATUS_COND_CHECK(data_rd_bits < 5, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
 
-
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set the UMA data registers - FIU_UMA_DW0-3                                                          */
     /*-----------------------------------------------------------------------------------------------------*/
     memset(data_reg, 0, sizeof(data_reg));
-
-
-
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* First we activate Chip Select (CS) for the given flash device                                       */
     /*-----------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(FIU_UMA_CTS(fiu_module), FIU_UMA_CTS_DEV_NUM, (UINT32)device);
 
-
     SET_REG_FIELD(FIU_UMA_CTS(fiu_module), FIU_UMA_CTS_SW_CS, 0);
-
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* set transaction code in FIU_UMA_CODE                                                                */
@@ -958,15 +962,13 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
     SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_RDATSIZ, data_rd_size);
     SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_WDATSIZ, data_wr_size);
     SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_DBSIZ,   dummy_bytes);
-    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_CMBPCK,  cmd_bits - 1);
-    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_ADBPCK,  addr_bits - 1);
-    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_WDBPCK,  data_wr_bits - 1);
-    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_RDBPCK,  data_rd_bits - 1);
-    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_DBPCK,   addr_bits - 1);
+    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_CMBPCK,  bits_log[cmd_bits]);
+    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_ADBPCK,  bits_log[addr_bits]);
+    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_WDBPCK,  bits_log[data_wr_bits]);
+    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_RDBPCK,  bits_log[data_rd_bits]);
+    SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_DBPCK,   bits_log[addr_bits]);
 
     // SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_DBSIZ,   1);
-
-
 
     //FIU_MSG_DEBUG("\t\t> UMA_read fiu%d cs%d tr=0x%02x addr=0x%x (%x),    %d bytes \n",
     //                   fiu_module, device, transaction_code, address, address_size, (int)data_size);
@@ -976,16 +978,15 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
     /*-----------------------------------------------------------------------------------------------------*/
     REG_WRITE(FIU_UMA_CFG(fiu_module), uma_cfg);
 
-
     do {
-        uint32_t length = MIN(16, (size - offset)); // can only transmit 16 bytes max
+        UINT32 length = MIN(16, (size - offset)); // can only transmit 16 bytes max
 
         if (data_wr_size)
         {
-            memcpy(data_reg, data_wr + offset , length);
-
-
-	    // Avi: add an if on the size
+            if (length <= sizeof(data_reg))
+                memcpy(data_reg, data_wr + offset , length);
+            else
+                return DEFS_STATUS_FAIL;
             REG_WRITE(FIU_UMA_DW(fiu_module, 0), data_reg[0]);
             REG_WRITE(FIU_UMA_DW(fiu_module, 1), data_reg[1]);
             REG_WRITE(FIU_UMA_DW(fiu_module, 2), data_reg[2]);
@@ -1038,8 +1039,10 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
 
             memcpy(data_rd + offset, data_reg, length);
 
+            /* clear dummy bytes settings */
+            SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_DBSIZ, 0);
+            REG_WRITE(FIU_UMA_CFG(fiu_module), uma_cfg);
         }
-
 
         FIU_MSG_DEBUG("\t\t> UMA_ioctl fiu%d cs%d tr=0x%02x addr=0x%x (%x), rd %u bytes, wr %u bytes, uma_size %u, uma_cfg = %#010lx ",
                              fiu_module, device, transaction_code, address + offset, address_size, data_rd_size, data_wr_size, length, uma_cfg);
@@ -1047,18 +1050,13 @@ DEFS_STATUS FIU_UMA_ioctl ( FIU_MODULE_T            fiu_module,
         FIU_MSG_DEBUG("                 %#08lx %#08lx %#08lx %#08lx \n",
                       data_reg[0], data_reg[1], data_reg[2], data_reg[3]);
 
-
-
         offset += 16;
 
         /* After writing the first 16 bytes no need to send address and command for the next sequence */
         SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_ADDSIZ, 0);
         SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_CMDSIZ, 0);
 
-
-
     } while (offset < size);
-
 
     SET_REG_FIELD(FIU_UMA_CTS(fiu_module), FIU_UMA_CTS_SW_CS, 1);
 
@@ -1100,7 +1098,7 @@ DEFS_STATUS FIU_PageWrite ( FIU_MODULE_T    fiu_module,
     UINT32 uma_cfg;
     UINT32 fiu_dwr_cfg;
     UINT16 chunk_size;
-    DEFS_STATUS ret = DEFS_STATUS_OK;
+    DEFS_STATUS ret;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* set device number - DEV_NUM in FIU_UMA_CTS                                                          */
@@ -1171,9 +1169,10 @@ DEFS_STATUS FIU_PageWrite ( FIU_MODULE_T    fiu_module,
         chunk_size = MIN(FIU_MAX_UMA_DATA_SIZE, data_size);
 
         SET_VAR_FIELD(uma_cfg, FIU_UMA_CFG_WDATSIZ, chunk_size);     // Set data size and write direction
-
-        memcpy(chunk_data, data, chunk_size);
-
+        if (chunk_size <= sizeof (chunk_data))
+            memcpy (chunk_data, data, chunk_size);
+        else
+             return DEFS_STATUS_FAIL;
         /*-----------------------------------------------------------------------------------------------------*/
         /* wait for indication that transaction has terminated                                                 */
         /*-----------------------------------------------------------------------------------------------------*/
@@ -1262,7 +1261,7 @@ DEFS_STATUS FIU_PageWrite ( FIU_MODULE_T    fiu_module,
 void FIU_Config4ByteAddress (FIU_MODULE_T fiu_module, _UNUSED_ FIU_CS_T device, _UNUSED_ FIU_CS_T chipSelect, BOOLEAN enable)
 {
 
-    HAL_PRINT("\t%s fiu%d cs%d %sable 4B\n", __FUNCTION__, fiu_module, device, (enable == TRUE)? "en" : "dis");
+    FIU_MSG_DEBUG("\t%s fiu%d %sable 4B\n", __FUNCTION__, fiu_module, (enable == TRUE)? "en" : "dis");
 
     if(enable)
     {
@@ -1730,6 +1729,179 @@ void FIU_SlaveUMABlock (BOOLEAN block)
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_SetProtectionRegion                                                                */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  fiu -  FIU module                                                                      */
+/*                  index -  region index, up to 6                                                         */
+/*                  startAddr - start addresses of range.                                                  */
+/*                  endAddr - end addresses off range.                                                     */
+/*                  csUse - 0 invalid, 1 CS0, 2 CS1, 3 - both CS.                                          */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS                                                                            */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sets a region in the flash protection.                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_SetProtectionRegion (FIU_MODULE_T fiu, UINT index, UINT32 startAddr, UINT32 endAddr, UINT csUse)
+{
+    UINT32 val = 0;
+
+    if (index >= FIU_PRT_RANG_MAX)
+    {
+        FIU_PROT_MSG_DEBUG("FIU%d region ind %d too big\n", fiu, index);
+        return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
+    }
+
+    SET_VAR_FIELD(val, FIU_PRT_RANG_STRTRANGm, startAddr >> 14);
+    SET_VAR_FIELD(val, FIU_PRT_RANG_LASTRANGm, (endAddr - 0x3FFF) >> 14);
+    SET_VAR_FIELD(val, FIU_PRT_RANG_CSUSE, csUse);
+
+    REG_WRITE(FIU_PRT_RANG (fiu, index), val);
+    FIU_PROT_MSG_DEBUG("FIU%d FIU_PRT_RANG%d %#010lx\n", fiu, index, REG_READ(FIU_PRT_RANG (fiu, index)));
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_SetProtectionCommand                                                               */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  addrBits - 1/2/4 bits                                                                  */
+/*                  addrBytes - 4/3 bytes. For commands relevant for entire chip field is don't care.      */
+/*                  cmdBits - 1/2/4                                                                        */
+/*                  command - command byte                                                                 */
+/*                  com_index - up to 40 commands are supported.                                           */
+/*                  fiu -  FIU module                                                                      */
+/*                  range_ind - index of range where cmd is blocked. 6 - lock of entire flash. 7 - always OK */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sets a command to enable or block.                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_SetProtectionCommand (FIU_MODULE_T fiu, UINT com_index, UINT range_ind, UINT8 command,
+                                        UINT addrBytes, UINT addrBits, UINT cmdBits)
+{
+    UINT32 val = 0;
+    UINT reg_ind = com_index >> 1;
+    UINT reg_A_B = com_index % 2;
+
+    if (reg_ind >= FIU_PRT_CMD_MAX)
+    {
+        FIU_PROT_MSG_DEBUG("FIU%d cmd ind %d too big\n", fiu, reg_ind);
+        return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
+    }
+
+    SET_VAR_FIELD(val, FIU_PRT_CMD_ADBPCKA, addrBits - 1);
+    SET_VAR_FIELD(val, FIU_PRT_CMD_CMBPCKA, cmdBits - 1);
+    SET_VAR_FIELD(val, FIU_PRT_CMD_ADDSZA, (addrBytes == 4) ? 1 : 0);
+
+    /* 3 bits for address range selection [15, 9, 8] */
+    SET_VAR_FIELD(val, FIU_PRT_CMD_ADRNGSELA, (range_ind >> 2) & 0x01);
+    SET_VAR_FIELD(val, FIU_PRT_CMD_FRBDCA, range_ind & 0x3);
+    SET_VAR_FIELD(val, FIU_PRT_CMD_CMDA, command);
+
+    if (reg_A_B == 0)
+    {
+        SET_REG_FIELD(FIU_PRT_CMD (fiu, reg_ind), FIU_PRT_CMD_A, val);
+    }
+    else
+    {
+        SET_REG_FIELD(FIU_PRT_CMD (fiu, reg_ind), FIU_PRT_CMD_B, val);
+    }
+
+    FIU_PROT_MSG_DEBUG("FIU%d FIU_PRT_CMD%d %#010lx val %#010lx addr %#010lx \n",
+        fiu, reg_ind, REG_READ(FIU_PRT_CMD(fiu, reg_ind)), val, REG_ADDR(FIU_PRT_CMD(fiu, reg_ind)));
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FIU_ConfigProtection                                                                   */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  bEnable - enable\disable. (disable only if not previously locked)                      */
+/*                  devSize - size of flash                                                                */
+/*                  fiu -  fiu module                                                                      */
+/*                  lock - lock the flash protection.                                                      */
+/*                  settings - handler for various parameters required for flash protecton.                */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure flas protection.                                                */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS FIU_ConfigProtection (FIU_MODULE_T fiu, BOOLEAN lock, BOOLEAN bEnable, UINT32 devSize, FIU_PROTECTION_SETTING_T *settings)
+{
+    UINT32 val = 0;
+    UINT32 devSizeInMega;
+
+    DEFS_STATUS_COND_CHECK(settings != NULL, DEFS_STATUS_INVALID_PARAMETER);
+    DEFS_STATUS_COND_CHECK(devSize > _128MB_, DEFS_STATUS_INVALID_PARAMETER);
+
+    devSizeInMega = devSize >> 20;
+
+    SET_VAR_FIELD(val, FIU_PRT_CFG_DEVSIZ, devSizeInMega ? LOG_4(devSizeInMega) : 0);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FCS0, settings->cs_enable[0]);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FCS0_LCK, settings->cs_value[0]);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FCS1, settings->cs_enable[1]);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FCS1_LCK,  settings->cs_value[1]);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FIO2_ENLCK, settings->io2_enable);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_FIO2_LVL, settings->io2_value);
+
+    SET_VAR_FIELD(val, FIU_PRT_CFG_PVE, 1); // clear status of "Protection Violation Encountered" status.
+
+    if (settings->handler != NULL)
+    {
+        SET_VAR_FIELD(val, FIU_PRT_CFG_PVIE, 1);
+        /*-------------------------------------------------------------------------------------*/
+        /* Registering event handler to GIC\NVIC                                               */
+        /*-------------------------------------------------------------------------------------*/
+        INTERRUPT_REGISTER_AND_ENABLE(FIU_INTERRUPT_PROVIDER, FIU_INTERRUPT(fiu), settings->handler, \
+                                        FIU_INTERRUPT_POLARITY, FIU_INTERRUPT_PRIORITY);
+    }
+
+    SET_VAR_FIELD(val, FIU_PRT_CFG_OCALWD, settings->otherCommandsAllowed);
+    SET_VAR_FIELD(val, FIU_PRT_CFG_PEN, bEnable);
+
+    REG_WRITE(FIU_PRT_CFG (fiu), val);
+
+    if (lock == TRUE)
+    {
+        SET_REG_FIELD(FIU_PRT_CFG(fiu), FIU_PRT_CFG_LCK, 1);
+    }
+
+    FIU_PROT_MSG_DEBUG("FIU%d FIU_PRT_CFG %#010lx val %#010lx addr %#010lx \n", fiu,
+                    REG_READ(FIU_PRT_CFG(fiu)), val, REG_ADDR(FIU_PRT_CFG(fiu)));
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function         FIU_GetProtectionViolationStatus                                                       */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  fiu -  fiu module index                                                                */
+/*                  clearStatus -                                                                          */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine returns the status of the protection. TRUE: violation accored.            */
+/*                  FALSE: otherwise.                                                                      */
+/*---------------------------------------------------------------------------------------------------------*/
+BOOLEAN FIU_GetProtectionViolationStatus (FIU_MODULE_T fiu, BOOLEAN clearStatus)
+{
+    BOOLEAN ret_val = (BOOLEAN)READ_REG_FIELD(FIU_PRT_CFG(fiu), FIU_PRT_CFG_PVE);
+
+    if (clearStatus == TRUE)
+    {
+        SET_REG_FIELD(FIU_PRT_CFG(fiu), FIU_PRT_CFG_PVE, 1); // W1C
+    }
+
+    return ret_val;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        FIU_PrintRegsModules_l                                                                 */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
@@ -1738,7 +1910,7 @@ void FIU_SlaveUMABlock (BOOLEAN block)
 /* Description:                                                                                            */
 /*                  This routine prints the module registers per module                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-static void FIU_PrintRegsModules_l (FIU_MODULE_T n)
+static void FIU_PrintRegsModules_l (_UNUSED_ FIU_MODULE_T n)
 {
     HAL_PRINT("/*--------------*/\n");
     HAL_PRINT("/*     FIU%d     */\n", n);
@@ -1758,20 +1930,13 @@ static void FIU_PrintRegsModules_l (FIU_MODULE_T n)
     HAL_PRINT("FIU_UMA_DR2(n)       = %#010lx \n", REG_READ(FIU_UMA_DR2(n)));
     HAL_PRINT("FIU_UMA_DR3(n)       = %#010lx \n", REG_READ(FIU_UMA_DR3(n)));
     HAL_PRINT("FIU_PRT_CFG(n)       = %#010lx \n", REG_READ(FIU_PRT_CFG(n)));
-    HAL_PRINT("FIU_PRT_CMD0(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD0(n)));
-    HAL_PRINT("FIU_PRT_CMD1(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD1(n)));
-    HAL_PRINT("FIU_PRT_CMD2(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD2(n)));
-    HAL_PRINT("FIU_PRT_CMD3(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD3(n)));
-    HAL_PRINT("FIU_PRT_CMD4(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD4(n)));
-    HAL_PRINT("FIU_PRT_CMD5(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD5(n)));
-    HAL_PRINT("FIU_PRT_CMD6(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD6(n)));
-    HAL_PRINT("FIU_PRT_CMD7(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD7(n)));
-    HAL_PRINT("FIU_PRT_CMD8(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD8(n)));
-    HAL_PRINT("FIU_PRT_CMD9(n)      = %#010lx \n", REG_READ(FIU_PRT_CMD9(n)));
-    HAL_PRINT("FIU_PRT_CMD10(n)     = %#010lx \n", REG_READ(FIU_PRT_CMD10(n)));
-    HAL_PRINT("FIU_PRT_CMD11(n)     = %#010lx \n", REG_READ(FIU_PRT_CMD11(n)));
-    HAL_PRINT("FIU_PRT_CMD12(n)     = %#010lx \n", REG_READ(FIU_PRT_CMD12(n)));
-    HAL_PRINT("FIU_PRT_CMD13(n)     = %#010lx \n", REG_READ(FIU_PRT_CMD13(n)));
+
+    for (int m = 0 ; m < FIU_PRT_CMD_MAX; m++)
+        HAL_PRINT("FIU_PRT_CMD(%d, %d)      = %#010lx \n", n, m, REG_READ(FIU_PRT_CMD(n, m)));
+
+    for (int m = 0 ; m < FIU_PRT_RANG_MAX; m++)
+        HAL_PRINT("FIU_PRT_RANG(%d, %d)      = %#010lx \n", n, m, REG_READ(FIU_PRT_RANG(n, m)));
+
     HAL_PRINT("FIU_STPL_CFG(n)      = %#010lx \n", REG_READ(FIU_STPL_CFG(n)));
     HAL_PRINT("FIU_CFG(n)           = %#010lx \n", REG_READ(FIU_CFG(n)));
     HAL_PRINT("FIU_VER(n)           = %#010lx \n", REG_READ(FIU_VER(n)));

@@ -955,7 +955,7 @@ void FUSE_PrintRegs (void)
     HAL_PRINT("/*     FUSE     */\n");
     HAL_PRINT("/*--------------*/\n\n");
 
-    FUSE_PrintModuleRegs(0);
+    FUSE_PrintModuleRegs(KEY_SA);
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

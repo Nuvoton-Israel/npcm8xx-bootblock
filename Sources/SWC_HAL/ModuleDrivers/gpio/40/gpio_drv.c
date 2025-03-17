@@ -632,7 +632,7 @@ void GPIO_PrintRegs (void)
 /*                  This routine prints the module instance registers                                      */
 /*lint -e{715}      Suppress 'port' not referenced                                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-void GPIO_PrintModuleRegs (UINT port)
+void GPIO_PrintModuleRegs (_UNUSED_ UINT port)
 {
     ASSERT(port < GPIO_NUM_OF_PORTS);
 
@@ -944,13 +944,12 @@ DEFS_STATUS GPIO_ConfigureInput( GPIO_EVEN_HANDLE_T  handler,
                     GPIO_handler[handler_pos].handler   = handler;
                     GPIO_handler[handler_pos].arg       = handler_args;
 
-#if !defined(NO_INTERNAL_IRQ_HANDLER)
                     /*-------------------------------------------------------------------------------------*/
                     /* Registering event handler to AIC                                                    */
                     /*-------------------------------------------------------------------------------------*/
-                    GIC_InstallHandler(GPIO_INTERRUPT(current_gpio), GPIO_Isr) ; // dev = , 0);
-                    GIC_EnableInt(GPIO_INTERRUPT(current_gpio), TRUE);
-#endif
+                    INTERRUPT_REGISTER_AND_ENABLE(GPIO_INTERRUPT_PROVIDER, GPIO_INTERRUPT(current_gpio), GPIO_Isr, \
+                                                  GPIO_INTERRUPT_POLARITY, GPIO_INTERRUPT_PRIORITY);
+
                 }
                 else
                 {

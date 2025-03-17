@@ -182,35 +182,29 @@
 /**************************************************************************************************************************/
 /*   FIU Protection Command Register (FIU_PRT_CMD0-13)                                                                    */
 /**************************************************************************************************************************/
-#define  FIU_PRT_CMD0(n)                   (FIU_BASE_ADDR(n) + 0x40) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD1(n)                   (FIU_BASE_ADDR(n) + 0x44) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD2(n)                   (FIU_BASE_ADDR(n) + 0x48) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD3(n)                   (FIU_BASE_ADDR(n) + 0x4C) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD4(n)                   (FIU_BASE_ADDR(n) + 0x50) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD5(n)                   (FIU_BASE_ADDR(n) + 0x54) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD6(n)                   (FIU_BASE_ADDR(n) + 0x58) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD7(n)                   (FIU_BASE_ADDR(n) + 0x5C) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD8(n)                   (FIU_BASE_ADDR(n) + 0x60) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD9(n)                   (FIU_BASE_ADDR(n) + 0x64) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD10(n)                  (FIU_BASE_ADDR(n) + 0x68) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD11(n)                  (FIU_BASE_ADDR(n) + 0x6C) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD12(n)                  (FIU_BASE_ADDR(n) + 0x70) , FIU_ACCESS , 32
-#define  FIU_PRT_CMD13(n)                  (FIU_BASE_ADDR(n) + 0x74) , FIU_ACCESS , 32
+#define  FIU_PRT_CMD(n, m)                 (FIU_BASE_ADDR(n) + 0x80 + (4)*(m)) , FIU_ACCESS , 32
+#define  FIU_PRT_CMD_MAX                20
 
+/* CMD B fields */
 #define  FIU_PRT_CMD_ADRNGSELB          31 , 2             /* 31  (Address Range Select B). Defines what address range is used by Command B
                                                                    together with the FRBDCB field. See field FRBDCB description.      */
 #define  FIU_PRT_CMD_ADBPCKB            29 , 2             /* 30-29 ADBPCKB (Address B Bits per Clock). Selects how many address B bits are checked per clock.                      */
 #define  FIU_PRT_CMD_CMBPCKB            27 , 2             /* 28-27 CMBPCKB (Command B Bits per Clock). Selects how many command B bits are checked per clock.                      */
 #define  FIU_PRT_CMD_ADDSZB             26 , 1              /* 26 ADDSZB (Address Size for limiting command B). Defines the address size of command B for limit                      */
 #define  FIU_PRT_CMD_FRBDCB             24 , 2             /* 25-24 FRBDCB (Forbid Command B). Defines if Command B is forbidden.                                                   */
-#define  FIU_PRT_CMD_CMDB               16 , 8             /* 23-16 CMDB (Command B). Sets the value of command B.                                                                  */
-#define  FIU_PRT_CMD_ADRNGSELA          15 , 1             /* ADRNGSELA (Address Range Select A). Defines what address range is used by Command A
+#define  FIU_PRT_CMD_CMDB               16 , 8             /* 23-16 CMDB (Command B). Sets the value of command B.        */
+
+/* CMD A fields */
+#define FIU_PRT_CMD_ADRNGSELA           15 , 1             /* ADRNGSELA (Address Range Select A). Defines what address range is used by Command A
                                                                    together with the FRBDCA field. See field FRBDCA description. (added in ARBEL) */
 #define  FIU_PRT_CMD_ADBPCKA            13 , 2             /* 14-13 ADBPCKA (Address A Bits per Clock). Selects how many address A bits are checked per clock.                      */
 #define  FIU_PRT_CMD_CMBPCKA            11 , 2             /* 12-11 CMBPCKA (Command Bits per Clock A). Selects how many command A bits are checked per clock.                      */
 #define  FIU_PRT_CMD_ADDSZA             10 , 1              /* 10 ADDSZA (Address Size for limiting command A). Defines the address size of command A for limit                      */
 #define  FIU_PRT_CMD_FRBDCA             8 , 2              /* 9-8 FRBDCA (Forbid Command A). Defines if Command A is forbidden.                                                     */
 #define  FIU_PRT_CMD_CMDA               0 , 8              /* 7-0 CMDA (Command A). Sets the value of a command A.                                                                  */
+
+#define  FIU_PRT_CMD_A               0 , 16              /* COMMAND A  */
+#define  FIU_PRT_CMD_B               16 , 16             /* COMMAND B  */
 
 /**************************************************************************************************************************/
 /*   FIU Status Polling Configuration Register (FIU_STPL_CFG)                                                             */
@@ -259,10 +253,12 @@
 /**************************************************************************************************************************/
 /*   FIU Protection Range Register m (FIU_PRT_RANG0-3) (added in ARBEL)                                                   */
 /**************************************************************************************************************************/
-#define  FIU_PRT_RANG(n, m)                        (FIU_BASE_ADDR(n) + 0x80 + (4 * (m)) ) , FIU_ACCESS , 32      /* Offset: 80h, 84, 88, 8C */
+#define  FIU_PRT_RANG(n, m)                        (FIU_BASE_ADDR(n) + 0x40 + (4 * (m)) ) , FIU_ACCESS , 32
+#define  FIU_PRT_RANG_MAX   6
+
 #define  FIU_PRT_RANG_LASTRANGm           16 , 13              /* 28-16 R/W LASTRANGm (Range m Last Address). Defines the end address of range. The end address of range = value in field * 4000h + 3FFFh. */
 #define  FIU_PRT_RANG_CSUSE               13 , 2               /* 14-13 R/W CSUSE (Chip Select Range Usage). Define the range relevance to chip-select 0 and chip-select 1 of the SPI bus. */
-#define  FIU_PRT_RANG_STRTRANGm           0  , 11              /* 12-0 R/W STRTRANGm (Range m Start Address). Defines the start address of range. The start address of */
+#define  FIU_PRT_RANG_STRTRANGm           0  , 12              /* 12-0 R/W STRTRANGm (Range m Start Address). Defines the start address of range. The start address of */
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* FIU Fie

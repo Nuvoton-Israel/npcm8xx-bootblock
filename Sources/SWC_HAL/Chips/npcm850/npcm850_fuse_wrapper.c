@@ -56,18 +56,25 @@ DEFS_STATUS FUSE_WRPR_get (UINT16 fuse_address, UINT16 fuse_length, FUSE_ECC_TYP
     {
         for (iCnt = 0; iCnt < fuse_length ; iCnt++)
         {
-            FUSE_Read(0, fuse_address + iCnt , &value[iCnt]);
+            FUSE_Read(KEY_SA, fuse_address + iCnt , &value[iCnt]);
         }
     }
     else
     {
         for (iCnt = 0; iCnt < fuse_length ; iCnt++)
         {
-            FUSE_Read(0, fuse_address + iCnt , &fuse_encoded[iCnt]);
+            FUSE_Read(KEY_SA, fuse_address + iCnt , &fuse_encoded[iCnt]);
         }
 
     }
 
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Either encode the data or read it as is                                                             */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if ( (FUSE_ECC_TYPE_T)fuse_ecc == FUSE_ECC_NIBBLE_PARITY)
+    {
+        status = FUSE_NibParEccDecode(fuse_encoded, value, fuse_length);
+    }
 
     return status;
 }

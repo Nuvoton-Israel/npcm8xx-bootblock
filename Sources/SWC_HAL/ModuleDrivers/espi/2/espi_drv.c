@@ -35,6 +35,9 @@
 
 #if defined GDMA_MODULE_TYPE || defined GDMA_CAPABILITY_REQUEST_SELECT
 #include __MODULE_IF_HEADER_FROM_DRV(gdma)
+#ifdef ESPI_PCBM_GDMA_ERRATA_ISSUE
+#include __MODULE_REGS_FROM_DRV(gdma, 5)
+#endif
 #endif
 
 #if defined SHM_MODULE_TYPE
@@ -45,7 +48,7 @@
 #include __MODULE_IF_HEADER_FROM_DRV(miwu)
 #endif
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 #if defined FLASH_DEV_MODULE_TYPE
 #include __LOGICAL_IF_HEADER_FROM_DRV(flash_dev)
 #endif
@@ -185,6 +188,12 @@ typedef struct
     BOOLEAN                     manualMode;
     BOOLEAN                     useDMA;
     UINT16                      buffTransferred;
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#ifdef GDMA_CAPABILITY_REQUEST_SELECT
+    BOOLEAN                     readFromFalsh;
+    FIU_MODULE_T                fiu_module;
+#endif
+#endif
 } ESPI_PC_USR_REQ_INFO;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -211,8 +220,12 @@ typedef _ALIGN_(sizeof(UINT32), _PACK_(struct))
 #define ESPI_PC_64_BIT_HDR_SIZE                 12
 #define ESPI_PC_MSG_HDR_SIZE                    8
 #define ESPI_PC_READ_SECTOR_SIZE                _4KB_
-#define ESPI_PC_AUTO_MODE(on)                   SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMBRSTEN, on)
-#define ESPI_PC_AUTO_MODE_IS_ON()               READ_REG_FIELD(ESPI_PERCTL, PERCTL_BMBRSTEN)
+#define ESPI_PC_READ_AUTO_MODE(on)              SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMBRSTEN, on)
+#define ESPI_PC_READ_AUTO_MODE_IS_ON()          READ_REG_FIELD(ESPI_PERCTL, PERCTL_BMBRSTEN)
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+#define ESPI_PC_WRITE_AUTO_MODE(on)             SET_REG_FIELD(ESPI_PERCTLBW , PERCTLBW_BMWBRSTEN, on)
+#define ESPI_PC_WRITE_AUTO_MODE_IS_ON()         READ_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWBRSTEN)
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* PC BM Timeout                                                                                           */
@@ -472,7 +485,7 @@ typedef struct
 #define ESPI_OOB_PECI_HOST_ID(host_id)          (UINT32)(host_id << 1 | 0)
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* USB usage responce mask                                                                                 */
+/* USB usage response mask                                                                                 */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_OOB_USB_USAGE_RES_MASK(x)          (x | 0x10)
 
@@ -528,7 +541,6 @@ typedef struct
 
 #define ESPI_FLASH_MAX_READ_REQ_SIZE            64
 #define ESPI_FLASH_AUTO_MODE_MAX_TRANS_SIZE     256
-#define ESPI_FLASH_PROGRAM_PAGE_DEFAULT_SIZE    256
 #ifdef ESPI_CAPABILITY_FLASH_64B_WRITE
 #define ESPI_FLASH_TRANS_DATA_PAYLOAD_MAX_SIZE  64
 #else
@@ -538,12 +550,18 @@ typedef struct
 #define ESPI_FLASH_IS_AUTO_MODE_ON              (READ_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_AMTEN))
 #define ESPI_FLASH_READ_SECTOR_SIZE             _4KB_
 #define ESPI_FLASH_AUTO_AMDONE_LOOP_COUNT       0xFFFFFF
-#ifdef ESPI_CAPABILITY_SAF
-#define ESPI_FLASH_MAX_READ_REQ_SIZE_SUPP       ESPI_FLASH_SafMaxReadSize[READ_REG_FIELD(ESPI_FLASHCFG,FLASHCFG_FLASHREQSUP)]
+#ifdef ESPI_CAPABILITY_TAF
+#define ESPI_FLASH_MAX_READ_REQ_SIZE_SUPP       ESPI_FLASH_TafMaxReadSize[READ_REG_FIELD(ESPI_FLASHCFG,FLASHCFG_FLASHREQSUP)]
 #define ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE         _64B_
 #define ESPI_MIDDLE_COMPLETION_MASK             0xF9
 #define ESPI_FIRST_COMPLETION_MASK              0xFB
 #define ESPI_LAST_COMPLETION_MASK               0xFD
+#ifndef ESPI_TAF_FIU_MODULE
+#define ESPI_TAF_FIU_MODULE                     FIU_MODULE_1
+#endif
+#ifndef ESPI_TAF_DEVICE
+#define ESPI_TAF_DEVICE                         FIU_CS_0
+#endif
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -580,54 +598,65 @@ typedef struct
     SET_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE, var);         \
 }
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
+/*---------------------------------------------------------------------------------------------------------*/
+/* Flash TAF Timeout                                                                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASH_TAF_FLASH_POLLING_STATUS_TIMEOUT 20
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Flash TAF Address                                                                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_FLASH_SUPPORTED_ADDRESS_RANGE          _128MB_
+#define ESPI_FLASH_BASE_ADDRESS                     FLASH_BASE_ADDR(ESPI_TAF_FIU_MODULE)
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Flash access channel mode                                                                               */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
     ESPI_FLASH_MODE_MAF  = 0,
-    ESPI_FLASH_MODE_SAF = 1,
+    ESPI_FLASH_MODE_TAF = 1,
 } ESPI_FLASH_MODE_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Flash SAF host requests                                                                                 */
+/* Flash TAF host requests                                                                                 */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_FLASH_SAF_REQ_READ  = 0,
-    ESPI_FLASH_SAF_REQ_WRITE = 1,
-    ESPI_FLASH_SAF_REQ_ERASE = 2,
-    ESPI_FLASH_SAF_REQ_RPMC_OP1  = 3,
-    ESPI_FLASH_SAF_REQ_RPMC_OP2  = 4,
-    ESPI_FLASH_SAF_REQ_NUM,
-} ESPI_FLASH_SAF_REQ_T;
+    ESPI_FLASH_TAF_REQ_READ  = 0,
+    ESPI_FLASH_TAF_REQ_WRITE = 1,
+    ESPI_FLASH_TAF_REQ_ERASE = 2,
+    ESPI_FLASH_TAF_REQ_RPMC_OP1  = 3,
+    ESPI_FLASH_TAF_REQ_RPMC_OP2  = 4,
+    ESPI_FLASH_TAF_REQ_NUM,
+} ESPI_FLASH_TAF_REQ_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Flash SAF erase sizes                                                                                   */
+/* Flash TAF erase sizes                                                                                   */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
     ESPI_FLASH_ERASE_4K  = 0,
-    ESPI_FLASH_ERASE_16K = 1,
+    ESPI_FLASH_ERASE_32K = 1,
     ESPI_FLASH_ERASE_64K = 2,
 } ESPI_FLASH_ERASE_T;
 
 typedef struct
 {
-    ESPI_FLASH_SAF_REQ_T    reqType;
+    ESPI_FLASH_TAF_REQ_T    reqType;
     DEFS_STATUS             status;
     UINT                    outBufferSize;
     UINT8                   tag;
-    UINT32                  buffer[(_64B_)/sizeof(UINT32)];
+    UINT32                  buffer[ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE/sizeof(UINT32)];
     UINT8                   currSize;
     UINT32                  offset;
     UINT32                  size;
     UINT32                  reminder;
     UINT32                  bytesRead;
-} ESPI_FLASH_SAF_REQ_INFO;
+} ESPI_FLASH_TAF_REQ_INFO;
+#endif // ESPI_CAPABILITY_TAF
 
-#endif // ESPI_CAPABILITY_SAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -856,14 +885,14 @@ static BOOLEAN                  ESPI_FLASH_RXIE_L;
 static GDMA_CHANNEL_ID_T        ESPI_FLASH_gdmaChannelId;
 #endif
 #endif
-#ifdef ESPI_CAPABILITY_SAF
-static BOOLEAN                  ESPI_FLASH_SafPendingIncomingReq_L;
-static BOOLEAN                  ESPI_FLASH_SafPendingIncomingRes_L;
-static const UINT               ESPI_FLASH_SafMaxReadSize[] = {_64B_, _64B_, _128B_, _256B_, _512B_,
+#ifdef ESPI_CAPABILITY_TAF
+static BOOLEAN                  ESPI_FLASH_TafAutoReadConfig_L;
+static BOOLEAN                  ESPI_FLASH_TafPendingIncomingRes_L;
+static const UINT               ESPI_FLASH_TafMaxReadSize[] = {_64B_, _64B_, _128B_, _256B_, _512B_,
                                                                _1KB_, _2KB_, _4KB_}; // DO NOT change order, according to ESPI_FLASH_REQ_ACC_T
-static FLASH_DEV_FP_T           ESPI_FLASH_SafFlashParams_L;
-static ESPI_FLASH_SAF_REQ_INFO  ESPI_FLASH_SafReqInfo_L;
-#endif // ESPI_CAPABILITY_SAF
+static FLASH_DEV_FP_T           ESPI_FLASH_TafFlashParams_L;
+static ESPI_FLASH_TAF_REQ_INFO  ESPI_FLASH_TafReqInfo_L;
+#endif // ESPI_CAPABILITY_TAF
 
 #if defined (ESPI_ESPI_RST_ERRATA_ISSUE) && defined (ESPI_VW_MIWU_INTERRUPT_SUPPORT)
 /*---------------------------------------------------------------------------------------------------------*/
@@ -908,6 +937,11 @@ static DEFS_STATUS  ESPI_PC_BM_ReqManual_l                  (ESPI_PC_MSG_T msgTy
                                                              BOOLEAN pollingMode, UINT32* buffer, BOOLEAN strpHdr);
 static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l                (UINT64 offset, UINT32 size, BOOLEAN polling,
                                                              UINT32* buffer, BOOLEAN strpHdr, BOOLEAN useDMA);
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+static DEFS_STATUS  ESPI_PC_BM_WriteReqAuto_l               (UINT64 offset, UINT32 size, BOOLEAN polling,
+                                                             UINT32* buffer, BOOLEAN strpHdr, BOOLEAN useDMA);
+static DEFS_STATUS  ESPI_PC_BM_TransmitDataBuffer_l         (const UINT32* buffer, UINT32 size);
+#endif
 static void         ESPI_PC_BM_HandleReqRes_l               (void);
 static void         ESPI_PC_BM_HandleInMessage_l            (void);
 static void         ESPI_PC_BM_AutoModeTransDoneHandler_l   (UINT32 status, UINT32 intEnable);
@@ -918,9 +952,18 @@ static void         ESPI_PC_BM_GdmaIntHandler_l             (GDMA_CHANNEL_ID_T c
 static void         ESPI_PC_BM_GdmaIntHandler_l             (UINT8  module, UINT8 channel, DEFS_STATUS status,
                                                              UINT32 transferLen);
 #endif
-static void         ESPI_PC_BM_ExitAutoReadRequest_l        (DEFS_STATUS status, BOOLEAN useDMA);
-static void         ESPI_PC_BM_HandleBurstErr_l             (BOOLEAN useDMA);
+static void         ESPI_PC_BM_ExitAutoRequest_l            (ESPI_PC_MSG_T msgType, DEFS_STATUS status, BOOLEAN useDMA);
+static void         ESPI_PC_BM_HandleBurstErr_l             (ESPI_PC_MSG_T msgType, BOOLEAN useDMA);
 static DEFS_STATUS  ESPI_PC_BM_EnqueuePacket_l              (ESPI_PC_MSG_T msgType);
+static DEFS_STATUS  ESPI_PC_BM_ClearTxDone_l                (void);
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+static DEFS_STATUS  ESPI_PC_BM_WriteQueueEmpty_l            (void);
+static DEFS_STATUS  ESPI_PC_BM_ClearWriteTxDone_l           (void);
+#ifdef ESPI_PCBM_GDMA_ERRATA_ISSUE
+static DEFS_STATUS ESPI_PC_BM_GDMA_Transfer                 (GDMA_CHANNEL_ID_T channelId, UINT32 srcAddr, UINT8* destAddr,
+                                                             UINT32 dataLen, GDMA_INT_HANDLER handler);
+#endif
+#endif
 #endif
 
 
@@ -950,7 +993,7 @@ static MIWU_SRC_T   ESPI_VW_ToMiwuSource            (ESPI_VW vw);
 
 static void         ESPI_FLASH_Init_l               (void);
 #ifdef ESPI_GLOBAL_RST_ERRATA_ISSUE
-static void         ESPI_FLASH_DummyReqManual_l     (void);
+static void         ESPI_FLASH_GlobalRstErrata_l    (void);
 #endif
 static DEFS_STATUS  ESPI_FLASH_ReqManual_l          (ESPI_FLASH_REQ_ACC_T reqType, UINT32 offset, UINT32 size,
                                                      BOOLEAN polling, UINT32* buffer, BOOLEAN strpHdr);
@@ -974,10 +1017,10 @@ static DEFS_STATUS  ESPI_FLASH_GetCurrReqSize_l     (ESPI_FLASH_REQ_ACC_T reqTyp
                                                      UINT32* currSize);
 static void         ESPI_FLASH_HandleAutoModeErr_l  (BOOLEAN useDMA);
 static void         ESPI_FLASH_ExitAutoReadRequest_l(DEFS_STATUS status, BOOLEAN useDMA);
-#ifdef ESPI_CAPABILITY_SAF
-static void         ESPI_FLASH_SAF_SendRes_l        (UINT8 comp);
-static DEFS_STATUS  ESPI_FLASH_SAF_CheckAddress_l   (void);
-static DEFS_STATUS  ESPI_FLASH_SAF_PerformReq_l     (UINT32 addr, UINT32 size);
+#ifdef ESPI_CAPABILITY_TAF
+static void         ESPI_FLASH_TAF_SendRes_l        (UINT8 comp, BOOLEAN forceSend);
+static DEFS_STATUS  ESPI_FLASH_TAF_CheckAddress_l   (void);
+static DEFS_STATUS  ESPI_FLASH_TAF_PerformReq_l     (UINT32 addr, UINT32 size);
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -1038,7 +1081,7 @@ void ESPI_Init (ESPI_INT_HANDLER handler)
     ESPI_Reset_l();
 
     /*-----------------------------------------------------------------------------------------------------*/
-    /* Enable the transmition of the Boot Load Virtual Wires upon eSPI slave VW channel being enabled      */
+    /* Enable the transmission of the Boot Load Virtual Wires upon eSPI slave VW channel being enabled     */
     /*-----------------------------------------------------------------------------------------------------*/
     ESPI_VW_EnableBootLoad(TRUE);
 
@@ -1112,8 +1155,8 @@ void ESPI_Init (ESPI_INT_HANDLER handler)
     SHM_EspiRegisterCallback(ESPI_VW_SmNonFatalError_l);
 #endif
 
-#ifdef ESPI_CAPABILITY_SAF
-    (void)FLASH_DEV_Init(&ESPI_FLASH_SafFlashParams_L);
+#ifdef ESPI_CAPABILITY_TAF
+    (void)FLASH_DEV_Init(&ESPI_FLASH_TafFlashParams_L);
 #endif
 
 #ifdef ESPI_FATAL_ERROR_ERRATA_ISSUE
@@ -1281,6 +1324,9 @@ void ESPI_ChannelSlaveEnable (
         break;
 
     case ESPI_CHANNEL_FLASH:
+#ifdef ESPI_CAPABILITY_TAF
+        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_TAF_AUTO_READ, ESPI_FLASH_TafAutoReadConfig_L);
+#endif
         SET_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANEN,    enable);
         SET_VAR_FIELD(ESPI_configUpdateMask, ESPICFG_FLASHCHANEN, enable);
         break;
@@ -1436,12 +1482,18 @@ void ESPI_IntEnable (
         /*-------------------------------------------------------------------------------------------------*/
         /* Bus Master burst error interrupt                                                                */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_VAR_FIELD(var, ESPIIE_BMBURSTERRIE, enable);
+        SET_VAR_FIELD(var, ESPIIE_BMBURSTERRIE,  enable);
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        SET_VAR_FIELD(var, ESPIIE_BMWBURSTERRIE, enable);
+#endif
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Bus Master burst done interrupt                                                                 */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_VAR_FIELD(var, ESPIIE_BMBURSTDONEIE, enable);
+        SET_VAR_FIELD(var, ESPIIE_BMBURSTDONEIE,  enable);
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        SET_VAR_FIELD(var, ESPIIE_BMWBURSTDONEIE, enable);
+#endif
         break;
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 
@@ -1480,12 +1532,12 @@ void ESPI_IntEnable (
         /*-------------------------------------------------------------------------------------------------*/
         SET_VAR_FIELD(var, ESPIIE_FLASHRXIE, enable);
 
-        if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_ACCESS_SLAVE_ATTCH)
+        if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_ACCESS_TARGET_ATTCH)
         {
             /*---------------------------------------------------------------------------------------------*/
-            /* Slave attach flash access channel read detected interrupt                                   */
+            /* Target attach flash access channel read detected interrupt                                  */
             /*---------------------------------------------------------------------------------------------*/
-            SET_VAR_FIELD(var, ESPIIE_SFLASHRDIE, enable);
+            SET_VAR_FIELD(var, ESPIIE_FLNACSIE, enable);
         }
 
         /*-------------------------------------------------------------------------------------------------*/
@@ -1526,7 +1578,7 @@ void ESPI_IntEnable (
         break;
 
     case ESPI_CHANNEL_ALL:
-        var = enable ? MASK_FIELD(ESPIIE_ALL) : 0x0;
+        var = enable ? ESPIIE_ALL : 0x0;
 #ifdef ESPI_ESPI_RST_ERRATA_ISSUE
         SET_VAR_FIELD(var, ESPIIE_ESPIRSTIE, 0);
         ESPI_EnableEspiRstMiwuInterrupt_l(enable);;
@@ -1609,14 +1661,6 @@ void ESPI_WakeUpEnable (
         /* Flash data received interrupt                                                                   */
         /*-------------------------------------------------------------------------------------------------*/
         SET_VAR_FIELD(var, ESPIWE_FLASHRXWE, enable);
-
-        if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_ACCESS_SLAVE_ATTCH)
-        {
-            /*---------------------------------------------------------------------------------------------*/
-            /* Slave attach flash access channel read detected interrupt                                   */
-            /*---------------------------------------------------------------------------------------------*/
-            SET_VAR_FIELD(var, ESPIWE_SFLASHRDWE, enable);
-        }
         break;
 
     case ESPI_CHANNEL_GENERIC:
@@ -1644,7 +1688,7 @@ void ESPI_WakeUpEnable (
         break;
 
     case ESPI_CHANNEL_ALL:
-        var = enable ? MASK_FIELD(ESPIWE_ALL) : 0x0;
+        var = enable ? ESPIWE_ALL : 0x0;
         break;
 
     default:
@@ -1757,10 +1801,18 @@ void ESPI_IntHandler (void)
         {
             if (READ_VAR_FIELD(intEnable, ESPIIE_FLASHRXIE))
             {
-#ifdef ESPI_CAPABILITY_SAF
-                if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_MODE_SAF)
+#ifdef ESPI_CAPABILITY_TAF
+                if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_MODE_TAF)
                 {
-                    ESPI_FLASH_SafPendingIncomingReq_L = TRUE;
+                    ESPI_FLASH_TAF_HandleReq();
+                    if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
+                    {
+                        EXECUTE_FUNC(ESPI_userIntHandler_L, (ESPI_INT_FLASH_TAF_REQ_HANDELED));
+                    }
+                    else
+                    {
+                        (void)ESPI_FLASH_TAF_SendRes();
+                    }
                 }
                 else
 #endif
@@ -1885,16 +1937,17 @@ void ESPI_IntHandler (void)
 
         /*-------------------------------------------------------------------------------------------------*/
         /* A Slave Attached Flash Access Channel read transaction is detected                              */
+        /* A Non-Automatic TAF Completion was sent and the FLASHTXBUF buffer is now empty.                 */
         /*-------------------------------------------------------------------------------------------------*/
-        if (READ_VAR_FIELD(status, ESPISTS_SFLASHRD))
+        if (READ_VAR_FIELD(status, ESPISTS_FLNACS))
         {
-            if (READ_VAR_FIELD(intEnable, ESPIIE_SFLASHRDIE))
+            if (READ_VAR_FIELD(intEnable, ESPIIE_FLNACSIE))
             {
-#ifdef ESPI_CAPABILITY_SAF
-                if ((ESPI_FLASH_SafReqInfo_L.reqType == ESPI_FLASH_SAF_REQ_READ) &&
-                    (ESPI_FLASH_SafReqInfo_L.reminder > 0))
+#ifdef ESPI_CAPABILITY_TAF
+                if ((ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ) &&
+                    (ESPI_FLASH_TafReqInfo_L.reminder > 0))
                 {
-                    ESPI_FLASH_SafPendingIncomingRes_L = TRUE;
+                    ESPI_FLASH_TafPendingIncomingRes_L = TRUE;
                 }
 #endif
                 EXECUTE_FUNC(ESPI_userIntHandler_L,         (ESPI_INT_FLASH_READ_ACCESS_DETECTED));
@@ -1927,6 +1980,21 @@ void ESPI_IntHandler (void)
             }
         }
 
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Bus Master burst write done, This bit is set to 1 when all the 64-byte packets selected by      */
+        /* BMBURSTSIZE field in PERCTL register were transmitted and the last buffer contents were written */
+        /* by the Core (useful when using DMA). Default = 0                                                */
+        /*-------------------------------------------------------------------------------------------------*/
+        if (READ_VAR_FIELD(status, ESPISTS_BMWBURSTDONE) == 0x01)
+        {
+            if (READ_VAR_FIELD(intEnable, ESPIIE_BMWBURSTDONEIE))
+            {
+                ESPI_PC_BM_AutoModeTransDoneHandler_l(status, intEnable);
+            }
+        }
+#endif
+
         /*-------------------------------------------------------------------------------------------------*/
         /* Bus Master Message buffer was received                                                          */
         /*-------------------------------------------------------------------------------------------------*/
@@ -1953,8 +2021,7 @@ void ESPI_IntHandler (void)
                     /*-------------------------------------------------------------------------------------*/
                     ESPI_PC_BM_HandleReqRes_l();
                 }
-
-                if (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_LTR)
+                else if (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_LTR)
                 {
                     /*-------------------------------------------------------------------------------------*/
                     /* Update status                                                                       */
@@ -2188,6 +2255,8 @@ void ESPI_PrintRegs (void)
     {
         HAL_PRINT("VWEVSM%d%*s            = 0x%08X\n", i, (UINT)(i<10), "", REG_READ(ESPI_VWEVSM(i)));
     }
+    HAL_PRINT("VWSWIRQ             = 0x%08X\n", REG_READ(ESPI_VWSWIRQ));
+
     for (i = 0; i < ESPI_VWEVMS_NUM; i++)
     {
         HAL_PRINT("VWEVMS%d%*s            = 0x%08X\n", i, (UINT)(i<10), "", REG_READ(ESPI_VWEVMS(i)));
@@ -2213,25 +2282,30 @@ void ESPI_PrintRegs (void)
         HAL_PRINT("PBMRXBUF%d%*s          = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_PBMRXBUF(i)));
     }
 #endif
-#ifdef ESPI_CAPABILITY_SAF
-    for (i = 0; i < ESPI_FLASH_SAF_PROT_MEM_NUM; i++)
+#ifdef ESPI_CAPABILITY_TAF
+    for (i = 0; i < ESPI_FLASH_TAF_PROT_MEM_NUM; i++)
     {
         HAL_PRINT("PRTR_BADDR%d%*s        = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_FLASH_PRTR_BADDRn(i)));
     }
 
-    for (i = 0; i < ESPI_FLASH_SAF_PROT_MEM_NUM; i++)
+    for (i = 0; i < ESPI_FLASH_TAF_PROT_MEM_NUM; i++)
     {
-        HAL_PRINT("PRTR_HADDR%d%*s        = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_FLASH_PRTR_HADDRn(i)));
+        HAL_PRINT("PRTR_TADDR%d%*s        = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_FLASH_PRTR_TADDRn(i)));
     }
 
-    for (i = 0; i < ESPI_FLASH_SAF_TAG_RANGE_NUM; i++)
+    for (i = 0; i < ESPI_FLASH_TAF_TAG_RANGE_NUM; i++)
     {
         HAL_PRINT("FLASH_RGN_TAG_OVR%d%*s = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_FLASH_FLASH_RGN_TAG_OVRn(i)));
     }
 
-    for (i = 0; i < ESPI_FLASH_SAF_BUFF_NUM; i++)
+    for (i = 0; i < ESPI_FLASH_TAF_BUFF_NUM; i++)
     {
-        HAL_PRINT("FLASHRDTXBUF%d%*s      = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_FLASHRDTXBUF(i)));
+        HAL_PRINT("ESPI_RDFLASHTXBUF0_%d%*s = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_RDFLASHTXBUF0(i)));
+    }
+
+    for (i = 0; i < ESPI_FLASH_TAF_BUFF_NUM; i++)
+    {
+        HAL_PRINT("ESPI_RDFLASHTXBUF1_%d%*s = 0x%08X\n",  i, (UINT)(i<10), "", REG_READ(ESPI_RDFLASHTXBUF1(i)));
     }
 #endif
 
@@ -2364,10 +2438,18 @@ void ESPI_PC_BM_RegisterCallback (ESPI_INT_HANDLER handler)
 /*                                                                                                         */
 /*                  limitations under request type ESPI_PC_REQ_READ_AUTO and ESPI_PC_REQ_READ_DMA:         */
 /*                      1. Offset must be aligned to 64B                                                   */
-/*                      2. Size must be aligned to 64B.                                                    */
+/*                      2. Size must be aligned to 64B                                                     */
 /*                      3. Maximum size for transaction is (64B*256)                                       */
-/*                  * If using request type ESPI_PC_REQ_READ_DMA the buffer must be at least               */
-/*                    4B aligned , 16B aligned will improve performance.                                   */
+/*                      4. If using request type ESPI_PC_REQ_READ_DMA the buffer must be at least          */
+/*                         4B aligned , 16B aligned will improve performance.                              */
+/*                  limitations under request type ESPI_PC_BM_REQ_WRITE_AUTO and ESPI_PC_BM_REQ_WRITE_DMA: */
+/*                      1. Offset must be aligned to 64B                                                   */
+/*                      2. Size must be aligned to 64B                                                     */
+/*                      3. Minimum size for transaction is (128B)                                          */
+/*                      4. Maximum size for transaction is (64B*256)                                       */
+/*                      5. If using request type ESPI_PC_BM_REQ_WRITE_AUTO pollingMode must be TRUE.       */
+/*                      5. If using request type ESPI_PC_BM_REQ_WRITE_DMA the buffer must be at least      */
+/*                         16B aligned.                                                                    */
 /*                  * If polling mode == TRUE, PC interrupts should be disabled by the user                */
 /*                    If polling mode == FALSE, PC interrupts should be enabled by the user                */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -2402,7 +2484,7 @@ DEFS_STATUS ESPI_PC_BM_SendReq (
         status = ESPI_PC_BM_ReqManual_l(ESPI_PC_MSG_READ, offset, size, pollingMode, buffer, strpHdr);
         break;
 
-    case ESPI_PC_BM_REQ_WRITE:
+    case ESPI_PC_BM_REQ_WRITE_MANUAL:
         status = ESPI_PC_BM_ReqManual_l(ESPI_PC_MSG_WRITE, offset, size, pollingMode, buffer, strpHdr);
         break;
 
@@ -2443,6 +2525,61 @@ DEFS_STATUS ESPI_PC_BM_SendReq (
         }
 #endif
         break;
+
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    case ESPI_PC_BM_REQ_WRITE_DMA:
+        useDMA = TRUE;
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Strip header option must be used                                                                */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_COND_CHECK((strpHdr == TRUE), DEFS_STATUS_INVALID_PARAMETER);
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Alignment restrictions                                                                          */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_COND_CHECK(((UINT32)buffer % _16B_ == 0) && ((UINT32)offset % _16B_ == 0), DEFS_STATUS_FAIL);
+        /*lint -fallthrough */
+
+    case ESPI_PC_BM_REQ_WRITE_AUTO:
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Error check. Burst mode must be 64B aligned and at least 128B size                              */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_COND_CHECK(((size % ESPI_PC_MAX_PAYLOAD_SIZE) == 0) && (size > ESPI_PC_MAX_PAYLOAD_SIZE),
+                               DEFS_STATUS_INVALID_PARAMETER);
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Error check. Polling Mode must be used for Burst Write without DMA                              */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_COND_CHECK(((reqType == ESPI_PC_BM_REQ_WRITE_DMA) || (pollingMode == TRUE)), DEFS_STATUS_INVALID_PARAMETER);
+
+        status = ESPI_PC_BM_WriteReqAuto_l(offset, size, pollingMode, buffer, strpHdr, useDMA);
+
+#ifdef GDMA_CAPABILITY_REQUEST_SELECT
+        if (useDMA && status != DEFS_STATUS_OK)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Free the allocated GDMA channel                                                             */
+            /*---------------------------------------------------------------------------------------------*/
+            (void)GDMA_FreeChannel(ESPI_PC_BM_gdmaChannelId);
+            ESPI_PC_BM_gdmaChannelId = GDMA_CHANNELS_ID_NUMBER;
+
+            if (ESPI_PC_BM_usrReqInfo_L.readFromFalsh)
+            {
+                /*-----------------------------------------------------------------------------------------*/
+                /* Disable (on the FIU side) the DMA request                                               */
+                /*-----------------------------------------------------------------------------------------*/
+                FIU_EnableDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, FALSE);
+
+                /*-----------------------------------------------------------------------------------------*/
+                /* Return the FIU to normal mode                                                           */
+                /*-----------------------------------------------------------------------------------------*/
+                FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_NORMAL_READ);
+            }
+        }
+#endif
+        break;
+#endif
 
     default:
         break;
@@ -2622,7 +2759,7 @@ DEFS_STATUS ESPI_PC_BM_SelfTest (
         }
         break;
 
-    case ESPI_PC_BM_REQ_WRITE:
+    case ESPI_PC_BM_REQ_WRITE_MANUAL:
         //Do nothing, there is no point in testing only write
         break;
 
@@ -2647,7 +2784,7 @@ DEFS_STATUS ESPI_PC_BM_SelfTest (
         /*-------------------------------------------------------------------------------------------------*/
         /* Write buffer                                                                                    */
         /*-------------------------------------------------------------------------------------------------*/
-        DEFS_STATUS_RET_CHECK(ESPI_PC_BM_SendReq(ESPI_PC_BM_REQ_WRITE, offset, size, polling, writeBuffer, strpHdr));
+        DEFS_STATUS_RET_CHECK(ESPI_PC_BM_SendReq(ESPI_PC_BM_REQ_WRITE_MANUAL, offset, size, polling, writeBuffer, strpHdr));
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Wait till transaction ends                                                                      */
@@ -3693,7 +3830,7 @@ DEFS_STATUS ESPI_VW_SendBootLoad (BOOLEAN status)
 /* Function:        ESPI_VW_EnableBootLoad                                                                 */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
-/*                  enable - TRUE to enable the transmition of the Boot Load Virtual Wires upon the eSPI   */
+/*                  enable - TRUE to enable the transmission of the Boot Load Virtual Wires upon the eSPI  */
 /*                           slave VW channel being enabled; FALSE to disable.                             */
 /*                                                                                                         */
 /* Returns:         none                                                                                   */
@@ -3722,7 +3859,7 @@ void ESPI_VW_EnableBootLoad (BOOLEAN enable)
 /* Returns:         None                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  Configure the interrupt type for the specifc ESPI VW                                   */
+/*                  Configure the interrupt type for the specific ESPI VW                                  */
 /*                  Install the handler and enable the relevant interrupt.                                 */
 /*---------------------------------------------------------------------------------------------------------*/
 void ESPI_VW_ConfigInterrupt (ESPI_VW vw, UINT intType, ESPI_MSVW_HANDLER_T handler)
@@ -3790,10 +3927,10 @@ void ESPI_VW_ClearInterrupt (ESPI_VW vw)
 /* Parameters:                                                                                             */
 /*                  vw       - ESPI Virtual Wire in ESPI_VW_DEF format                                     */
 /*                                                                                                         */
-/* Returns:         TRUE if interrupt is pending , otherewise return FALSE                                 */
+/* Returns:         TRUE if interrupt is pending , otherwise return FALSE                                  */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  retruns the pending status of the  VW event                                            */
+/*                  returns the pending status of the  VW event                                            */
 /*---------------------------------------------------------------------------------------------------------*/
 BOOLEAN ESPI_VW_PendingInterrupt (ESPI_VW vw)
 {
@@ -4072,9 +4209,9 @@ BOOLEAN ESPI_FLASH_TransmitQueueFull (void)
     return (BOOLEAN)READ_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_FLASH_ACC_TX_AVAIL);
 }
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_Config                                                                  */
+/* Function:        ESPI_FLASH_TAF_Config                                                                  */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  maxReadSizeSupp     - Flash access channel maximum read request size supported         */
@@ -4085,24 +4222,148 @@ BOOLEAN ESPI_FLASH_TransmitQueueFull (void)
 /* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine configure the flash SAF registers                                         */
+/*                  This routine configure the flash TAF registers                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS ESPI_FLASH_SAF_Config (ESPI_FLASH_SAF_MAX_READ_REQ maxReadSizeSupp,
-                                   ESPI_FLASH_SHARING_CAP_SUPP flashSharingCapSupp,
-                                   ESPI_FLASH_SAF_ERASE_BLOCK_SIZE eraseBlockSize,
-                                   UINT8 targetRPMCsupp)
+DEFS_STATUS ESPI_FLASH_TAF_Config (
+    ESPI_FLASH_TAF_MAX_READ_REQ maxReadSizeSupp,
+    ESPI_FLASH_SHARING_CAP_SUPP flashSharingCapSupp,
+    UINT8                       eraseBlockSize,
+    UINT8                       targetRPMCsupp,
+    UINT8                       RPMCdevsupp
+)
 {
-    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_FLASHREQSUP, maxReadSizeSupp);
-    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_FLASHCAPA, flashSharingCapSupp);
-    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_TRGFLASHEBLKSIZE, eraseBlockSize);
-    DEFS_STATUS_COND_CHECK(flashSharingCapSupp < ESPI_FLASH_SAF_MAX_TAR_RPMC_SUPP, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
-    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_TRGRPMCSUPP, targetRPMCsupp);
+    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_FLASHREQSUP,   maxReadSizeSupp);
+    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_TRGFLEBLKSIZE, eraseBlockSize);
+    SET_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_FLCAPA,        flashSharingCapSupp);
+
+    DEFS_STATUS_COND_CHECK(targetRPMCsupp < ESPI_FLASH_TAF_MAX_TAR_RPMC_SUPP,DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
+    SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_TRGRPMCSUPP, targetRPMCsupp);
+
+    DEFS_STATUS_COND_CHECK(RPMCdevsupp <= ESPI_FLASH_TAF_MAX_RPMC_DEV_SUPP,DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
+    if (RPMCdevsupp && targetRPMCsupp)
+    {
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_DEV_SUPP, RPMCdevsupp - 1);
+    }
+    else
+    {
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_DEV_SUPP, 0);
+    }
 
     return DEFS_STATUS_OK;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_SetRWprotect                                                            */
+/* Function:        ESPI_FLASH_TAF_EnableAutoRead                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  autoRead            - TRUE sets the read mode to be Auto read, FALSE sets the read     */
+/*                                        mode to be Standard read mode                                    */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure the eSPI TAF to work with auto read mode or not                 */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_EnableAutoRead (BOOLEAN autoRead)
+{
+    ESPI_FLASH_TafAutoReadConfig_L = autoRead;
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_SetRpmcOpcode                                                           */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  targetRPMC            - rpmc flash device                                              */
+/*                  rpmc_op               - rpmc OP1 opcode used by this target                            */
+/*                  rpm_cntr              - number of rpmc counters supported by this target               */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure target RPMC flash device                                        */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_SetRpmcOpcode (UINT8 targetRPMC, UINT8 rpmc_op, UINT8 rpm_cntr)
+{
+    DEFS_STATUS_COND_CHECK(targetRPMC < ESPI_FLASH_TAF_MAX_RPMC_DEV_SUPP, DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
+    DEFS_STATUS_COND_CHECK((rpm_cntr > 0) && (rpm_cntr <= ESPI_FLASH_TAF_MAX_RPMC_COUNTER), DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
+
+    switch (targetRPMC)
+    {
+    case 0:
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_1,  rpmc_op);
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_1, rpm_cntr - 1);
+        break;
+    case 1:
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_2,  rpmc_op);
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_1, ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_2, rpm_cntr - 1);
+        break;
+    case 2:
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_2, ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_3,  rpmc_op);
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_2, ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_3, rpm_cntr - 1);
+        break;
+    case 3:
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_2, ESPI_FLASH_RPMC_CFG_1_RPMC_OP1_4,  rpmc_op);
+        SET_REG_FIELD(ESPI_FLASH_RPMC_CFG_2, ESPI_FLASH_RPMC_CFG_1_RPMC_CNTR_4, rpm_cntr - 1);
+        break;
+    default:
+        break;
+    }
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_SetFlashBase                                                            */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  baseAddr            - Flash base address                                               */
+/*                  lock                - lock Flash BAse address, it will be RO                           */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure the eSPI TAF base address for automatic read                    */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_SetFlashBase (UINT32 baseAddr, BOOLEAN Lock)
+{
+    baseAddr = FLASH_BASE_ADDR(ESPI_TAF_FIU_MODULE) | (baseAddr & MASK_FIELD(ESPI_FLASHBASE_FLBASE_ADDR)) | Lock;
+
+    REG_WRITE(ESPI_FLASHBASE, baseAddr);
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_RemapConfig                                                             */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  flash_offs            - holds the offset of the flash window from which Automatic read */
+/*                                          requests are remapped to another memory area                   */
+/*                  dst_base              - holds the destination base address (i.e., the new address of   */
+/*                                          the remapped window) for Automatic read requests, when they    */
+/*                                          are remapped to another memory area                            */
+/*                  win_szie              - Defines the window size for Automatic read request mapping to  */
+/*                                          another memory area. The value of the field is in Kbytes       */
+/*                  lock                  - lock the above definitions, it will be RO                      */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configure the eSPI TAF remap for automatic read                           */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_RemapConfig (UINT32 flash_offs, UINT32 dst_base, UINT32 win_szie, BOOLEAN Lock)
+{
+    REG_WRITE(ESPI_RMAP_FLASH_OFFS, (flash_offs & ~0x3FFUL));
+    REG_WRITE(ESPI_RMAP_DST_BASE, (dst_base & ~0x3FFUL));
+    SET_REG_FIELD(ESPI_RMAP_WIN_SIZE, ESPI_RMAP_WIN_SIZE_RMAP_WIN_SZ, (win_szie >> 10)); // verify field size
+    SET_REG_FIELD(ESPI_RMAP_WIN_SIZE, ESPI_RMAP_WIN_SIZE_TAF_RMAP_LCK, Lock);
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_SetRWprotect                                                            */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  index         - Index of memory range [0..15]                                          */
@@ -4114,39 +4375,43 @@ DEFS_STATUS ESPI_FLASH_SAF_Config (ESPI_FLASH_SAF_MAX_READ_REQ maxReadSizeSupp,
 /*                                  enabled regardless of read protect bit                                 */
 /*                  writeTagOvr   - Write tag overrun value, if bit i is set, write request from tag i is  */
 /*                                  enabled regardless of write protect bit                                */
+/*                  protLock      - Write protection lock to lock the respective base top protection       */
+/*                                  range and its tag override                                             */
 /*                                                                                                         */
 /* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine configures specific memory range protection options                       */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS ESPI_FLASH_SAF_SetRWprotect (UINT8 index, UINT16 baseAddr, UINT16 highAddr, BOOLEAN readProt,
-                                         BOOLEAN writeProt, UINT16 readTagOvr, UINT16 writeTagOvr)
+DEFS_STATUS ESPI_FLASH_TAF_SetRWprotect (UINT8 index, UINT32 baseAddr, UINT32 highAddr, BOOLEAN readProt,
+                                         BOOLEAN writeProt, UINT16 readTagOvr, UINT16 writeTagOvr, BOOLEAN protLock)
 {
     /*-----------------------------------------------------------------------------------------------------*/
     /* Verify index is valid                                                                               */
     /*-----------------------------------------------------------------------------------------------------*/
-    DEFS_STATUS_COND_CHECK((index < ESPI_FLASH_SAF_PROT_MEM_NUM), DEFS_STATUS_INVALID_PARAMETER);
+    DEFS_STATUS_COND_CHECK((index < ESPI_FLASH_TAF_PROT_MEM_NUM), DEFS_STATUS_INVALID_PARAMETER);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set base address                                                                                    */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_BADDR,baseAddr);
+    baseAddr = (baseAddr & MASK_FIELD(ESPI_FLASH_PRTR_BADDRn_BADDR)) >> 12;
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_BADDR, baseAddr);
 
     /*-----------------------------------------------------------------------------------------------------*/
-    /* Set high address                                                                                    */
+    /* Set top address                                                                                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASH_PRTR_HADDRn(index), ESPI_FLASH_PRTR_HADDRn_HADDR,highAddr);
+    highAddr = (highAddr & MASK_FIELD(ESPI_FLASH_PRTR_TADDRn_TADDR)) >> 12;
+    SET_REG_FIELD(ESPI_FLASH_PRTR_TADDRn(index), ESPI_FLASH_PRTR_TADDRn_TADDR, highAddr);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set read protect                                                                                    */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRGN_RPR, readProt);
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRNG_RPR, readProt);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set write protect                                                                                   */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRGN_WPR, writeProt);
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRNG_WPR, writeProt);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set read protect tag overrun                                                                        */
@@ -4158,11 +4423,16 @@ DEFS_STATUS ESPI_FLASH_SAF_SetRWprotect (UINT8 index, UINT16 baseAddr, UINT16 hi
     /*-----------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(index), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR, writeTagOvr);
 
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set protection lock                                                                                 */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_TAF_PROT_LCK, protLock);
+
     return DEFS_STATUS_OK;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_ClearRWprotect                                                          */
+/* Function:        ESPI_FLASH_TAF_ClearRWprotect                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  index     - Index of memory range [0..15]                                              */
@@ -4172,18 +4442,20 @@ DEFS_STATUS ESPI_FLASH_SAF_SetRWprotect (UINT8 index, UINT16 baseAddr, UINT16 hi
 /* Description:                                                                                            */
 /*                  This routine clears index i specific memory range protection settings                  */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS ESPI_FLASH_SAF_ClearRWprotect (UINT8 index)
+DEFS_STATUS ESPI_FLASH_TAF_ClearRWprotect (UINT8 index)
 {
     /*-----------------------------------------------------------------------------------------------------*/
     /* Verify index is valid                                                                               */
     /*-----------------------------------------------------------------------------------------------------*/
-    DEFS_STATUS_COND_CHECK((index < ESPI_FLASH_SAF_PROT_MEM_NUM), DEFS_STATUS_INVALID_PARAMETER);
+    DEFS_STATUS_COND_CHECK((index < ESPI_FLASH_TAF_PROT_MEM_NUM), DEFS_STATUS_INVALID_PARAMETER);
+    DEFS_STATUS_COND_CHECK((READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_TAF_PROT_LCK) == FALSE),
+                            DEFS_STATUS_FAIL);
 
     SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_BADDR, 0);
-    SET_REG_FIELD(ESPI_FLASH_PRTR_HADDRn(index), ESPI_FLASH_PRTR_HADDRn_HADDR, 0);
+    SET_REG_FIELD(ESPI_FLASH_PRTR_TADDRn(index), ESPI_FLASH_PRTR_TADDRn_TADDR, 0);
 
-    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRGN_RPR, 0);
-    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRGN_WPR, 0);
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRNG_RPR, 0);
+    SET_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(index), ESPI_FLASH_PRTR_BADDRn_FRNG_WPR, 0);
 
     SET_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(index), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_RPR_TOVR, 0);
     SET_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(index), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR, 0);
@@ -4191,24 +4463,9 @@ DEFS_STATUS ESPI_FLASH_SAF_ClearRWprotect (UINT8 index)
     return DEFS_STATUS_OK;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_IsPendingReq                                                            */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                  none                                                                                   */
-/*                                                                                                         */
-/* Returns:         TRUE if request is pending, FALSE otherwise                                            */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                  This routine returns  TRUE if request is pending, FALSE otherwise                      */
-/*---------------------------------------------------------------------------------------------------------*/
-BOOLEAN ESPI_FLASH_SAF_IsPendingReq (void)
-{
-    return ESPI_FLASH_SafPendingIncomingReq_L;
-}
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_HandleReq                                                               */
+/* Function:        ESPI_FLASH_TAF_HandleReq                                                               */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
 /*                                                                                                         */
@@ -4217,138 +4474,159 @@ BOOLEAN ESPI_FLASH_SAF_IsPendingReq (void)
 /* Description:                                                                                            */
 /*                  This routine handles incoming request from host                                        */
 /*---------------------------------------------------------------------------------------------------------*/
-void ESPI_FLASH_SAF_HandleReq (void)
+void ESPI_FLASH_TAF_HandleReq (void)
 {
-    UINT32 reqHdr;
-    ESPI_FLASH_TRANS_HDR* reqHdrPtr;
-    UINT32 roundedSize;
-    UINT i;
-    UINT8 eraseBlockSize;
-    UINT16 tagPlusLength;
+    UINT32                  reqHdr;
+    ESPI_FLASH_TRANS_HDR*   reqHdrPtr;
+    UINT32                  roundedSize;
+    UINT                    i;
+    UINT8                   eraseBlockSize;
+    UINT16                  tagPlusLength;
 
-    ESPI_FLASH_SafPendingIncomingRes_L = FALSE;
-    ESPI_FLASH_SafReqInfo_L.reqType = ESPI_FLASH_SAF_REQ_NUM;
-    ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_OK;
+    ESPI_FLASH_TafPendingIncomingRes_L = FALSE;
+    ESPI_FLASH_TafReqInfo_L.reqType = ESPI_FLASH_TAF_REQ_NUM;
+    ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_OK;
 
-    ESPI_FLASH_SafPendingIncomingReq_L = FALSE;
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Clear receive buffer status                                                                         */
+    /*-----------------------------------------------------------------------------------------------------*/
+    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_FLASHRX));
+
     /*-----------------------------------------------------------------------------------------------------*/
     /* Parse request header                                                                                */
     /*-----------------------------------------------------------------------------------------------------*/
     reqHdr = REG_READ(ESPI_FLASHRXRDHEAD);
     reqHdrPtr = (ESPI_FLASH_TRANS_HDR*)(void*)(&reqHdr);
-    ESPI_FLASH_SafReqInfo_L.offset   = LE32(REG_READ(ESPI_FLASHRXRDHEAD));
+    ESPI_FLASH_TafReqInfo_L.offset   = REG_READ(ESPI_FLASHRXRDHEAD);
+    ESPI_FLASH_TafReqInfo_L.offset   = LE32(ESPI_FLASH_TafReqInfo_L.offset);
+    ESPI_FLASH_TafReqInfo_L.offset  += (REG_READ(ESPI_FLASHBASE) & MASK_FIELD(ESPI_FLASHBASE_FLBASE_ADDR));
     tagPlusLength = LE16(reqHdrPtr->tagPlusLength);
-    ESPI_FLASH_SafReqInfo_L.size = ESPI_FLASH_SafReqInfo_L.reminder = READ_VAR_FIELD(tagPlusLength,HEADER_LENGTH);
-    ESPI_FLASH_SafReqInfo_L.reqType = (ESPI_FLASH_SAF_REQ_T)reqHdrPtr->type;
-    ESPI_FLASH_SafReqInfo_L.tag = READ_VAR_FIELD(tagPlusLength,HEADER_TAG);
+    ESPI_FLASH_TafReqInfo_L.size = ESPI_FLASH_TafReqInfo_L.reminder = READ_VAR_FIELD(tagPlusLength,HEADER_LENGTH);
+    ESPI_FLASH_TafReqInfo_L.reqType = (ESPI_FLASH_TAF_REQ_T)reqHdrPtr->type;
+    ESPI_FLASH_TafReqInfo_L.tag = READ_VAR_FIELD(tagPlusLength,HEADER_TAG);
+    ESPI_FLASH_TafReqInfo_L.bytesRead = 0;
 
-    if (!(ESPI_FLASH_SafReqInfo_L.reqType < ESPI_FLASH_SAF_REQ_NUM))
+    if (!(ESPI_FLASH_TafReqInfo_L.reqType < ESPI_FLASH_TAF_REQ_NUM))
     {
+        ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_FAIL;
         return;
     }
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Size  and request type check                                                                        */
     /*-----------------------------------------------------------------------------------------------------*/
-    switch(ESPI_FLASH_SafReqInfo_L.reqType)
+    switch (ESPI_FLASH_TafReqInfo_L.reqType)
     {
-        case ESPI_FLASH_SAF_REQ_READ:
-            if(ESPI_FLASH_SafReqInfo_L.size > ESPI_FLASH_MAX_READ_REQ_SIZE_SUPP)
-            {
-                ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
-            }
+    case ESPI_FLASH_TAF_REQ_READ:
+        if(ESPI_FLASH_TafReqInfo_L.size > ESPI_FLASH_MAX_READ_REQ_SIZE_SUPP)
+        {
+            ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+        }
         break;
 
-        case ESPI_FLASH_SAF_REQ_WRITE:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP2:
-            if(ESPI_FLASH_SafReqInfo_L.reminder > ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
-            {
-                ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
-            }
-            roundedSize = ROUND_UP(ESPI_FLASH_SafReqInfo_L.reminder,sizeof(UINT32)) / sizeof(UINT32);
+    case ESPI_FLASH_TAF_REQ_WRITE:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+        if(ESPI_FLASH_TafReqInfo_L.reminder > ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
+        {
+            ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+        }
+        else
+        {
+            roundedSize = ROUND_UP(ESPI_FLASH_TafReqInfo_L.reminder,sizeof(UINT32)) / sizeof(UINT32);
             for (i = 0; i < roundedSize; i++)
             {
-                ESPI_FLASH_SafReqInfo_L.buffer[i] = REG_READ(ESPI_FLASHRXRDHEAD);
+                ESPI_FLASH_TafReqInfo_L.buffer[i] = REG_READ(ESPI_FLASHRXRDHEAD);
             }
+        }
         break;
 
-        case ESPI_FLASH_SAF_REQ_ERASE:
-            eraseBlockSize = READ_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_TRGFLASHEBLKSIZE);
-            switch (ESPI_FLASH_SafReqInfo_L.size)
+    case ESPI_FLASH_TAF_REQ_ERASE:
+        eraseBlockSize = READ_REG_FIELD(ESPI_FLASHCFG, FLASHCFG_TRGFLEBLKSIZE);
+
+        switch (ESPI_FLASH_TafReqInfo_L.size)
+        {
+        case ESPI_FLASH_ERASE_4K:
+            if ((eraseBlockSize & ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_4KB) &&
+                (ESPI_FLASH_TafFlashParams_L.eraseSectorSize == _4KB_))
             {
-                case ESPI_FLASH_ERASE_4K:
-
-                    if (eraseBlockSize == ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_4KB)
-                    {
-                        ESPI_FLASH_SafReqInfo_L.reminder = _4KB_;
-                    }
-                    else
-                    {
-                        ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
-                    }
-                break;
-
-                case ESPI_FLASH_ERASE_16K:
-                    if (eraseBlockSize == ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_16KB)
-                    {
-                        ESPI_FLASH_SafReqInfo_L.reminder = _16KB_;
-                    }
-                    else
-                    {
-                        ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
-                    }
-                break;
-
-                case ESPI_FLASH_ERASE_64K:
-                    if (eraseBlockSize == ESPI_FLASH_SAF_ERASE_BLOCK_SIZE_64KB)
-                    {
-                        ESPI_FLASH_SafReqInfo_L.reminder = _64KB_;
-                    }
-                    else
-                    {
-                        ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
-                    }
-                break;
-
-                default:
-                    ESPI_FLASH_SafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+                ESPI_FLASH_TafReqInfo_L.reminder = _4KB_;
+                ESPI_FLASH_TafReqInfo_L.size = _4KB_;
             }
+            else
+            {
+                ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+            }
+            break;
+
+        case ESPI_FLASH_ERASE_32K:
+            if ((eraseBlockSize & ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_32KB) &&
+                (ESPI_FLASH_TafFlashParams_L.eraseBlockSize == _32KB_))
+            {
+                ESPI_FLASH_TafReqInfo_L.reminder = _32KB_;
+                ESPI_FLASH_TafReqInfo_L.size = _32KB_;
+            }
+            else
+            {
+                ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+            }
+            break;
+
+        case ESPI_FLASH_ERASE_64K:
+            if ((eraseBlockSize & ESPI_FLASH_TAF_ERASE_BLOCK_SIZE_64KB) &&
+                (ESPI_FLASH_TafFlashParams_L.eraseBlockSize == _64KB_))
+            {
+                ESPI_FLASH_TafReqInfo_L.reminder = _64KB_;
+                ESPI_FLASH_TafReqInfo_L.size = _64KB_;
+            }
+            else
+            {
+                ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+            }
+            break;
+
+        default:
+            ESPI_FLASH_TafReqInfo_L.status = DEFS_STATUS_INVALID_DATA_SIZE;
+            break;
+        }
         break;
 
-        case ESPI_FLASH_SAF_REQ_NUM:
+    case ESPI_FLASH_TAF_REQ_NUM:
         break;
     }
 
-    ESPI_FLASH_SafPendingIncomingRes_L = TRUE;
+    ESPI_FLASH_TafPendingIncomingRes_L = TRUE;
     /*-----------------------------------------------------------------------------------------------------*/
     /* If size check failed                                                                                */
     /*-----------------------------------------------------------------------------------------------------*/
-    if (ESPI_FLASH_SafReqInfo_L.status != DEFS_STATUS_OK)
+    if (ESPI_FLASH_TafReqInfo_L.status != DEFS_STATUS_OK)
     {
         return;
     }
 
-    ESPI_FLASH_SafReqInfo_L.status = ESPI_FLASH_SAF_CheckAddress_l();
-    if (ESPI_FLASH_SafReqInfo_L.status != DEFS_STATUS_OK)
+    ESPI_FLASH_TafReqInfo_L.status = ESPI_FLASH_TAF_CheckAddress_l();
+    if (ESPI_FLASH_TafReqInfo_L.status != DEFS_STATUS_OK)
     {
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Send host NON FATAL ERROR virtual wire indication                                               */
+        /*-------------------------------------------------------------------------------------------------*/
+        ESPI_VW_SmNonFatalError_l();
         return;
     }
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* If the transaction is not read command                                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    if (ESPI_FLASH_SafReqInfo_L.reqType != ESPI_FLASH_SAF_REQ_READ)
+    if (ESPI_FLASH_TafReqInfo_L.reqType != ESPI_FLASH_TAF_REQ_READ)
     {
-
-        ESPI_FLASH_SafReqInfo_L.status = ESPI_FLASH_SAF_PerformReq_l(ESPI_FLASH_SafReqInfo_L.offset,
-                                                                   ESPI_FLASH_SafReqInfo_L.reminder);
+        ESPI_FLASH_TafReqInfo_L.status = ESPI_FLASH_TAF_PerformReq_l(ESPI_FLASH_TafReqInfo_L.offset,
+                                                                     ESPI_FLASH_TafReqInfo_L.reminder);
     }
-
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_GetStatus                                                               */
+/* Function:        ESPI_FLASH_TAF_GetStatus                                                               */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  none                                                                                   */
@@ -4359,41 +4637,35 @@ void ESPI_FLASH_SAF_HandleReq (void)
 /* Description:                                                                                            */
 /*                  This routine return the status of latest request                                       */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS ESPI_FLASH_SAF_GetStatus (UINT8* status)
+DEFS_STATUS ESPI_FLASH_TAF_GetStatus (void)
 {
     DEFS_STATUS ret = DEFS_STATUS_OK;
 
-    switch (ESPI_FLASH_SafReqInfo_L.reqType)
+    switch (ESPI_FLASH_TafReqInfo_L.reqType)
     {
-        case ESPI_FLASH_SAF_REQ_READ:
-            *status = DEFS_STATUS_OK;
+    case ESPI_FLASH_TAF_REQ_READ:
         break;
 
-        case ESPI_FLASH_SAF_REQ_WRITE:
-        case ESPI_FLASH_SAF_REQ_ERASE:
-        // TODO: ?? NEED FIU STATUS
-        case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP2:
-            ret = FLASH_DEV_PollOnBusyBit(&ESPI_FLASH_SafFlashParams_L, FIU_MODULE_0, FIU_CS_0, 1);
-            if (ret == DEFS_STATUS_OK)
-            {
-                ret = DEFS_STATUS_OK;
-            }
-            else
-            {
-                ret = DEFS_STATUS_SYSTEM_BUSY;
-            }
+    case ESPI_FLASH_TAF_REQ_WRITE:
+    case ESPI_FLASH_TAF_REQ_ERASE:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+        ret = FLASH_DEV_PollOnBusyBit(&ESPI_FLASH_TafFlashParams_L, ESPI_TAF_FIU_MODULE, ESPI_TAF_DEVICE, ESPI_FLASH_TAF_FLASH_POLLING_STATUS_TIMEOUT);
+        if (ret != DEFS_STATUS_OK)
+        {
+            ret = DEFS_STATUS_SYSTEM_BUSY;
+        }
         break;
 
-        case ESPI_FLASH_SAF_REQ_NUM:
-            ret = DEFS_STATUS_FAIL;
+    case ESPI_FLASH_TAF_REQ_NUM:
+        ret = DEFS_STATUS_FAIL;
         break;
     }
     return ret;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_IsPendingRes                                                            */
+/* Function:        ESPI_FLASH_TAF_IsPendingRes                                                            */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  none                                                                                   */
@@ -4403,13 +4675,13 @@ DEFS_STATUS ESPI_FLASH_SAF_GetStatus (UINT8* status)
 /* Description:                                                                                            */
 /*                  This routine returns  TRUE if response is pending, FALSE otherwise                     */
 /*---------------------------------------------------------------------------------------------------------*/
-BOOLEAN ESPI_FLASH_SAF_IsPendingRes (void)
+BOOLEAN ESPI_FLASH_TAF_IsPendingRes (void)
 {
-    return ESPI_FLASH_SafPendingIncomingRes_L;
+    return ESPI_FLASH_TafPendingIncomingRes_L;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_SendRes                                                                 */
+/* Function:        ESPI_FLASH_TAF_SendRes                                                                 */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
 /*                                                                                                         */
@@ -4418,41 +4690,43 @@ BOOLEAN ESPI_FLASH_SAF_IsPendingRes (void)
 /* Description:                                                                                            */
 /*                  This routine sends response to host                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-DEFS_STATUS ESPI_FLASH_SAF_SendRes (void)
+DEFS_STATUS ESPI_FLASH_TAF_SendRes (void)
 {
     UINT8 comp = 0;
 
-    ESPI_FLASH_SafPendingIncomingRes_L = FALSE;
-    switch (ESPI_FLASH_SafReqInfo_L.reqType)
+    ESPI_FLASH_TafPendingIncomingRes_L = FALSE;
+    switch (ESPI_FLASH_TafReqInfo_L.reqType)
     {
-        case ESPI_FLASH_SAF_REQ_READ:
+    case ESPI_FLASH_TAF_REQ_READ:
 
-            ESPI_FLASH_SafReqInfo_L.currSize = (UINT8)MIN(ESPI_FLASH_SafReqInfo_L.reminder, ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE);
+        if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
+        {
+            ESPI_FLASH_TafReqInfo_L.currSize = (UINT8)MIN(ESPI_FLASH_TafReqInfo_L.reminder, ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE);
 
-            if (ESPI_FLASH_SafReqInfo_L.currSize > 0)
+            if (ESPI_FLASH_TafReqInfo_L.currSize > 0)
             {
-                ESPI_FLASH_SafReqInfo_L.status = ESPI_FLASH_SAF_PerformReq_l(ESPI_FLASH_SafReqInfo_L.offset + ESPI_FLASH_SafReqInfo_L.bytesRead,
-                                                                             ESPI_FLASH_SafReqInfo_L.currSize);
+                ESPI_FLASH_TafReqInfo_L.status = ESPI_FLASH_TAF_PerformReq_l(ESPI_FLASH_TafReqInfo_L.offset + ESPI_FLASH_TafReqInfo_L.bytesRead,
+                                                                             ESPI_FLASH_TafReqInfo_L.currSize);
 
-                ESPI_FLASH_SafReqInfo_L.reminder -= ESPI_FLASH_SafReqInfo_L.currSize;
-                ESPI_FLASH_SafReqInfo_L.bytesRead += ESPI_FLASH_SafReqInfo_L.currSize;
+                ESPI_FLASH_TafReqInfo_L.reminder -= ESPI_FLASH_TafReqInfo_L.currSize;
+                ESPI_FLASH_TafReqInfo_L.bytesRead += ESPI_FLASH_TafReqInfo_L.currSize;
 
-                if (ESPI_FLASH_SafReqInfo_L.status == DEFS_STATUS_OK)
+                if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
                 {
                     /*-------------------------------------------------------------------------------------*/
                     /* One packet                                                                          */
                     /*-------------------------------------------------------------------------------------*/
-                    if (ESPI_FLASH_SafReqInfo_L.size <= ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
+                    if (ESPI_FLASH_TafReqInfo_L.size <= ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
                     {
                         comp = ESPI_SUCCESSFUL_COMPLETION_WITH_DATA;
                     }
                     else
                     {
-                        if (ESPI_FLASH_SafReqInfo_L.bytesRead <= ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
+                        if (ESPI_FLASH_TafReqInfo_L.bytesRead <= ESPI_FLASH_MAX_PAYLOAD_REQ_SIZE)
                         {
                             comp = (ESPI_SUCCESSFUL_COMPLETION_WITH_DATA & ESPI_FIRST_COMPLETION_MASK);
                         }
-                        else if (ESPI_FLASH_SafReqInfo_L.reminder > 0)
+                        else if (ESPI_FLASH_TafReqInfo_L.reminder > 0)
                         {
                             comp = (ESPI_SUCCESSFUL_COMPLETION_WITH_DATA & ESPI_MIDDLE_COMPLETION_MASK);
                         }
@@ -4462,60 +4736,166 @@ DEFS_STATUS ESPI_FLASH_SAF_SendRes (void)
                         }
                     }
                 }
-                else
-                {
-                    comp = ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA;
-                    /*-------------------------------------------------------------------------------------------------*/
-                    /* Indicate to the Host that the recieve buffer is empty                                           */
-                    /*-------------------------------------------------------------------------------------------------*/
-                    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
-                }
 
-                if (ESPI_FLASH_SafReqInfo_L.bytesRead == ESPI_FLASH_SafReqInfo_L.size)
+                if (ESPI_FLASH_TafReqInfo_L.bytesRead == ESPI_FLASH_TafReqInfo_L.size)
                 {
-                    /*-------------------------------------------------------------------------------------------------*/
-                    /* Indicate to the Host that the recieve buffer is empty                                           */
-                    /*-------------------------------------------------------------------------------------------------*/
+                    /*-------------------------------------------------------------------------------------*/
+                    /* Indicate to the Host that the receive buffer is empty                               */
+                    /*-------------------------------------------------------------------------------------*/
                     SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
                 }
 
             }
-        break;
+        }
 
-        case ESPI_FLASH_SAF_REQ_WRITE:
-        case ESPI_FLASH_SAF_REQ_ERASE:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP2:
+        if (ESPI_FLASH_TafReqInfo_L.status != DEFS_STATUS_OK)
+        {
+            comp = ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA;
             /*---------------------------------------------------------------------------------------------*/
-            /* Indicate to the Host that the recieve buffer is empty                                       */
+            /* Indicate to the Host that the receive buffer is empty                                       */
             /*---------------------------------------------------------------------------------------------*/
             SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
+        }
+        break;
 
-            if (ESPI_FLASH_SafReqInfo_L.status == DEFS_STATUS_OK)
+    case ESPI_FLASH_TAF_REQ_WRITE:
+    case ESPI_FLASH_TAF_REQ_ERASE:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+    case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Indicate to the Host that the receive buffer is empty                                           */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
+
+        if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
+        {
+            if (ESPI_FLASH_TafReqInfo_L.outBufferSize > 0)
             {
-                if (ESPI_FLASH_SafReqInfo_L.outBufferSize > 0)
-                {
-                    comp = ESPI_SUCCESSFUL_COMPLETION_WITH_DATA;
-                }
-                else
-                {
-                    comp = ESPI_SUCCESSFUL_COMPLETION_WO_DATA;
-                }
+                comp = ESPI_SUCCESSFUL_COMPLETION_WITH_DATA;
             }
             else
             {
-                comp = ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA;
+                comp = ESPI_SUCCESSFUL_COMPLETION_WO_DATA;
             }
+        }
+        else
+        {
+            comp = ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA;
+        }
         break;
 
-        case ESPI_FLASH_SAF_REQ_NUM:
-            break;
+    case ESPI_FLASH_TAF_REQ_NUM:
+        break;
     }
-    ESPI_FLASH_SAF_SendRes_l(comp);
+    ESPI_FLASH_TAF_SendRes_l(comp, FALSE);
     return DEFS_STATUS_OK;
 }
 
-#endif // ESPI_CAPABILITY_SAF
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_PreventHostAccess                                                       */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success,                                                             */
+/*                  DEFS_STATUS_SYSTEM_BUSY if currently there is a request being handled by eSPI TAF      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine prevent host from sending TAF Requests, if function returns               */
+/*                  DEFS_STATUS_OK then host this indicate host has been prevented from sending request    */
+/*                  otherwise at some point in the flow, preventing failed. in this case                   */
+/*                  ESPI_FLASH_TAF_PreventHostAccess should be called again,                               */
+/*                  or ESPI_FLASH_TAF_ReenableHostAccess should be called to make sure all is coherence    */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
+{
+    DEFS_STATUS ret = DEFS_STATUS_OK;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* on Auto Read mode if the flash is the same as TAF flash - prevent TAF Auto Read                     */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (ESPI_FLASH_TafAutoReadConfig_L == TRUE)
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* if Auto Read queue is not empty return busy                                                     */
+        /*-------------------------------------------------------------------------------------------------*/
+        if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_FLASHAUTORDREQ) == TRUE)
+        {
+            return DEFS_STATUS_SYSTEM_BUSY;
+        }
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Disable flash channel interrupt                                                                 */
+        /*-------------------------------------------------------------------------------------------------*/
+        ESPI_IntEnable(ESPI_CHANNEL_FLASH, FALSE);
+        if (ESPI_FLASH_TAF_IsPendingRes())
+        {
+            ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+            ret = DEFS_STATUS_SYSTEM_BUSY;
+        }
+        else
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Prevent host auto read access                                                               */
+            /*---------------------------------------------------------------------------------------------*/
+            SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, TRUE);
+
+            DELAY_LOOP(10); //Add minimal delay to wait set operation end
+
+            if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_AUTO_RD_DIS_STS) == FALSE)
+            {
+                SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
+                ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+                ret = DEFS_STATUS_SYSTEM_BUSY;
+            }
+            else
+            {
+                /*-----------------------------------------------------------------------------------------*/
+                /* Check again if Auto Read queue is empty, verify no new transaction pushed till here     */
+                /*-----------------------------------------------------------------------------------------*/
+                if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_FLASHAUTORDREQ) == TRUE)
+                {
+                    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
+                    ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+                    ret = DEFS_STATUS_SYSTEM_BUSY;
+                }
+                else
+                {
+                    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_BLK_FLASH_NP_FREE, TRUE);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_TAF_ReenableHostAccess                                                      */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine re-enable host to sends TAF Requests, it reverse the preventing done by   */
+/*                  ESPI_FLASH_TAF_PreventHostAccess                                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_FLASH_TAF_ReenableHostAccess (void)
+{
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* on Auto Read mode if the flash is the same as TAF flash - prevent TAF Auto Read                     */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (ESPI_FLASH_TafAutoReadConfig_L == TRUE)
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Prevent host auto read access                                                                   */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
+        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_BLK_FLASH_NP_FREE, FALSE);
+        ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+    }
+    return DEFS_STATUS_OK;
+}
+
+#endif // ESPI_CAPABILITY_TAF
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -5240,7 +5620,7 @@ static void ESPI_ConfigUpdate_l (void)
             /*---------------------------------------------------------------------------------------------*/
             if ((chn == ESPI_CHANNEL_FLASH) && chnMasterEnable && ESPI_FLASH_TransmitQueueFull())
             {
-                ESPI_FLASH_DummyReqManual_l();
+                ESPI_FLASH_GlobalRstErrata_l();
             }
 #endif
             ESPI_ChannelSlaveEnable(chn, chnMasterEnable);
@@ -5464,12 +5844,21 @@ static DEFS_STATUS ESPI_PC_BM_SetRequest_l (
     /*-----------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMPKT_LEN, pktLen);
 
-    if ((reqType == ESPI_PC_MSG_READ) && (manualMode == FALSE))
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set Burst mode if needed.                                                                           */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (manualMode == FALSE)
     {
-        /*-------------------------------------------------------------------------------------------------*/
-        /* Set Burst mode                                                                                  */
-        /*-------------------------------------------------------------------------------------------------*/
-        ESPI_PC_AUTO_MODE(TRUE);
+        if (reqType == ESPI_PC_MSG_READ)
+        {
+            ESPI_PC_READ_AUTO_MODE(TRUE);
+        }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        else if (reqType == ESPI_PC_MSG_WRITE)
+        {
+            ESPI_PC_WRITE_AUTO_MODE(TRUE);
+        }
+#endif
     }
 
     /*-----------------------------------------------------------------------------------------------------*/
@@ -5728,7 +6117,7 @@ static DEFS_STATUS ESPI_PC_BM_ReqManual_l (
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set manual mode                                                                                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    ESPI_PC_AUTO_MODE(FALSE);
+    ESPI_PC_READ_AUTO_MODE(FALSE);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set system memory to 64/32 bits addressing                                                          */
@@ -5848,7 +6237,7 @@ static DEFS_STATUS ESPI_PC_BM_ReqManual_l (
             /*---------------------------------------------------------------------------------------------*/
             /* Clear transfer done status                                                                  */
             /*---------------------------------------------------------------------------------------------*/
-            REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMTXDONE));
+            DEFS_STATUS_COND_CHECK((ESPI_PC_BM_ClearTxDone_l() == DEFS_STATUS_OK), DEFS_STATUS_RESPONSE_TIMEOUT);
         }
 
         /*-------------------------------------------------------------------------------------------------*/
@@ -5896,7 +6285,7 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
 )
 {
     UINT16                  numOfTrans  = (UINT16)(size / ESPI_PC_MAX_PAYLOAD_SIZE);
-    DEFS_STATUS             status      = DEFS_STATUS_OK;
+    DEFS_STATUS             status;
     UINT                    j;
     UINT32                  intEnableReg;
 #if defined GDMA_MODULE_TYPE || defined GDMA_CAPABILITY_REQUEST_SELECT
@@ -5935,6 +6324,11 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
     }
 
     /*-----------------------------------------------------------------------------------------------------*/
+    /* Reset the pointers of the Transmit and Receive buffers                                              */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_PERCTL, PERCTL_RSTPBUFHEADS, 0x01);
+
+    /*-----------------------------------------------------------------------------------------------------*/
     /* Set system memory to 64/32 bits addressing                                                          */
     /*-----------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(ESPI_PERCTL, PERCTL_MEM64_ACCESS, ESPI_PC_BM_sysRAMis64bAddr_L);
@@ -5947,7 +6341,7 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
         /*-------------------------------------------------------------------------------------------------*/
         SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMSTRPHDR, 0x01);
 
-#ifdef ESPI_CAPABILITY_PC_BM_WRITE_DMA
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
         /*-------------------------------------------------------------------------------------------------*/
         /* Select Receive buffer as DMA request source                                                     */
         /*-------------------------------------------------------------------------------------------------*/
@@ -6049,7 +6443,7 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
 #endif
         if (status != DEFS_STATUS_OK)
         {
-            ESPI_PC_BM_ExitAutoReadRequest_l(status, useDMA);
+            ESPI_PC_BM_ExitAutoRequest_l(ESPI_PC_MSG_READ, status, useDMA);
             return ESPI_PC_BM_status_L;
         }
 #endif  /* GDMA_MODULE_TYPE || GDMA_CAPABILITY_REQUEST_SELECT */
@@ -6103,8 +6497,7 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
                 }
             }
         }
-
-        if (useDMA)
+        else
         {
             /*---------------------------------------------------------------------------------------------*/
             /* Wait till request transfer is done                                                          */
@@ -6147,7 +6540,7 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
             /*---------------------------------------------------------------------------------------------*/
             /* Handle burst error                                                                          */
             /*---------------------------------------------------------------------------------------------*/
-            ESPI_PC_BM_HandleBurstErr_l(useDMA);
+            ESPI_PC_BM_HandleBurstErr_l(ESPI_PC_MSG_READ, useDMA);
 
             /*---------------------------------------------------------------------------------------------*/
             /* Restore interrupts                                                                          */
@@ -6156,13 +6549,365 @@ static DEFS_STATUS  ESPI_PC_BM_ReadReqAuto_l (
         }
         else
         {
-            ESPI_PC_BM_ExitAutoReadRequest_l(DEFS_STATUS_OK, useDMA);
+            ESPI_PC_BM_ExitAutoRequest_l(ESPI_PC_MSG_READ, DEFS_STATUS_OK, useDMA);
         }
 
         return ESPI_PC_BM_status_L;
     }
     return DEFS_STATUS_OK;
 }
+
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_WriteReqAuto_l                                                              */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  offset     - offset in flash                                                           */
+/*                  size       - size of transaction                                                       */
+/*                  polling    - equals TRUE if polling is required and FALSE for interrupt mode           */
+/*                  buffer     - Input/output buffer, depends on reqType                                   */
+/*                  strpHdr    - equals TRUE if strip header is required and FALSE otherwise               */
+/*                  useDMA     - equals TRUE if DMA is required and FALSE otherwise                        */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sends a read automatic request to host.                                   */
+/*                  RAM offset must be aligned to size of transaction                                      */
+/*                  Size must be aligned to 64B.                                                           */
+/*                  Maximum size for transaction is (64B*256)                                              */
+/*                  If using DMA mode the buffer must be at least 4B aligned , 16B aligned will improve    */
+/*                  performance.                                                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_PC_BM_WriteReqAuto_l (
+    UINT64  offset,
+    UINT32  size,
+    BOOLEAN polling,
+    UINT32* buffer,
+    BOOLEAN strpHdr,
+    BOOLEAN useDMA
+)
+{
+    UINT16                  numOfTrans  = (UINT16)(size / ESPI_PC_MAX_PAYLOAD_SIZE);
+    DEFS_STATUS             status      = DEFS_STATUS_OK;
+    UINT                    j;
+    UINT32                  intEnableReg;
+#if defined GDMA_MODULE_TYPE || defined GDMA_CAPABILITY_REQUEST_SELECT
+    GDMA_TRANSFER_WIDTH_T   transferWidth;
+    UINT                    fiuDevNum;
+#endif
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Error check                                                                                         */
+    /*-----------------------------------------------------------------------------------------------------*/
+#if !defined GDMA_MODULE_TYPE && !defined GDMA_CAPABILITY_REQUEST_SELECT
+    DEFS_STATUS_COND_CHECK((useDMA == FALSE), DEFS_STATUS_INVALID_PARAMETER);
+#endif
+    DEFS_STATUS_COND_CHECK(numOfTrans <= ESPI_PC_PAUTO_MAX_TRANS_COUNT, DEFS_STATUS_INVALID_DATA_SIZE);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Verify transmit buffer is empty                                                                     */
+    /*-----------------------------------------------------------------------------------------------------*/
+    DEFS_STATUS_COND_CHECK((READ_REG_FIELD(ESPI_PERCTL, PERCTL_BM_NP_AVAIL)  == FALSE) &&
+                           (READ_REG_FIELD(ESPI_PERCTL, PERCTL_BM_MSG_AVAIL) == FALSE) &&
+                           (READ_REG_FIELD(ESPI_PERCTL, PERCTL_BM_PC_AVAIL)  == FALSE),
+                           DEFS_STATUS_SYSTEM_BUSY);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* The DMA transfer starts from the 2nd packet (the first 64-byte write data is written by firmware    */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (numOfTrans == 1)
+    {
+        useDMA = FALSE;
+    }
+
+    if (!polling)
+    {
+        ESPI_PC_BM_usrReqInfo_L.buffer          = buffer;
+        ESPI_PC_BM_usrReqInfo_L.buffOffset      = 0;
+        ESPI_PC_BM_usrReqInfo_L.currSize        = ESPI_PC_MAX_PAYLOAD_SIZE;
+        ESPI_PC_BM_usrReqInfo_L.RamOffset       = offset;
+        ESPI_PC_BM_usrReqInfo_L.reqType         = ESPI_PC_MSG_WRITE;
+        ESPI_PC_BM_usrReqInfo_L.size            = size;
+        ESPI_PC_BM_usrReqInfo_L.status          = DEFS_STATUS_OK;
+        ESPI_PC_BM_usrReqInfo_L.strpHdr         = useDMA ? TRUE : strpHdr;
+        ESPI_PC_BM_usrReqInfo_L.useDMA          = useDMA;
+        ESPI_PC_BM_usrReqInfo_L.buffTransferred = 0;
+        ESPI_PC_BM_usrReqInfo_L.manualMode      = FALSE;
+    }
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Reset the pointers of the Transmit and Receive buffers                                              */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_PERCTL, PERCTL_RSTPBUFHEADS, 0x01);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set system memory to 64/32 bits addressing                                                          */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_PERCTL, PERCTL_MEM64_ACCESS, ESPI_PC_BM_sysRAMis64bAddr_L);
+
+    if (useDMA)
+    {
+#if defined GDMA_MODULE_TYPE || defined GDMA_CAPABILITY_REQUEST_SELECT
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Select transmit buffer as DMA request source                                                    */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMDMA_TR_SL, 0x01);
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Find relevant transfer width according to input buffer                                          */
+        /*-------------------------------------------------------------------------------------------------*/
+        if ((UINT32)buffer % _16B_ == 0)
+        {
+            transferWidth = GDMA_TRANSFER_WIDTH_16B;
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Enable DMA with a thershold 4 double words                                                  */
+            /*---------------------------------------------------------------------------------------------*/
+            SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWDMATHRESH, ESPI_BM_DMA_THRESHOLD_16B);
+        }
+        else
+        {
+            return DEFS_STATUS_FAIL;
+        }
+
+#ifdef GDMA_CAPABILITY_REQUEST_SELECT
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Allocate and configure the GDMA channel                                                         */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_RET_CHECK((GDMA_AllocChannel(&ESPI_PC_BM_gdmaChannelId)));
+        DEFS_STATUS_RET_CHECK(GDMA_Config(ESPI_PC_BM_gdmaChannelId, FALSE, FALSE, transferWidth));
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* check if source address is FIU, get fiu number. else the source address is RAM                  */
+        /*-------------------------------------------------------------------------------------------------*/
+        if (CHIP_SPI_DeviceNumber((UINT32)buffer, &fiuDevNum, size) == DEFS_STATUS_OK)
+        {
+            ESPI_PC_BM_usrReqInfo_L.readFromFalsh   = TRUE;
+            ESPI_PC_BM_usrReqInfo_L.fiu_module      = (FIU_MODULE_T)fiuDevNum;
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Config Unlimited Burst and requestor                                                        */
+            /*---------------------------------------------------------------------------------------------*/
+            FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_UNLIMITED);
+            (void)GDMA_ConfigRequestor(ESPI_PC_BM_gdmaChannelId, GDMA_FROM_FIU_BURST_TO_ESPI_PCBM(fiuDevNum));
+            FIU_EnableDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, TRUE);
+        }
+        else
+        {
+            ESPI_PC_BM_usrReqInfo_L.readFromFalsh   = FALSE;
+
+            (void)GDMA_ConfigRequestor(ESPI_PC_BM_gdmaChannelId, GDMA_FROM_RAM_TO_ESPI_PCBM);
+        }
+#else
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Initialize and configure the GDMA channel                                                       */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_RET_CHECK(GDMA_InitEspi(ESPI_GDMA_MODULE, ESPI_PC_BM_GDMA_CHANNEL));
+        DEFS_STATUS_RET_CHECK(GDMA_Config(ESPI_GDMA_MODULE, ESPI_PC_BM_GDMA_CHANNEL, FALSE, FALSE, transferWidth));
+#endif
+#endif  /* GDMA_MODULE_TYPE || GDMA_CAPABILITY_REQUEST_SELECT */
+    }
+    else // No DMA
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* DMA request is disabled                                                                         */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWDMATHRESH, ESPI_BM_DMA_THRESHOLD_DISABLE);
+    }
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set number of transactions required                                                                 */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWBURSTSIZE, (numOfTrans - 1));
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set tag for next request                                                                            */
+    /*-----------------------------------------------------------------------------------------------------*/
+    ESPI_PC_BM_currReqTag_L = 0;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set request in transfer buffer (first transaction header and first transaction data)                */
+    /*-----------------------------------------------------------------------------------------------------*/
+    DEFS_STATUS_RET_CHECK(ESPI_PC_BM_SetRequest_l(ESPI_PC_MSG_WRITE, offset, ESPI_PC_MAX_PAYLOAD_SIZE,
+                                                  buffer, ESPI_PC_BM_currReqTag_L, FALSE));
+
+    ESPI_PC_BM_status_L = DEFS_STATUS_SYSTEM_BUSY;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Enqueue the first transaction (the other transactions will be generated automatically)              */
+    /*-----------------------------------------------------------------------------------------------------*/
+    status = ESPI_PC_BM_EnqueuePacket_l(ESPI_PC_MSG_WRITE);
+
+    if (status != DEFS_STATUS_OK)
+    {
+        ESPI_PC_BM_status_L = DEFS_STATUS_FAIL;
+        return status;
+    }
+
+    if (useDMA)
+    {
+#if defined GDMA_MODULE_TYPE || defined GDMA_CAPABILITY_REQUEST_SELECT
+        ESPI_PC_BM_RX_INTERRUPT_SAVE_DISABLE(ESPI_PC_BM_RXIE_L);
+        ESPI_PC_BM_TXDONE_INTERRUPT_SAVE_DISABLE(ESPI_PC_BM_TXDONE_L);
+
+#ifdef GDMA_CAPABILITY_REQUEST_SELECT
+#ifdef ESPI_PCBM_GDMA_ERRATA_ISSUE
+        /*-------------------------------------------------------------------------------------------------*/
+        /* GDMA driver in ROM has a bug, thus calling a W/A function in eSPI driver                        */
+        /*-------------------------------------------------------------------------------------------------*/
+        status = ESPI_PC_BM_GDMA_Transfer(ESPI_PC_BM_gdmaChannelId, (UINT32)(void*)&(((UINT8*)buffer)[ESPI_PC_MAX_PAYLOAD_SIZE]), (UINT8*)REG_ADDR(ESPI_PBMTXWRHEAD), (size - ESPI_PC_MAX_PAYLOAD_SIZE), ESPI_PC_BM_GdmaIntHandler_l);
+#else
+        status = GDMA_Transfer(ESPI_PC_BM_gdmaChannelId, (UINT32)(void*)&(((UINT8*)buffer)[ESPI_PC_MAX_PAYLOAD_SIZE]), (UINT8*)REG_ADDR(ESPI_PBMTXWRHEAD), (size - ESPI_PC_MAX_PAYLOAD_SIZE), ESPI_PC_BM_GdmaIntHandler_l, NULL);
+#endif
+#else
+        status = GDMA_Transfer(ESPI_GDMA_MODULE, ESPI_PC_BM_GDMA_CHANNEL, (UINT32)(void*)&(((UINT8*)buffer)[ESPI_PC_MAX_PAYLOAD_SIZE]), (UINT8*)REG_ADDR(ESPI_PBMTXWRHEAD), (size - ESPI_PC_MAX_PAYLOAD_SIZE), ESPI_PC_BM_GdmaIntHandler_l);
+#endif
+
+        if (status != DEFS_STATUS_OK)
+        {
+            ESPI_PC_BM_ExitAutoRequest_l(ESPI_PC_MSG_WRITE, status, useDMA);
+            return ESPI_PC_BM_status_L;
+        }
+#endif  /* GDMA_MODULE_TYPE || GDMA_CAPABILITY_REQUEST_SELECT */
+    }
+
+    if (polling)
+    {
+        if (!useDMA)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* While burst mode Write Transmit Buffer is full. Skip over the first 64 bytes as they were   */
+            /* written in ESPI_PC_BM_SetRequest_l function.                                                */
+            /*---------------------------------------------------------------------------------------------*/
+            for (j = 1; j < numOfTrans; j++)
+            {
+                status = ESPI_PC_BM_TransmitDataBuffer_l((UINT32*)(void*)&(((UINT8*)buffer)[j * ESPI_PC_MAX_PAYLOAD_SIZE]),
+                                                         ESPI_PC_MAX_PAYLOAD_SIZE);
+
+                if (status != DEFS_STATUS_OK)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Wait till request transfer is done                                                          */
+            /*---------------------------------------------------------------------------------------------*/
+            j = ESPI_FLASH_AUTO_AMDONE_LOOP_COUNT;
+            do
+            {
+                if (j-- == 0)
+                {
+                    status = DEFS_STATUS_RESPONSE_TIMEOUT;
+                    break;
+                }
+            } while (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMWBURSTDONE) == FALSE);
+
+#ifdef GDMA_CAPABILITY_REQUEST_SELECT
+            /*---------------------------------------------------------------------------------------------*/
+            /* Free the allocated GDMA channel                                                             */
+            /*---------------------------------------------------------------------------------------------*/
+            (void)GDMA_FreeChannel(ESPI_PC_BM_gdmaChannelId);
+            ESPI_PC_BM_gdmaChannelId = GDMA_CHANNELS_ID_NUMBER;
+
+            if (ESPI_PC_BM_usrReqInfo_L.readFromFalsh)
+            {
+                /*-----------------------------------------------------------------------------------------*/
+                /* Disable (on the FIU side) the DMA request                                               */
+                /*-----------------------------------------------------------------------------------------*/
+                FIU_EnableDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, FALSE);
+
+                /*-----------------------------------------------------------------------------------------*/
+                /* Return the FIU to normal mode                                                           */
+                /*-----------------------------------------------------------------------------------------*/
+                FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_NORMAL_READ);
+            }
+#endif
+        }
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Wait till transfer is done                                                                      */
+        /*-------------------------------------------------------------------------------------------------*/
+        BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMWBURSTDONE) == FALSE), ESPI_PC_BM_TIMEOUT) ;
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Wait till Write queue is empty                                                                  */
+        /*-------------------------------------------------------------------------------------------------*/
+        BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMWBURSTQEMP) == FALSE), ESPI_PC_BM_TIMEOUT) ;
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Check that no error occurred. Error can be: Unsuccessful Completion or protocol error           */
+        /* Incorrect TAG or Length < 64 bytes                                                              */
+        /*-------------------------------------------------------------------------------------------------*/
+        if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMWBURSTERR) == TRUE)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Disable interrupts such that ESPI_errorMask will not be changed                             */
+            /*---------------------------------------------------------------------------------------------*/
+            ESPI_INTERRUPT_SAVE_DISABLE(intEnableReg);
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Get error and clean relevant bits                                                           */
+            /*---------------------------------------------------------------------------------------------*/
+            ESPI_GetError_l(ESPIERR_MASK_BMBURSTERR);
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Handle burst error                                                                          */
+            /*---------------------------------------------------------------------------------------------*/
+            ESPI_PC_BM_HandleBurstErr_l(ESPI_PC_MSG_WRITE, useDMA);
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Restore interrupts                                                                          */
+            /*---------------------------------------------------------------------------------------------*/
+            ESPI_INTERRUPT_RESTORE(intEnableReg);
+        }
+        else
+        {
+            ESPI_PC_BM_ExitAutoRequest_l(ESPI_PC_MSG_WRITE, DEFS_STATUS_OK, useDMA);
+        }
+
+        return ESPI_PC_BM_status_L;
+    }
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_TransmitDataBuffer_l                                                        */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  buffer     - input buffer for write operation                                          */
+/*                  size       - size of transaction (requested size)                                      */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine transmits and handles data buffer under polling mode                      */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_PC_BM_TransmitDataBuffer_l (const UINT32* buffer, UINT32 size)
+{
+    UINT    i;
+    UINT    loopCount;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Wait till transmit buffer is empty                                                                  */
+    /*-----------------------------------------------------------------------------------------------------*/
+    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWBURST_BEMPTY) == FALSE), ESPI_PC_BM_TIMEOUT) ;
+
+    /*----------------------------------------------------------------------------------------------------*/
+    /* Transmit the data.                                                                                 */
+    /*----------------------------------------------------------------------------------------------------*/
+    loopCount = size / sizeof(UINT32);
+    for (i = 0; i < loopCount; i++)
+    {
+        REG_WRITE(ESPI_PBMTXWRHEAD, buffer[i]);
+    }
+
+    return DEFS_STATUS_OK;
+}
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        ESPI_PC_BM_HandleReqRes_l                                                              */
@@ -6203,31 +6948,56 @@ static void ESPI_PC_BM_HandleReqRes_l (void)
         }
         ESPI_PC_BM_usrReqInfo_L.buffOffset += ESPI_PC_BM_usrReqInfo_L.currSize;
 
-
         /*-------------------------------------------------------------------------------------------------*/
-        /* If it's automatic mode (read operation only)                                                    */
+        /* If this is automatic mode                                                                       */
         /*-------------------------------------------------------------------------------------------------*/
-        if ((ESPI_PC_BM_usrReqInfo_L.manualMode == FALSE) &&
-            (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_READ))
+        if (ESPI_PC_BM_usrReqInfo_L.manualMode == FALSE)
         {
             /*---------------------------------------------------------------------------------------------*/
-            /* While there is more data in buffers                                                         */
+            /* If it's automatic read                                                                      */
             /*---------------------------------------------------------------------------------------------*/
-            while ((ESPI_PC_BM_usrReqInfo_L.buffOffset < ESPI_PC_BM_usrReqInfo_L.size) &&
-                   (READ_REG_FIELD(ESPI_PERCTL, PERCTL_BMBURST_BFULL) == TRUE))
+            if (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_READ)
             {
                 /*-----------------------------------------------------------------------------------------*/
-                /* Clear receive buffer status                                                             */
+                /* While there is more data in buffers                                                     */
                 /*-----------------------------------------------------------------------------------------*/
-                REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
+                while ((ESPI_PC_BM_usrReqInfo_L.buffOffset < ESPI_PC_BM_usrReqInfo_L.size) &&
+                       (READ_REG_FIELD(ESPI_PERCTL, PERCTL_BMBURST_BFULL) == TRUE))
+                {
+                    /*-------------------------------------------------------------------------------------*/
+                    /* Clear receive buffer status                                                         */
+                    /*-------------------------------------------------------------------------------------*/
+                    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
 
+                    /*-------------------------------------------------------------------------------------*/
+                    /* Handle packet                                                                       */
+                    /*-------------------------------------------------------------------------------------*/
+                    status = ESPI_PC_BM_HandleInputPacket_l(ESPI_PC_BM_usrReqInfo_L.reqType,
+                                                            (UINT32*)(void*)&((UINT8*)ESPI_PC_BM_usrReqInfo_L.buffer)[ESPI_PC_BM_usrReqInfo_L.buffOffset],
+                                                            ESPI_PC_BM_usrReqInfo_L.strpHdr,
+                                                            ESPI_PC_BM_usrReqInfo_L.currSize);
+
+                    /*-------------------------------------------------------------------------------------*/
+                    /* If packet handling failed                                                           */
+                    /*-------------------------------------------------------------------------------------*/
+                    if (status != DEFS_STATUS_OK)
+                    {
+                        ESPI_PC_BM_usrReqInfo_L.status = DEFS_STATUS_FAIL;
+                    }
+                    ESPI_PC_BM_usrReqInfo_L.buffOffset += ESPI_PC_BM_usrReqInfo_L.currSize;
+                }
+            }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+            /*---------------------------------------------------------------------------------------------*/
+            /* If it's automatic write                                                                     */
+            /*---------------------------------------------------------------------------------------------*/
+            else if (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_WRITE)
+            {
                 /*-----------------------------------------------------------------------------------------*/
                 /* Handle packet                                                                           */
                 /*-----------------------------------------------------------------------------------------*/
-                status = ESPI_PC_BM_HandleInputPacket_l(ESPI_PC_BM_usrReqInfo_L.reqType,
-                                                        (UINT32*)(void*)&((UINT8*)ESPI_PC_BM_usrReqInfo_L.buffer)[ESPI_PC_BM_usrReqInfo_L.buffOffset],
-                                                        ESPI_PC_BM_usrReqInfo_L.strpHdr,
-                                                        ESPI_PC_BM_usrReqInfo_L.currSize);
+                status = ESPI_PC_BM_TransmitDataBuffer_l((UINT32*)(void*)&((UINT8*)ESPI_PC_BM_usrReqInfo_L.buffer)[ESPI_PC_BM_usrReqInfo_L.buffOffset],
+                                                             ESPI_PC_BM_usrReqInfo_L.currSize);
 
                 /*-----------------------------------------------------------------------------------------*/
                 /* If packet handling failed                                                               */
@@ -6238,12 +7008,12 @@ static void ESPI_PC_BM_HandleReqRes_l (void)
                 }
                 ESPI_PC_BM_usrReqInfo_L.buffOffset += ESPI_PC_BM_usrReqInfo_L.currSize;
             }
+#endif
         }
-
         /*-------------------------------------------------------------------------------------------------*/
         /* If this is manual mode                                                                          */
         /*-------------------------------------------------------------------------------------------------*/
-        if (ESPI_PC_BM_usrReqInfo_L.manualMode == TRUE)
+        else
         {
             /*---------------------------------------------------------------------------------------------*/
             /* If operation is not done                                                                    */
@@ -6286,7 +7056,7 @@ static void ESPI_PC_BM_HandleReqRes_l (void)
                     /*-------------------------------------------------------------------------------------*/
                     /* Clear status                                                                        */
                     /*-------------------------------------------------------------------------------------*/
-                    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMTXDONE));
+                    (void)ESPI_PC_BM_ClearTxDone_l();
                 }
                 /*-----------------------------------------------------------------------------------------*/
                 /* Enqueue the packet for transmission                                                     */
@@ -6324,7 +7094,12 @@ static void ESPI_PC_BM_HandleReqRes_l (void)
         /*-------------------------------------------------------------------------------------------------*/
         /* Only for single mode                                                                            */
         /*-------------------------------------------------------------------------------------------------*/
-        if (ESPI_PC_AUTO_MODE_IS_ON() == FALSE)
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        if ((ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_READ  && ESPI_PC_READ_AUTO_MODE_IS_ON()  == FALSE) ||
+            (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_WRITE && ESPI_PC_WRITE_AUTO_MODE_IS_ON() == FALSE))
+#else
+        if (ESPI_PC_READ_AUTO_MODE_IS_ON() == FALSE)
+#endif
         {
             /*---------------------------------------------------------------------------------------------*/
             /* Send host NON FATAL ERROR virtual wire indication                                           */
@@ -6454,7 +7229,22 @@ static void ESPI_PC_BM_AutoModeTransDoneHandler_l (
         /*-------------------------------------------------------------------------------------------------*/
         (void)GDMA_FreeChannel(ESPI_PC_BM_gdmaChannelId);
         ESPI_PC_BM_gdmaChannelId = GDMA_CHANNELS_ID_NUMBER;
+
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        if (ESPI_PC_BM_usrReqInfo_L.readFromFalsh)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Disable (on the FIU side) the DMA request                                                   */
+            /*---------------------------------------------------------------------------------------------*/
+            FIU_EnableDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, FALSE);
+
+            /*---------------------------------------------------------------------------------------------*/
+            /* Return the FIU to normal mode                                                               */
+            /*---------------------------------------------------------------------------------------------*/
+            FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_NORMAL_READ);
+        }
     }
+#endif
 #endif
 
     /*-----------------------------------------------------------------------------------------------------*/
@@ -6474,7 +7264,11 @@ static void ESPI_PC_BM_AutoModeTransDoneHandler_l (
     /* BMSPLITEN and BMAMTEN bits are set to 0.                                                            */
     /* Default = 0                                                                                         */
     /*-----------------------------------------------------------------------------------------------------*/
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    if (READ_VAR_FIELD(status, ESPISTS_BMBURSTERR) || READ_VAR_FIELD(status, ESPISTS_BMWBURSTERR))
+#else
     if (READ_VAR_FIELD(status, ESPISTS_BMBURSTERR))
+#endif
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* Get error and clean relevant bits                                                               */
@@ -6484,11 +7278,16 @@ static void ESPI_PC_BM_AutoModeTransDoneHandler_l (
         /*-------------------------------------------------------------------------------------------------*/
         /* Handle burst error                                                                              */
         /*-------------------------------------------------------------------------------------------------*/
-        ESPI_PC_BM_HandleBurstErr_l(ESPI_PC_BM_usrReqInfo_L.useDMA);
+        ESPI_PC_BM_HandleBurstErr_l(ESPI_PC_BM_usrReqInfo_L.reqType, ESPI_PC_BM_usrReqInfo_L.useDMA);
 
         ESPI_PC_BM_status_L = DEFS_STATUS_FAIL;
 
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        if ((READ_VAR_FIELD(status, ESPISTS_BMBURSTERR)  && READ_VAR_FIELD(intEnable, ESPIIE_BMBURSTERRIE)) ||
+            (READ_VAR_FIELD(status, ESPISTS_BMWBURSTERR) && READ_VAR_FIELD(intEnable, ESPIIE_BMWBURSTERRIE)))
+#else
         if (READ_VAR_FIELD(intEnable, ESPIIE_BMBURSTERRIE))
+#endif
         {
             /*---------------------------------------------------------------------------------------------*/
             /* Notify user                                                                                 */
@@ -6503,11 +7302,25 @@ static void ESPI_PC_BM_AutoModeTransDoneHandler_l (
     /*-----------------------------------------------------------------------------------------------------*/
     else
     {
-        ESPI_PC_BM_ExitAutoReadRequest_l(DEFS_STATUS_OK, ESPI_PC_BM_usrReqInfo_L.useDMA);
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        if (ESPI_PC_BM_usrReqInfo_L.reqType == ESPI_PC_MSG_WRITE)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Wait till Write queue is empty                                                              */
+            /*---------------------------------------------------------------------------------------------*/
+            (void)ESPI_PC_BM_WriteQueueEmpty_l();
+        }
+#endif
+        ESPI_PC_BM_ExitAutoRequest_l(ESPI_PC_BM_usrReqInfo_L.reqType, DEFS_STATUS_OK, ESPI_PC_BM_usrReqInfo_L.useDMA);
 
         ESPI_PC_BM_status_L = ESPI_PC_BM_usrReqInfo_L.status;
 
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        if ((READ_VAR_FIELD(status, ESPISTS_BMBURSTDONE)  && READ_VAR_FIELD(intEnable, ESPIIE_BMBURSTDONEIE)) ||
+            (READ_VAR_FIELD(status, ESPISTS_BMWBURSTDONE) && READ_VAR_FIELD(intEnable, ESPIIE_BMWBURSTDONEIE)))
+#else
         if (READ_VAR_FIELD(intEnable, ESPIIE_BMBURSTDONEIE))
+#endif
         {
             /*---------------------------------------------------------------------------------------------*/
             /* Notify user                                                                                 */
@@ -6554,49 +7367,95 @@ static void ESPI_PC_BM_GdmaIntHandler_l (
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_PC_BM_ExitAutoReadRequest_l                                                       */
+/* Function:        ESPI_PC_BM_ExitAutoRequest_l                                                           */
 /*                                                                                                         */
-/* Parameters:      none                                                                                   */
+/* Parameters:                                                                                             */
+/*                  useDMA     - equals TRUE if DMA is required and FALSE otherwise                        */
+/*                  status     - operation status                                                          */
+/*                  msgType    - request type (read/write)                                                 */
+/*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine Exit read request; set manual mode and return status                      */
+/*                  This routine Exit read/write request; set manual mode and return status                */
 /*---------------------------------------------------------------------------------------------------------*/
-static void ESPI_PC_BM_ExitAutoReadRequest_l (
-    DEFS_STATUS status,
-    BOOLEAN     useDMA
+static void ESPI_PC_BM_ExitAutoRequest_l (
+    ESPI_PC_MSG_T   msgType,
+    DEFS_STATUS     status,
+    BOOLEAN         useDMA
 )
 {
-    if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMTXDONE) == TRUE)
+    if (msgType == ESPI_PC_MSG_READ)
+    {
+        if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMTXDONE) == TRUE)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Clear bus mastering transfer done status                                                    */
+            /*---------------------------------------------------------------------------------------------*/
+            (void)ESPI_PC_BM_ClearTxDone_l();
+        }
+
+        if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMBURSTDONE) == TRUE)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Clear automatic mode done status                                                            */
+            /*---------------------------------------------------------------------------------------------*/
+            REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTDONE));
+        }
+    }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    else if (msgType == ESPI_PC_MSG_WRITE)
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* Clear bus mastering transfer done status                                                        */
         /*-------------------------------------------------------------------------------------------------*/
-        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMTXDONE));
+        (void)ESPI_PC_BM_ClearWriteTxDone_l();
     }
-
-    if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMBURSTDONE) == TRUE)
-    {
-        /*-------------------------------------------------------------------------------------------------*/
-        /* Clear automatic mode done status                                                                */
-        /*-------------------------------------------------------------------------------------------------*/
-        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTDONE));
-    }
-
+#endif
     if (useDMA)
     {
-        if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_PBMRX) == TRUE)
+        if (msgType == ESPI_PC_MSG_READ)
+        {
+            if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_PBMRX) == TRUE)
+            {
+                /*-----------------------------------------------------------------------------------------*/
+                /* Clear bus mastering receive status                                                      */
+                /*-----------------------------------------------------------------------------------------*/
+                REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
+            }
+        }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        else if (msgType == ESPI_PC_MSG_WRITE)
         {
             /*---------------------------------------------------------------------------------------------*/
-            /* Clear bus mastering receive status                                                          */
+            /* Disable DMA request.                                                                        */
             /*---------------------------------------------------------------------------------------------*/
-            REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
+            SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWDMATHRESH, ESPI_BM_DMA_THRESHOLD_DISABLE);
         }
+#endif
+
         ESPI_PC_BM_RX_INTERRUPT_RESTORE(ESPI_PC_BM_RXIE_L);
         ESPI_PC_BM_TXDONE_INTERRUPT_RESTORE(ESPI_PC_BM_TXDONE_L);
     }
 
-    ESPI_PC_AUTO_MODE(FALSE);
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Disable auto mode                                                                                   */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (msgType == ESPI_PC_MSG_READ)
+    {
+        ESPI_PC_READ_AUTO_MODE(FALSE);
+    }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    else if (msgType == ESPI_PC_MSG_WRITE)
+    {
+        ESPI_PC_WRITE_AUTO_MODE(FALSE);
+    }
+#endif
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Reset the pointers of the Transmit and Receive buffers                                              */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_PERCTL, PERCTL_RSTPBUFHEADS, 0x01);
 
     ESPI_PC_BM_status_L = status;
 }
@@ -6606,17 +7465,28 @@ static void ESPI_PC_BM_ExitAutoReadRequest_l (
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  useDMA     - equals TRUE if DMA is required and FALSE otherwise                        */
+/*                  msgType    - request type (read/write)                                                 */
+/*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine handles automatic mode burst error                                        */
 /*---------------------------------------------------------------------------------------------------------*/
-static void ESPI_PC_BM_HandleBurstErr_l (BOOLEAN useDMA)
+static void ESPI_PC_BM_HandleBurstErr_l (ESPI_PC_MSG_T msgType, BOOLEAN useDMA)
 {
     /*-----------------------------------------------------------------------------------------------------*/
     /* Clear error bit                                                                                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTERR));
+    if (msgType == ESPI_PC_MSG_READ)
+    {
+        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTERR));
+    }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    else if (msgType == ESPI_PC_MSG_WRITE)
+    {
+        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMWBURSTERR));
+    }
+#endif
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* If it's not protocol error/ unsuccessful completion error                                           */
@@ -6634,20 +7504,37 @@ static void ESPI_PC_BM_HandleBurstErr_l (BOOLEAN useDMA)
     /*-----------------------------------------------------------------------------------------------------*/
     SET_REG_FIELD(ESPI_PERCTL, PERCTL_RSTPBUFHEADS, 0x01);
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Clear bus mastering transfer done status                                                            */
-    /*-----------------------------------------------------------------------------------------------------*/
-    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMTXDONE));
+    if (msgType == ESPI_PC_MSG_READ)
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Clear bus mastering transfer done status                                                        */
+        /*-------------------------------------------------------------------------------------------------*/
+        (void)ESPI_PC_BM_ClearTxDone_l();
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Clear bus mastering receive status                                                                  */
-    /*-----------------------------------------------------------------------------------------------------*/
-    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Clear bus mastering receive status                                                              */
+        /*-------------------------------------------------------------------------------------------------*/
+        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_PBMRX));
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Clear bus mastering burst done status                                                               */
-    /*-----------------------------------------------------------------------------------------------------*/
-    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTDONE));
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Clear bus mastering burst done status                                                           */
+        /*-------------------------------------------------------------------------------------------------*/
+        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMBURSTDONE));
+    }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+    else if (msgType == ESPI_PC_MSG_WRITE)
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Clear bus mastering transfer done status                                                        */
+        /*-------------------------------------------------------------------------------------------------*/
+        (void)ESPI_PC_BM_ClearWriteTxDone_l();
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Clear bus mastering burst done status                                                           */
+        /*-------------------------------------------------------------------------------------------------*/
+        REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMWBURSTDONE));
+    }
+#endif
 
     if (useDMA)
     {
@@ -6655,7 +7542,16 @@ static void ESPI_PC_BM_HandleBurstErr_l (BOOLEAN useDMA)
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable DMA request                                                                             */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMDMATHRESH, ESPI_BM_DMA_THRESHOLD_DISABLE);
+        if (msgType == ESPI_PC_MSG_READ)
+        {
+            SET_REG_FIELD(ESPI_PERCTL, PERCTL_BMDMATHRESH, ESPI_BM_DMA_THRESHOLD_DISABLE);
+        }
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+        else if (msgType == ESPI_PC_MSG_WRITE)
+        {
+            SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWDMATHRESH, ESPI_BM_DMA_THRESHOLD_DISABLE);
+        }
+#endif
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Restore interrupts handling                                                                     */
@@ -6704,6 +7600,150 @@ static DEFS_STATUS ESPI_PC_BM_EnqueuePacket_l (ESPI_PC_MSG_T msgType)
 
     return DEFS_STATUS_OK;
 }
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_ClearTxDone_l                                                               */
+/*                                                                                                         */
+/* Parameters:      None                                                                                   */
+/* Returns:         None                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine clears the Bus Master Data Transmitted status.                            */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_PC_BM_ClearTxDone_l (void)
+{
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Clear transfer done status                                                                          */
+    /*-----------------------------------------------------------------------------------------------------*/
+    REG_WRITE(ESPI_ESPISTS, MASK_FIELD(ESPISTS_BMTXDONE));
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Read BMTXDONE until a value of 0 is returned                                                        */
+    /*-----------------------------------------------------------------------------------------------------*/
+    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMTXDONE) == 1), ESPI_PC_BM_TIMEOUT) ;
+
+    return DEFS_STATUS_OK;
+}
+
+#ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_WriteQueueEmpty_l                                                           */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine waits till Write queue is empty                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_PC_BM_WriteQueueEmpty_l (void)
+{
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Wait till Write queue is empty                                                                      */
+    /*-----------------------------------------------------------------------------------------------------*/
+    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMWBURSTQEMP) == FALSE), ESPI_PC_BM_TIMEOUT) ;
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_ClearWriteTxDone_l                                                          */
+/*                                                                                                         */
+/* Parameters:      None                                                                                   */
+/* Returns:         None                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine clears the Bus Master Write Data Transmitted status.                      */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_PC_BM_ClearWriteTxDone_l (void)
+{
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Clear transfer done status                                                                          */
+    /*-----------------------------------------------------------------------------------------------------*/
+    REG_WRITE(ESPI_ESPISTS, (MASK_FIELD(ESPISTS_BMTXDONE) | MASK_FIELD(ESPISTS_BMWBURSTDONE)));
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Read BMTXDONE until a value of 0 is returned                                                        */
+    /*-----------------------------------------------------------------------------------------------------*/
+    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_BMTXDONE) == 1), ESPI_PC_BM_TIMEOUT);
+
+    return DEFS_STATUS_OK;
+}
+
+#ifdef ESPI_PCBM_GDMA_ERRATA_ISSUE
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_PC_BM_GDMA_Transfer                                                               */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  channelId  - GDMA channel Id number                                                    */
+/*                  srcAddr    - source address                                                            */
+/*                  destAddr   - destination address                                                       */
+/*                  dataLen    - number of bytes to copy (notice dataLen must be a product of 16)          */
+/*                  handler    - interrupt handler function pointer. If it's NULL, non interrupt polling   */
+/*                               mode is used                                                              */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error.                        */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures GDMA transaction                                               */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_PC_BM_GDMA_Transfer (
+    GDMA_CHANNEL_ID_T   channelId,
+    UINT32              srcAddr,
+    UINT8*              destAddr,
+    UINT32              dataLen,
+    GDMA_INT_HANDLER    handler
+)
+{
+    UINT8 module    = (UINT8)(channelId & 1);
+    UINT8 channel   = (UINT8)(((UINT8)channelId>>1) & 1);
+
+    UINT8 chunkSize = (GDMA_GetDataTransferWidth(channelId) == GDMA_TRANSFER_WIDTH_16B ? 16 : 4); // TODO: ?
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Error checking                                                                                      */
+    /*-----------------------------------------------------------------------------------------------------*/
+    DEFS_STATUS_COND_CHECK(!READ_REG_FIELD(GDMA_CTL(module, channel), GDMA_CTL_GDMAEN), DEFS_STATUS_SYSTEM_BUSY);
+    DEFS_STATUS_COND_CHECK(((dataLen % chunkSize) == 0), DEFS_STATUS_INVALID_PARAMETER);
+
+    /*-------------------------------------------------------------------------------------------------*/
+    /* Addresses alignment error check                                                                 */
+    /*-------------------------------------------------------------------------------------------------*/
+    if (READ_REG_FIELD(GDMA_CTL(module, channel), GDMA_CTL_SAFIX) == 0)
+    {
+        DEFS_STATUS_COND_CHECK((((UINT32)srcAddr % chunkSize) == 0x00), DEFS_STATUS_INVALID_DATA_SIZE);
+    }
+    if (READ_REG_FIELD(GDMA_CTL(module, channel), GDMA_CTL_DAFIX) == 0)
+    {
+        DEFS_STATUS_COND_CHECK((((UINT32)destAddr % chunkSize) == 0x00), DEFS_STATUS_PARAMETER_OUT_OF_RANGE);
+    }
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Clear Transfer Complete event                                                                       */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(GDMA_CTL(module, channel), GDMA_CTL_TC, 0x00);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set source base address                                                                             */
+    /*-----------------------------------------------------------------------------------------------------*/
+    REG_WRITE(GDMA_SRCB(module, channel), srcAddr);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set destination base address                                                                        */
+    /*-----------------------------------------------------------------------------------------------------*/
+    REG_WRITE(GDMA_DSTB(module, channel), (UINT32)destAddr);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Set number of transfers                                                                             */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(GDMA_TCNT(module, channel), GDMA_TCNT_TFR_CNT, (dataLen / chunkSize));
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Start operation                                                                                     */
+    /*-----------------------------------------------------------------------------------------------------*/
+    return GDMA_Start(channelId, handler, NULL);
+}
+#endif
+#endif
 
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
 
@@ -7104,53 +8144,70 @@ static void ESPI_FLASH_Init_l (void)
     ESPI_FLASH_gdmaChannelId            = GDMA_CHANNELS_ID_NUMBER;
 #endif
 #endif
-#ifdef ESPI_CAPABILITY_SAF
-    ESPI_FLASH_SafPendingIncomingReq_L  = FALSE;
-    ESPI_FLASH_SafPendingIncomingRes_L  = FALSE;
-    ESPI_FLASH_SafReqInfo_L.reqType     = ESPI_FLASH_SAF_REQ_NUM;
-    ESPI_FLASH_SafReqInfo_L.status      = DEFS_STATUS_OK;
+#ifdef ESPI_CAPABILITY_TAF
+    ESPI_FLASH_TafAutoReadConfig_L      = TRUE;
+    ESPI_FLASH_TafPendingIncomingRes_L  = FALSE;
+    ESPI_FLASH_TafReqInfo_L.reqType     = ESPI_FLASH_TAF_REQ_NUM;
+    ESPI_FLASH_TafReqInfo_L.status      = DEFS_STATUS_OK;
 #endif
 }
 
 #ifdef ESPI_GLOBAL_RST_ERRATA_ISSUE
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_DummyReqManual_l                                                            */
+/* Function:        ESPI_FLASH_GlobalRstErrata_l                                                           */
 /*                                                                                                         */
 /* Parameters:      None.                                                                                  */
 /*                                                                                                         */
 /* Returns:         None.                                                                                  */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine sends dummy read manual request to flash                                  */
+/*                  This routine handle the eSPI reset errata.                                             */
+/*                   for TAF - sends unsuccessful completion                                               */
+/*                   for CAF - sends dummy read manual request to flash                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-static void ESPI_FLASH_DummyReqManual_l (void)
+static void ESPI_FLASH_GlobalRstErrata_l (void)
 {
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Set manual mode                                                                                     */
-    /*-----------------------------------------------------------------------------------------------------*/
-    ESPI_FLASH_AUTO_MODE(FALSE);
+#ifdef ESPI_CAPABILITY_TAF
+    if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_MODE_TAF)
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Indicate to the Host that the receive buffer is empty, just in case it is set after reset       */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_FLASH_ACC_NP_FREE, 1);
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Sign to the interrupt handler that it is a dummy request                                            */
-    /*-----------------------------------------------------------------------------------------------------*/
-    ESPI_FLASH_currReqInfo_L.status = DEFS_STATUS_RESPONSE_CANT_BE_PROVIDED;
+        ESPI_FLASH_TafReqInfo_L.reqType = ESPI_FLASH_TAF_REQ_WRITE;
+        ESPI_FLASH_TAF_SendRes_l(ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA, TRUE);
+    }
+    else
+#endif
+    {
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Set manual mode                                                                                 */
+        /*-------------------------------------------------------------------------------------------------*/
+        ESPI_FLASH_AUTO_MODE(FALSE);
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Set header/non header in receive buffer                                                             */
-    /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, TRUE);
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Sign to the interrupt handler that it is a dummy request                                        */
+        /*-------------------------------------------------------------------------------------------------*/
+        ESPI_FLASH_currReqInfo_L.status = DEFS_STATUS_RESPONSE_CANT_BE_PROVIDED;
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Set header/non header in receive buffer                                                         */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, TRUE);
 
 #ifdef ESPI_CAPABILITY_FLASH_AUTO_MODE_TAG_CHANGE
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Update tag                                                                                          */
-    /*-----------------------------------------------------------------------------------------------------*/
-    ESPI_FLASH_currReqTag_L = ESPI_FLASH_GET_NEXT_TAG(ESPI_FLASH_currReqTag_L);
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Update tag                                                                                      */
+        /*-------------------------------------------------------------------------------------------------*/
+        ESPI_FLASH_currReqTag_L = ESPI_FLASH_GET_NEXT_TAG(ESPI_FLASH_currReqTag_L);
 #endif
 
-    /*-----------------------------------------------------------------------------------------------------*/
-    /* Set request                                                                                         */
-    /*-----------------------------------------------------------------------------------------------------*/
-    (void)ESPI_FLASH_SetRequest_l(ESPI_FLASH_REQ_ACC_READ, 0, 16, NULL, ESPI_FLASH_currReqTag_L);
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Set request                                                                                     */
+        /*-------------------------------------------------------------------------------------------------*/
+        (void)ESPI_FLASH_SetRequest_l(ESPI_FLASH_REQ_ACC_READ, 0, 16, NULL, ESPI_FLASH_currReqTag_L);
+    }
 }
 #endif
 
@@ -8402,38 +9459,41 @@ static void ESPI_FLASH_ExitAutoReadRequest_l (DEFS_STATUS status, BOOLEAN useDMA
     ESPI_FLASH_status_L = status;
 }
 
-#ifdef ESPI_CAPABILITY_SAF
+#ifdef ESPI_CAPABILITY_TAF
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_SendRes_l                                                               */
+/* Function:        ESPI_FLASH_TAF_SendRes_l                                                               */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  comp        - Completion status                                                        */
+/*                  forceSend   - if TRUE no need to wait for TX AVAIL before transmitting                 */
+/*                                if FALSE wait for TX AVAIL before transmitting                           */
 /*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine send response                                                             */
 /*---------------------------------------------------------------------------------------------------------*/
-static void ESPI_FLASH_SAF_SendRes_l(UINT8 comp)
+static void ESPI_FLASH_TAF_SendRes_l(UINT8 comp, BOOLEAN forceSend)
 {
     ESPI_FLASH_TRANS_HDR resHdr = {0};
+    UINT16 tagPlusLength = 0;
     UINT roundedSize;
     UINT i;
 
-    switch(ESPI_FLASH_SafReqInfo_L.reqType)
+    switch(ESPI_FLASH_TafReqInfo_L.reqType)
     {
-        case ESPI_FLASH_SAF_REQ_READ:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP2:
-            SET_VAR_FIELD(resHdr.tagPlusLength, HEADER_LENGTH, ESPI_FLASH_SafReqInfo_L.outBufferSize);
+        case ESPI_FLASH_TAF_REQ_READ:
+        case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+            SET_VAR_FIELD(tagPlusLength, HEADER_LENGTH, (comp == ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA ? 0 : ESPI_FLASH_TafReqInfo_L.outBufferSize));
         break;
 
-        case ESPI_FLASH_SAF_REQ_WRITE:
-        case ESPI_FLASH_SAF_REQ_ERASE:
-        case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-            SET_VAR_FIELD(resHdr.tagPlusLength, HEADER_LENGTH, 0);
+        case ESPI_FLASH_TAF_REQ_WRITE:
+        case ESPI_FLASH_TAF_REQ_ERASE:
+        case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+            SET_VAR_FIELD(tagPlusLength, HEADER_LENGTH, 0);
         break;
 
-        case ESPI_FLASH_SAF_REQ_NUM:
+        case ESPI_FLASH_TAF_REQ_NUM:
         default:
         break;
     }
@@ -8442,21 +9502,25 @@ static void ESPI_FLASH_SAF_SendRes_l(UINT8 comp)
     /* Set response header                                                                                 */
     /*-----------------------------------------------------------------------------------------------------*/
     resHdr.type = comp;
-    SET_VAR_FIELD(resHdr.tagPlusLength, HEADER_TAG, ESPI_FLASH_SafReqInfo_L.tag);
-    resHdr.pktLen = (UINT8)(READ_VAR_FIELD(resHdr.tagPlusLength, HEADER_LENGTH) + 3);
-
+    SET_VAR_FIELD(tagPlusLength, HEADER_TAG, ESPI_FLASH_TafReqInfo_L.tag);
+    resHdr.pktLen = (UINT8)(READ_VAR_FIELD(tagPlusLength, HEADER_LENGTH) + 3);
+    resHdr.tagPlusLength = LE16(tagPlusLength);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Wait till transmit buffer is available                                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    while (READ_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_TX_AVAIL) == 1) ;
-    REG_WRITE(ESPI_FLASHTXWRHEAD,(*((UINT32*)(void*)(&resHdr))));
-    if (ESPI_FLASH_SafReqInfo_L.reqType == ESPI_FLASH_SAF_REQ_READ)
+    if (!forceSend)
     {
-        roundedSize = ROUND_UP(ESPI_FLASH_SafReqInfo_L.outBufferSize,sizeof(UINT32)) / sizeof(UINT32);
+        while (READ_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_FLASH_ACC_TX_AVAIL) == 1) ;
+    }
+    REG_WRITE(ESPI_FLASHTXWRHEAD,(*((UINT32*)(void*)(&resHdr))));
+
+    if (ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ && ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
+    {
+        roundedSize = ROUND_UP(ESPI_FLASH_TafReqInfo_L.outBufferSize,sizeof(UINT32)) / sizeof(UINT32);
         for(i = 0; i < roundedSize; i++)
         {
-            REG_WRITE(ESPI_FLASHTXWRHEAD, ESPI_FLASH_SafReqInfo_L.buffer[i]);
+            REG_WRITE(ESPI_FLASHTXWRHEAD, ESPI_FLASH_TafReqInfo_L.buffer[i]);
         }
     }
 
@@ -8467,7 +9531,7 @@ static void ESPI_FLASH_SAF_SendRes_l(UINT8 comp)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_CheckAddress_l                                                          */
+/* Function:        ESPI_FLASH_TAF_CheckAddress_l                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                                         */
@@ -8477,72 +9541,86 @@ static void ESPI_FLASH_SAF_SendRes_l(UINT8 comp)
 /* Description:                                                                                            */
 /*                  This routine verify request type is valid for the address range requested              */
 /*---------------------------------------------------------------------------------------------------------*/
-static DEFS_STATUS ESPI_FLASH_SAF_CheckAddress_l(void)
+static DEFS_STATUS ESPI_FLASH_TAF_CheckAddress_l(void)
 {
-    UINT i;
-    UINT16 highAddr;
-    UINT16 baseAddr;
+    UINT    i;
+    UINT32  highAddr;
+    UINT32  baseAddr;
     BOOLEAN readProt;
     BOOLEAN writeProt;
-    UINT16 readTagOvr;
-    UINT16 writeTagOvr;
+    UINT16  readTagOvr;
+    UINT16  writeTagOvr;
+    UINT32  offsetFormFlashBase;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Verify that the transaction is on supported addresses                                               */
+    /*-----------------------------------------------------------------------------------------------------*/
+    offsetFormFlashBase = REG_READ(ESPI_FLASHBASE);
+    SET_VAR_FIELD(offsetFormFlashBase, ESPI_FLASHBASE_FLBASE_LCK, 0);
+    offsetFormFlashBase += ESPI_FLASH_TafReqInfo_L.offset;
+    highAddr = ESPI_FLASH_BASE_ADDRESS + ESPI_FLASH_SUPPORTED_ADDRESS_RANGE;
+
+
+    if ((offsetFormFlashBase < ESPI_FLASH_BASE_ADDRESS) || (offsetFormFlashBase > highAddr) ||
+        ((offsetFormFlashBase + ESPI_FLASH_TafReqInfo_L.size) < ESPI_FLASH_BASE_ADDRESS) ||
+        ((offsetFormFlashBase + ESPI_FLASH_TafReqInfo_L.size) > highAddr))
+    {
+        return DEFS_STATUS_PARAMETER_OUT_OF_RANGE;
+    }
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* For each memory protection range                                                                    */
     /*-----------------------------------------------------------------------------------------------------*/
-    for (i = 0; i < ESPI_FLASH_SAF_PROT_MEM_NUM; i++)
+    for (i = 0; i < ESPI_FLASH_TAF_PROT_MEM_NUM; i++)
     {
-        highAddr = READ_REG_FIELD(ESPI_FLASH_PRTR_HADDRn(i), ESPI_FLASH_PRTR_HADDRn_HADDR);
-        if (highAddr != 0)
+        highAddr = (REG_READ(ESPI_FLASH_PRTR_TADDRn(i)) & MASK_FIELD(ESPI_FLASH_PRTR_TADDRn_TADDR)) | 0xFFF;
+        baseAddr = REG_READ(ESPI_FLASH_PRTR_BADDRn(i)) & MASK_FIELD(ESPI_FLASH_PRTR_BADDRn_BADDR);
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* If request memory is within the memory range of index i                                         */
+        /*-------------------------------------------------------------------------------------------------*/
+        if (((ESPI_FLASH_TafReqInfo_L.offset >= baseAddr) && (ESPI_FLASH_TafReqInfo_L.offset <= highAddr))  ||
+            (((ESPI_FLASH_TafReqInfo_L.offset + ESPI_FLASH_TafReqInfo_L.size) >= baseAddr) &&
+              ((ESPI_FLASH_TafReqInfo_L.offset + ESPI_FLASH_TafReqInfo_L.size) <= highAddr)))
         {
-            baseAddr = READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(i), ESPI_FLASH_PRTR_BADDRn_BADDR);
-            /*---------------------------------------------------------------------------------------------*/
-            /* If request memory is within the memory range of index i                                     */
-            /*---------------------------------------------------------------------------------------------*/
-            if (((ESPI_FLASH_SafReqInfo_L.offset >= baseAddr) && (ESPI_FLASH_SafReqInfo_L.offset <= highAddr))
-                ||
-                (((ESPI_FLASH_SafReqInfo_L.offset + ESPI_FLASH_SafReqInfo_L.size) >= baseAddr)
-                  && ((ESPI_FLASH_SafReqInfo_L.offset + ESPI_FLASH_SafReqInfo_L.size) <= highAddr)))
+            switch (ESPI_FLASH_TafReqInfo_L.reqType)
             {
-                switch(ESPI_FLASH_SafReqInfo_L.reqType)
+            case ESPI_FLASH_TAF_REQ_READ:
+                readProt = READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(i), ESPI_FLASH_PRTR_BADDRn_FRNG_RPR);
+                if (readProt)
                 {
-                    case ESPI_FLASH_SAF_REQ_READ:
-                        readProt = READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(i), ESPI_FLASH_PRTR_BADDRn_FRGN_RPR);
-                        if (readProt)
-                        {
-                            readTagOvr = READ_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(i), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_RPR_TOVR);
-                            /*-----------------------------------------------------------------------------*/
-                            /* If range is read protected and relevant tag overrun is not set              */
-                            /*-----------------------------------------------------------------------------*/
-                            if (READ_VAR_BIT(readTagOvr, ESPI_FLASH_SafReqInfo_L.tag) == FALSE)
-                            {
-                                return DEFS_STATUS_FAIL;
-                            }
-                        }
-                        break;
-
-                    case ESPI_FLASH_SAF_REQ_ERASE:
-                    case ESPI_FLASH_SAF_REQ_WRITE:
-                        writeProt = READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(i), ESPI_FLASH_PRTR_BADDRn_FRGN_WPR);
-                        if (writeProt)
-                        {
-                            writeTagOvr = READ_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(i), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR);
-                            /*-----------------------------------------------------------------------------*/
-                            /* If range is write protected and relevant tag overrun is not set             */
-                            /*-----------------------------------------------------------------------------*/
-                            if (READ_VAR_BIT(writeTagOvr, ESPI_FLASH_SafReqInfo_L.tag) == FALSE)
-                            {
-                                return DEFS_STATUS_FAIL;
-                            }
-                        }
-                        break;
-
-                    case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-                    case ESPI_FLASH_SAF_REQ_RPMC_OP2:
-                    case ESPI_FLASH_SAF_REQ_NUM:
-                    default:
-                        break;
+                    readTagOvr = READ_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(i), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_RPR_TOVR);
+                    /*-------------------------------------------------------------------------------------*/
+                    /* If range is read protected and relevant tag overrun is not set                      */
+                    /*-------------------------------------------------------------------------------------*/
+                    if (READ_VAR_BIT(readTagOvr, ESPI_FLASH_TafReqInfo_L.tag) == FALSE)
+                    {
+                        return DEFS_STATUS_FAIL;
+                    }
                 }
+                break;
+
+            case ESPI_FLASH_TAF_REQ_ERASE:
+            case ESPI_FLASH_TAF_REQ_WRITE:
+                writeProt = READ_REG_FIELD(ESPI_FLASH_PRTR_BADDRn(i), ESPI_FLASH_PRTR_BADDRn_FRNG_WPR);
+                if (writeProt)
+                {
+                    writeTagOvr = READ_REG_FIELD(ESPI_FLASH_FLASH_RGN_TAG_OVRn(i), ESPI_FLASH_FLASH_RGN_TAG_OVRn_FRNG_WPR_TOVR);
+                    /*-------------------------------------------------------------------------------------*/
+                    /* If range is write protected and relevant tag overrun is not set                     */
+                    /*-------------------------------------------------------------------------------------*/
+                    if (READ_VAR_BIT(writeTagOvr, ESPI_FLASH_TafReqInfo_L.tag) == FALSE)
+                    {
+                        return DEFS_STATUS_FAIL;
+                    }
+                }
+                break;
+
+            case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+            case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+            case ESPI_FLASH_TAF_REQ_NUM:
+            default:
+                break;
             }
         }
     }
@@ -8550,7 +9628,7 @@ static DEFS_STATUS ESPI_FLASH_SAF_CheckAddress_l(void)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_FLASH_SAF_PerformReq_l                                                            */
+/* Function:        ESPI_FLASH_TAF_PerformReq_l                                                            */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  addr        - Start address                                                            */
@@ -8562,43 +9640,50 @@ static DEFS_STATUS ESPI_FLASH_SAF_CheckAddress_l(void)
 /* Description:                                                                                            */
 /*                  This routine performs the request on the flash                                         */
 /*---------------------------------------------------------------------------------------------------------*/
-static DEFS_STATUS ESPI_FLASH_SAF_PerformReq_l(UINT32 addr, UINT32 size)
+static DEFS_STATUS ESPI_FLASH_TAF_PerformReq_l (UINT32 addr, UINT32 size)
 {
-
-    switch(ESPI_FLASH_SafReqInfo_L.reqType)
+    switch (ESPI_FLASH_TafReqInfo_L.reqType)
     {
-        case ESPI_FLASH_SAF_REQ_READ:
-            DEFS_STATUS_RET_CHECK(FLASH_DEV_Read(&ESPI_FLASH_SafFlashParams_L, FIU_MODULE_0, FIU_CS_0, addr, (UINT8*)(void*)(ESPI_FLASH_SafReqInfo_L.buffer), size));
-            ESPI_FLASH_SafReqInfo_L.outBufferSize = size;
+    case ESPI_FLASH_TAF_REQ_READ:
+        DEFS_STATUS_COND_CHECK(size <= sizeof(ESPI_FLASH_TafReqInfo_L.buffer), DEFS_STATUS_INVALID_DATA_SIZE);
+        DEFS_STATUS_RET_CHECK(FLASH_DEV_Read(&ESPI_FLASH_TafFlashParams_L, ESPI_TAF_FIU_MODULE, ESPI_TAF_DEVICE, addr, (UINT8*)(void*)(ESPI_FLASH_TafReqInfo_L.buffer), size));
+        ESPI_FLASH_TafReqInfo_L.outBufferSize = size;
         break;
 
-        case ESPI_FLASH_SAF_REQ_WRITE:
-            DEFS_STATUS_RET_CHECK(FLASH_DEV_WritePage(&ESPI_FLASH_SafFlashParams_L, FIU_MODULE_0, FIU_CS_0, addr, (UINT8*)(void*)(ESPI_FLASH_SafReqInfo_L.buffer), size, FALSE));
-            ESPI_FLASH_SafReqInfo_L.outBufferSize = 0;
+    case ESPI_FLASH_TAF_REQ_WRITE:
+        DEFS_STATUS_RET_CHECK(FLASH_DEV_WritePage(&ESPI_FLASH_TafFlashParams_L, ESPI_TAF_FIU_MODULE, ESPI_TAF_DEVICE, addr, (UINT8*)(void*)(ESPI_FLASH_TafReqInfo_L.buffer), size, FALSE));
+        ESPI_FLASH_TafReqInfo_L.outBufferSize = 0;
         break;
 
-        case ESPI_FLASH_SAF_REQ_ERASE:
-            DEFS_STATUS_RET_CHECK(FLASH_DEV_EraseType(&ESPI_FLASH_SafFlashParams_L, FIU_MODULE_0,FIU_CS_0, FLASH_DEV_ERASE_BLOCK, addr, FALSE));
-            ESPI_FLASH_SafReqInfo_L.outBufferSize = 0;
+    case ESPI_FLASH_TAF_REQ_ERASE:
+        if(ESPI_FLASH_TafReqInfo_L.size == ESPI_FLASH_TafFlashParams_L.eraseSectorSize)
+        {
+            DEFS_STATUS_RET_CHECK(FLASH_DEV_EraseType(&ESPI_FLASH_TafFlashParams_L, ESPI_TAF_FIU_MODULE, ESPI_TAF_DEVICE, FLASH_DEV_ERASE_SECTOR, addr, FALSE));
+        }
+        else if(ESPI_FLASH_TafReqInfo_L.size == ESPI_FLASH_TafFlashParams_L.eraseBlockSize)
+        {
+            DEFS_STATUS_RET_CHECK(FLASH_DEV_EraseType(&ESPI_FLASH_TafFlashParams_L, ESPI_TAF_FIU_MODULE, ESPI_TAF_DEVICE, FLASH_DEV_ERASE_BLOCK, addr, FALSE));
+        }
+        ESPI_FLASH_TafReqInfo_L.outBufferSize = 0;
         break;
 
-        case ESPI_FLASH_SAF_REQ_RPMC_OP1:
-            ESPI_FLASH_SafReqInfo_L.outBufferSize = 0;
-            // TODO: DEFS_STATUS_RET_CHECK(FLASH_RPMC_OP1(FIU_MODULE_0, size, inBuff));
+    case ESPI_FLASH_TAF_REQ_RPMC_OP1:
+        ESPI_FLASH_TafReqInfo_L.outBufferSize = 0;
+        // TODO: DEFS_STATUS_RET_CHECK(FLASH_RPMC_OP1(ESPI_TAF_FIU_MODULE, size, inBuff));
         break;
 
-        case ESPI_FLASH_SAF_REQ_RPMC_OP2:
-            ESPI_FLASH_SafReqInfo_L.outBufferSize = 0; // TODO ???
-            // TODO: DEFS_STATUS_RET_CHECK(FLASH_RPMC_OP2(FIU_MODULE_0, size, inBuff, outbuff, outBufferSize));
+    case ESPI_FLASH_TAF_REQ_RPMC_OP2:
+        ESPI_FLASH_TafReqInfo_L.outBufferSize = 0;
+        // TODO: DEFS_STATUS_RET_CHECK(FLASH_RPMC_OP2(ESPI_TAF_FIU_MODULE, size, inBuff, outbuff, outBufferSize));
         break;
 
-        case ESPI_FLASH_SAF_REQ_NUM:
-        default:
-            break;
+    case ESPI_FLASH_TAF_REQ_NUM:
+    default:
+        break;
     }
     return DEFS_STATUS_OK;
 }
-#endif // ESPI_CAPABILITY_SAF
+#endif // ESPI_CAPABILITY_TAF
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -8635,6 +9720,11 @@ static void ESPI_OOB_Init_l (void)
     ESPI_OOB_currInCmdInfo_L            = NULL;
     ESPI_OOB_currReqTag_L               = 0;
     ESPI_OOB_Status_L                   = DEFS_STATUS_OK;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Reset the pointers of the OOB Transmit and Receive buffers                                          */
+    /*-----------------------------------------------------------------------------------------------------*/
+    SET_REG_FIELD(ESPI_OOBCTL, OOBCTL_RSTBUFHEADS ,0x01);
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -9175,7 +10265,7 @@ static void ESPI_OOB_PECI_ReceiveMessage_l (void)
     UINT8                       nBytesCc        = 0;
     UINT8                       dataSize;
     UINT32                      dataBuff[2]     = {0, 0};
-    BOOLEAN                     isResponceErr   = FALSE;
+    BOOLEAN                     isResponseErr   = FALSE;
     UINT8                       cc              = (UINT8)ESPI_OOB_PECI_CC_NONE;
 
     /*-----------------------------------------------------------------------------------------------------*/
@@ -9186,7 +10276,7 @@ static void ESPI_OOB_PECI_ReceiveMessage_l (void)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Retrieve PECI Response/Error Status and check it                                                    */
     /*-----------------------------------------------------------------------------------------------------*/
-    isResponceErr = ESPI_OOB_cmdInfo[ESPI_OOB_CMD_PMC].readBuf[offset++] != ESPI_OOB_PECI_CC_COMMAND_PASSED_DATA_VALID;
+    isResponseErr = ESPI_OOB_cmdInfo[ESPI_OOB_CMD_PMC].readBuf[offset++] != ESPI_OOB_PECI_CC_COMMAND_PASSED_DATA_VALID;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Retrieve the command completion code (applicable for specific commands only)                        */
@@ -9211,7 +10301,7 @@ static void ESPI_OOB_PECI_ReceiveMessage_l (void)
         /*-------------------------------------------------------------------------------------------------*/
         /* Retrieve Completion Code only when there is no HW error (otherwise CC is not updated)           */
         /*-------------------------------------------------------------------------------------------------*/
-        if (!isResponceErr)
+        if (!isResponseErr)
         {
             cc = ESPI_OOB_cmdInfo[ESPI_OOB_CMD_PMC].readBuf[offset];
         }
@@ -9240,7 +10330,7 @@ static void ESPI_OOB_PECI_ReceiveMessage_l (void)
         EXECUTE_FUNC(ESPI_OOB_peciCallback_L, (ESPI_OOB_peciCurrentCommand_L, ESPI_OOB_PECI_DATA_SIZE_NONE,
                                                ESPI_OOB_PECI_TRANS_DONE_CC_ERROR, NO_PECI_DATA, NO_PECI_DATA));
     }
-    else if (isResponceErr || (cc & 0x80) == 0x80)
+    else if (isResponseErr || (cc & 0x80) == 0x80)
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* Retry to send the PECI transaction in the following cases:                                      */

@@ -1,14 +1,14 @@
 ----------------------------------------------------------------------
  SPDX-License-Identifier: GPL-2.0                                     
- Copyright (c) 2010-2024 by Nuvoton Technology Corporation   
+ Copyright (c) 2010-2025 by Nuvoton Technology Corporation   
  All rights reserved       
 
  NPCM8XX (Arbel) A35 BootBlock Release Letter 
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.05.04
-Date:    Dec 2024
+Version: 00.05.05
+Date:    Feb 2025
 
 
 # PACKAGE CONTENTS
@@ -56,6 +56,20 @@ to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
 
 # ENHANCEMENTS
 ----------------
+version 0.5.5     - Feb 20th 2025
+============
+- Read ADC int+ext calibration word to SCRPAD 60, 61.
+- Write bootblock total size in RAM in SCPARD 58, 59.
+  For botoblock 0.5.5 it will be:
+  U-Boot>md 0xF0800EE8 2
+		 f0800ee8: fffb0200 fffd4c80
+  These numbers may change in future releases.
+- Remove Z1 support.
+- SWC_HAL sync to 4.1.0.
+- Rename SCRPAD_42_73 to SCRPAD_32_63 (to match the spec).
+
+# HISTORY
+---------------
 version 0.5.4     - Dec 10th 2024
 ============
 - Add two new header fields:
@@ -66,8 +80,6 @@ version 0.5.4     - Dec 10th 2024
 - Add MC support for 300MHz.
 - Add CPU support for 325MHz, 625MHz.
 
-# HISTORY
----------------
 version 0.5.3     - Nov 11th 2024
 ============
 - Fix MC trim override options.

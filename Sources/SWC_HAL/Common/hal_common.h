@@ -71,7 +71,15 @@
 /* Secure memcpy definition                                                                                */
 /*---------------------------------------------------------------------------------------------------------*/
 #ifndef SECURE_MEMCMP
-#define SECURE_MEMCMP(ptr1, ptr2, size)     HAL_SEC_memcmp(ptr1, ptr2, size)
+#define SECURE_MEMCMP(ptr1, ptr2, size)     HAL_SEC_memcmp_action(ptr1, ptr2, size, NULL)
+#endif
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Secure memcpy with action on security error detection                                                   */
+/*---------------------------------------------------------------------------------------------------------*/
+#ifndef SECURE_MEMCMP_ACTION
+#define SECURE_MEMCMP_ACTION(ptr1, ptr2, size, secure_error_callback) \
+                                            HAL_SEC_memcmp_action(ptr1, ptr2, size, secure_error_callback)
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/

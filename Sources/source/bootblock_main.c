@@ -168,7 +168,7 @@ void errHandler (void)
 	serial_printf_init();
 	serial_printf(KRED "\n\nA35 Bootblock: trap error handler\n" KBLU);
 
-	for (i = 0; i < 30; i++)
+	for (i = 0; i < 31; i++)
 	{
 		if ((i % 4) == 0)
 			serial_printf("\n");
@@ -457,6 +457,7 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 static void bootblock_PrintLogo (void)
 {
 	UINT32 bootblockVersion = bb_version.BootblockVersion;
+	UINT32 chip_revision;
 
 	serial_printf_init();
 
@@ -471,13 +472,18 @@ static void bootblock_PrintLogo (void)
 	serial_printf("\n>==========================================================================================\n" KNRM);
 	serial_printf("%s \n" KNRM, bb_version.VersionDescription);
 
+	chip_revision = CHIP_Get_Version();
 	serial_printf(KGRN "\n\n=========\nArbel ");
-	if (CHIP_Get_Version() == 0x08)
+	if (chip_revision == 0x0C)
+		serial_printf("A3");
+	else if (chip_revision == 0x08)
 		serial_printf("A2");
-	else if (CHIP_Get_Version() == 0x04)
+	else if (chip_revision == 0x04)
 		serial_printf("A1");
-	else
+	else if (chip_revision == 0x00)
 		serial_printf("Z1");
+	else
+		serial_printf(KRED "PDID %x unknown\n" KNRM, chip_revision);
 	serial_printf("\n=========\n" KNRM);
 }
 

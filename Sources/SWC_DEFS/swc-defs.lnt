@@ -47,7 +47,7 @@
                                                         // When the 'value' parameter always evaluates to 0 following a mathematical operation.
                                                         // e.g., (FLASH_DIVIDER - 1), where FLASH_DIVIDER always evaluates to 1.
 
--emacro(647,SET_VAR_BIT)                                // Suspicious truncation when using UINT64
+-emacro(647,SET_VAR_FIELD,SET_VAR_BIT,CLEAR_VAR_BIT)    // Suspicious truncation when using UINT64
 
 -emacro(578,DEFS_FLOW_MONITOR_DECLARE)                  // Declaration of symbol 'flowCounterOffset' hides symbol 'flowCounterOffset'
 

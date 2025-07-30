@@ -59,7 +59,7 @@ else
 endif  
 
 
-CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER
+CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER -ftrack-macro-expansion=0
 CFLAGS += -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h
 CFLAGS += -mcpu=Cortex-A35 -march=armv8-a -mcmodel=large -D__AARCH64__ -D__LP64__
 CFLAGS += -Wno-empty-body -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -lm  -mstrict-align
@@ -186,7 +186,7 @@ BUILD_DIR ?= $(OUTDIR_Release)/objects
 Release: $(OUTFILE_Release)
 
 arbel_a35_bootblock:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" CFLAGS+="-DSECURE_DDR"
 arbel_a35_bootblock_no_tip:
 	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_"
 arbel_a35_bootblock_tfa:

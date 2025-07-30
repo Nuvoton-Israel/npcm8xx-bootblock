@@ -546,7 +546,7 @@ typedef struct
 #else
 #define ESPI_FLASH_TRANS_DATA_PAYLOAD_MAX_SIZE  16
 #endif
-#define ESPI_FLASH_AUTO_MODE(on)                SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_AMTEN, on)
+#define ESPI_FLASH_AUTO_MODE(on)                ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AMTEN, on)
 #define ESPI_FLASH_IS_AUTO_MODE_ON              (READ_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_AMTEN))
 #define ESPI_FLASH_READ_SECTOR_SIZE             _4KB_
 #define ESPI_FLASH_AUTO_AMDONE_LOOP_COUNT       0xFFFFFF
@@ -584,18 +584,30 @@ typedef struct
 /*---------------------------------------------------------------------------------------------------------*/
 /* Preserve FLASH receive interrupt state and disable                                                      */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_RX_INTERRUPT_SAVE_DISABLE(var)              \
-{                                                              \
-    var = READ_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE);       \
-    SET_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE, FALSE);       \
+#define ESPI_FLASH_RX_INTERRUPT_SAVE_DISABLE(var)           \
+{                                                           \
+    var = READ_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE);    \
+    SET_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE, FALSE);    \
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Restore FLASH receive interrupt state                                                                   */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_FLASH_RX_INTERRUPT_RESTORE(var)                   \
-{                                                              \
-    SET_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE, var);         \
+#define ESPI_FLASH_RX_INTERRUPT_RESTORE(var)                \
+{                                                           \
+    SET_REG_FIELD(ESPI_ESPIIE, ESPIIE_FLASHRXIE, var);      \
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Set FLASH_ACC_NP_FREE = 0 when writing to FLASHCTL register                                             */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_SET_FLASHCTL_REG_FIELD(field, value)           \
+{                                                           \
+    UINT32 var = REG_READ(ESPI_FLASHCTL);                   \
+    SET_VAR_FIELD(var, FLASHCTL_FLASH_ACC_TX_AVAIL, 0);     \
+    SET_VAR_FIELD(var, FLASHCTL_FLASH_ACC_NP_FREE,  0);     \
+    SET_VAR_FIELD(var, _GET_FIELD(field), value);           \
+    REG_WRITE(ESPI_FLASHCTL, var);                          \
 }
 
 #ifdef ESPI_CAPABILITY_TAF
@@ -609,15 +621,6 @@ typedef struct
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_FLASH_SUPPORTED_ADDRESS_RANGE          _128MB_
 #define ESPI_FLASH_BASE_ADDRESS                     FLASH_BASE_ADDR(ESPI_TAF_FIU_MODULE)
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Flash access channel mode                                                                               */
-/*---------------------------------------------------------------------------------------------------------*/
-typedef enum
-{
-    ESPI_FLASH_MODE_MAF  = 0,
-    ESPI_FLASH_MODE_TAF = 1,
-} ESPI_FLASH_MODE_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Flash TAF host requests                                                                                 */
@@ -1325,7 +1328,7 @@ void ESPI_ChannelSlaveEnable (
 
     case ESPI_CHANNEL_FLASH:
 #ifdef ESPI_CAPABILITY_TAF
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_TAF_AUTO_READ, ESPI_FLASH_TafAutoReadConfig_L);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_TAF_AUTO_READ, ESPI_FLASH_TafAutoReadConfig_L);
 #endif
         SET_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANEN,    enable);
         SET_VAR_FIELD(ESPI_configUpdateMask, ESPICFG_FLASHCHANEN, enable);
@@ -1532,13 +1535,12 @@ void ESPI_IntEnable (
         /*-------------------------------------------------------------------------------------------------*/
         SET_VAR_FIELD(var, ESPIIE_FLASHRXIE, enable);
 
-        if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_ACCESS_TARGET_ATTCH)
-        {
-            /*---------------------------------------------------------------------------------------------*/
-            /* Target attach flash access channel read detected interrupt                                  */
-            /*---------------------------------------------------------------------------------------------*/
-            SET_VAR_FIELD(var, ESPIIE_FLNACSIE, enable);
-        }
+#ifdef ESPI_CAPABILITY_TAF
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Target attach flash access channel read detected interrupt                                      */
+        /*-------------------------------------------------------------------------------------------------*/
+        SET_VAR_FIELD(var, ESPIIE_FLNACSIE, enable);
+#endif
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Automatic mode transfer error interrupt                                                         */
@@ -1802,7 +1804,7 @@ void ESPI_IntHandler (void)
             if (READ_VAR_FIELD(intEnable, ESPIIE_FLASHRXIE))
             {
 #ifdef ESPI_CAPABILITY_TAF
-                if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_MODE_TAF)
+                if (ESPI_FLASH_GetAccessMode() == ESPI_FLASH_ACCESS_TARGET_ATTCH)
                 {
                     ESPI_FLASH_TAF_HandleReq();
                     if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
@@ -1935,6 +1937,7 @@ void ESPI_IntHandler (void)
         }
 #endif // ESPI_CAPABILITY_VW_FLOATING_EVENTS
 
+#ifdef ESPI_CAPABILITY_TAF
         /*-------------------------------------------------------------------------------------------------*/
         /* A Slave Attached Flash Access Channel read transaction is detected                              */
         /* A Non-Automatic TAF Completion was sent and the FLASHTXBUF buffer is now empty.                 */
@@ -1943,17 +1946,37 @@ void ESPI_IntHandler (void)
         {
             if (READ_VAR_FIELD(intEnable, ESPIIE_FLNACSIE))
             {
-#ifdef ESPI_CAPABILITY_TAF
-                if ((ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ) &&
-                    (ESPI_FLASH_TafReqInfo_L.reminder > 0))
+#ifdef SUPPORT_SPLIT_COMPLETION  /* Split completion is currently not supported */  
+                if (ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ) 
                 {
-                    ESPI_FLASH_TafPendingIncomingRes_L = TRUE;
+                    if (ESPI_FLASH_TafReqInfo_L.reminder > 0)
+                    {
+                        ESPI_FLASH_TafPendingIncomingRes_L = TRUE;
+                    }
+                    else
+                    {
+                        /*---------------------------------------------------------------------------------*/
+                        /* After all bytes sent, indicate to the Host that the receive buffer is empty     */
+                        /*---------------------------------------------------------------------------------*/
+                        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_NP_FREE, 1);
+                    }                    
                 }
-#endif
-                EXECUTE_FUNC(ESPI_userIntHandler_L,         (ESPI_INT_FLASH_READ_ACCESS_DETECTED));
-                EXECUTE_FUNC(ESPI_FLASH_userIntHandler_L,   (ESPI_INT_FLASH_READ_ACCESS_DETECTED));
+                else
+                {
+                    /*-------------------------------------------------------------------------------------*/
+                    /* Indicate to the Host that the receive buffer is empty                               */
+                    /*-------------------------------------------------------------------------------------*/
+                    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_NP_FREE, 1);
+                }
+#else
+                /*-----------------------------------------------------------------------------------------*/
+                /* Indicate to the Host that the receive buffer is empty                                   */
+                /*-----------------------------------------------------------------------------------------*/
+                ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_NP_FREE, 1);
+#endif                    
             }
         }
+#endif
 
         /*-------------------------------------------------------------------------------------------------*/
         /* An in-band RESET Command is received                                                            */
@@ -4002,6 +4025,21 @@ void ESPI_FLASH_Config (
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_FLASH_GetAccessMode                                                               */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/*                                                                                                         */
+/* Returns:         flash channel access mode - controller/target                                          */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine retrieves flash channel access mode - CAF/TAF                             */
+/*---------------------------------------------------------------------------------------------------------*/
+ESPI_FLASH_ACCESS_MODE ESPI_FLASH_GetAccessMode (void)
+{
+    return (ESPI_FLASH_ACCESS_MODE)READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE);
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        ESPI_FLASH_RegisterCallback                                                            */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
@@ -4152,7 +4190,7 @@ void ESPI_FLASH_ResetReqTrans (void)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Reset the pointers of the Transmit and Receive buffers                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_RSTBUFHEADS, 0x01);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_RSTBUFHEADS, 0x01);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Ignore further packets                                                                              */
@@ -4174,7 +4212,7 @@ void ESPI_FLASH_ResetReqTrans (void)
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable DMA request                                                                             */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
     }
 }
 
@@ -4707,7 +4745,7 @@ DEFS_STATUS ESPI_FLASH_TAF_SendRes (void)
             {
                 ESPI_FLASH_TafReqInfo_L.status = ESPI_FLASH_TAF_PerformReq_l(ESPI_FLASH_TafReqInfo_L.offset + ESPI_FLASH_TafReqInfo_L.bytesRead,
                                                                              ESPI_FLASH_TafReqInfo_L.currSize);
-
+#ifdef SUPPORT_SPLIT_COMPLETION /* Split completion is currently not supported */
                 ESPI_FLASH_TafReqInfo_L.reminder -= ESPI_FLASH_TafReqInfo_L.currSize;
                 ESPI_FLASH_TafReqInfo_L.bytesRead += ESPI_FLASH_TafReqInfo_L.currSize;
 
@@ -4736,25 +4774,15 @@ DEFS_STATUS ESPI_FLASH_TAF_SendRes (void)
                         }
                     }
                 }
-
-                if (ESPI_FLASH_TafReqInfo_L.bytesRead == ESPI_FLASH_TafReqInfo_L.size)
-                {
-                    /*-------------------------------------------------------------------------------------*/
-                    /* Indicate to the Host that the receive buffer is empty                               */
-                    /*-------------------------------------------------------------------------------------*/
-                    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
-                }
-
+#else
+                comp = ESPI_SUCCESSFUL_COMPLETION_WITH_DATA;
+#endif
             }
         }
 
         if (ESPI_FLASH_TafReqInfo_L.status != DEFS_STATUS_OK)
         {
             comp = ESPI_UNSUCCESSFUL_COMPLETION_WO_DATA;
-            /*---------------------------------------------------------------------------------------------*/
-            /* Indicate to the Host that the receive buffer is empty                                       */
-            /*---------------------------------------------------------------------------------------------*/
-            SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
         }
         break;
 
@@ -4762,11 +4790,6 @@ DEFS_STATUS ESPI_FLASH_TAF_SendRes (void)
     case ESPI_FLASH_TAF_REQ_ERASE:
     case ESPI_FLASH_TAF_REQ_RPMC_OP1:
     case ESPI_FLASH_TAF_REQ_RPMC_OP2:
-        /*-------------------------------------------------------------------------------------------------*/
-        /* Indicate to the Host that the receive buffer is empty                                           */
-        /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_NP_FREE,1);
-
         if (ESPI_FLASH_TafReqInfo_L.status == DEFS_STATUS_OK)
         {
             if (ESPI_FLASH_TafReqInfo_L.outBufferSize > 0)
@@ -4808,12 +4831,13 @@ DEFS_STATUS ESPI_FLASH_TAF_SendRes (void)
 /*---------------------------------------------------------------------------------------------------------*/
 DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
 {
-    DEFS_STATUS ret = DEFS_STATUS_OK;
+    DEFS_STATUS     ret     = DEFS_STATUS_OK;
+    UINT volatile   intSave = 0;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* on Auto Read mode if the flash is the same as TAF flash - prevent TAF Auto Read                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    if (ESPI_FLASH_TafAutoReadConfig_L == TRUE)
+    if (ESPI_FLASH_GetAccessMode() == ESPI_FLASH_ACCESS_TARGET_ATTCH)
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* if Auto Read queue is not empty return busy                                                     */
@@ -4825,10 +4849,15 @@ DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable flash channel interrupt                                                                 */
         /*-------------------------------------------------------------------------------------------------*/
+        INTERRUPTS_SAVE_DISABLE(intSave);
         ESPI_IntEnable(ESPI_CHANNEL_FLASH, FALSE);
+        ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, FALSE);
+        INTERRUPTS_RESTORE(intSave);
+				
         if (ESPI_FLASH_TAF_IsPendingRes())
         {
             ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+            ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, TRUE);
             ret = DEFS_STATUS_SYSTEM_BUSY;
         }
         else
@@ -4836,14 +4865,15 @@ DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
             /*---------------------------------------------------------------------------------------------*/
             /* Prevent host auto read access                                                               */
             /*---------------------------------------------------------------------------------------------*/
-            SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, TRUE);
+            ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AUTO_RD_DIS_CTL, TRUE);
 
             DELAY_LOOP(10); //Add minimal delay to wait set operation end
 
             if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_AUTO_RD_DIS_STS) == FALSE)
             {
-                SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
+                ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
                 ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+                ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, TRUE);
                 ret = DEFS_STATUS_SYSTEM_BUSY;
             }
             else
@@ -4853,13 +4883,10 @@ DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
                 /*-----------------------------------------------------------------------------------------*/
                 if (READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_FLASHAUTORDREQ) == TRUE)
                 {
-                    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
+                    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
                     ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+                    ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, TRUE);
                     ret = DEFS_STATUS_SYSTEM_BUSY;
-                }
-                else
-                {
-                    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_BLK_FLASH_NP_FREE, TRUE);
                 }
             }
         }
@@ -4883,14 +4910,14 @@ DEFS_STATUS ESPI_FLASH_TAF_ReenableHostAccess (void)
     /*-----------------------------------------------------------------------------------------------------*/
     /* on Auto Read mode if the flash is the same as TAF flash - prevent TAF Auto Read                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    if (ESPI_FLASH_TafAutoReadConfig_L == TRUE)
+    if (ESPI_FLASH_GetAccessMode() == ESPI_FLASH_ACCESS_TARGET_ATTCH)
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* Prevent host auto read access                                                                   */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_BLK_FLASH_NP_FREE, FALSE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AUTO_RD_DIS_CTL, FALSE);
         ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
+        ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, TRUE);
     }
     return DEFS_STATUS_OK;
 }
@@ -8168,7 +8195,7 @@ static void ESPI_FLASH_Init_l (void)
 static void ESPI_FLASH_GlobalRstErrata_l (void)
 {
 #ifdef ESPI_CAPABILITY_TAF
-    if (READ_REG_FIELD(ESPI_ESPICFG, ESPICFG_FLASHCHANMODE) == ESPI_FLASH_MODE_TAF)
+    if (ESPI_FLASH_GetAccessMode() == ESPI_FLASH_ACCESS_TARGET_ATTCH)
     {
         /*-------------------------------------------------------------------------------------------------*/
         /* Indicate to the Host that the receive buffer is empty, just in case it is set after reset       */
@@ -8194,7 +8221,7 @@ static void ESPI_FLASH_GlobalRstErrata_l (void)
         /*-------------------------------------------------------------------------------------------------*/
         /* Set header/non header in receive buffer                                                         */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, TRUE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_STRPHDR, TRUE);
 
 #ifdef ESPI_CAPABILITY_FLASH_AUTO_MODE_TAG_CHANGE
         /*-------------------------------------------------------------------------------------------------*/
@@ -8276,7 +8303,7 @@ static DEFS_STATUS  ESPI_FLASH_ReqManual_l (
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set header/non header in receive buffer                                                             */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, strpHdr);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_STRPHDR, strpHdr);
 
 #ifdef ESPI_CAPABILITY_FLASH_AUTO_MODE_TAG_CHANGE
     /*-----------------------------------------------------------------------------------------------------*/
@@ -8523,7 +8550,7 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
     /*-----------------------------------------------------------------------------------------------------*/
     /* Reset the pointers of the Transmit and Receive buffers                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_RSTBUFHEADS, 0x01);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_RSTBUFHEADS, 0x01);
 #endif
 
     if (!polling)
@@ -8549,7 +8576,7 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
         /*-------------------------------------------------------------------------------------------------*/
         /* Strip header                                                                                    */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, 0x01);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_STRPHDR, 0x01);
 
 #ifdef GDMA_CAPABILITY_REQUEST_SELECT
         /*-------------------------------------------------------------------------------------------------*/
@@ -8576,7 +8603,7 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
             /*---------------------------------------------------------------------------------------------*/
             /* Define threshold value of the flash receive buffer above which a DMA request is asserted    */
             /*---------------------------------------------------------------------------------------------*/
-            SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_16B);
+            ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_16B);
         }
         else if ((UINT32)buffer % _4B_ == 0)
         {
@@ -8588,7 +8615,7 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
             /*---------------------------------------------------------------------------------------------*/
             /* Define threshold value of the flash receive buffer above which a DMA request is asserted    */
             /*---------------------------------------------------------------------------------------------*/
-            SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_4B);
+            ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_4B);
         }
         else
         {
@@ -8606,18 +8633,18 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
         /*-------------------------------------------------------------------------------------------------*/
         /* DMA request is disabled                                                                         */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Set header/non header in receive buffer                                                         */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_STRPHDR, strpHdr);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_STRPHDR, strpHdr);
     }
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Set transfer size                                                                                   */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_AMTSIZE, (numOfReadTrans - 1));
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_AMTSIZE, (numOfReadTrans - 1));
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Check transfer buffer is empty                                                                      */
@@ -8792,7 +8819,7 @@ static DEFS_STATUS ESPI_FLASH_EnqueuePacket_l (void)
 {
     DEFS_STATUS_COND_CHECK((ESPI_IsChannelSlaveEnable(ESPI_CHANNEL_FLASH) == ENABLE), DEFS_STATUS_HARDWARE_ERROR);
 
-    SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_FLASH_ACC_TX_AVAIL, 0x01);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_TX_AVAIL, 0x01);
 
     EXECUTE_FUNC(ESPI_FLASH_userIntHandler_L, (ESPI_INT_FLASH_FLASH_NP_AVAIL_SENT));
 
@@ -9208,7 +9235,7 @@ static void ESPI_FLASH_AutoModeTransDoneHandler_l (
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable DMA                                                                                     */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
 #endif
 
 #ifdef GDMA_CAPABILITY_REQUEST_SELECT
@@ -9385,7 +9412,7 @@ static void ESPI_FLASH_HandleAutoModeErr_l (BOOLEAN useDMA)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Reset the pointers of the Transmit and Receive buffers                                              */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_RSTBUFHEADS, 0x01);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_RSTBUFHEADS, 0x01);
 
     if (useDMA)
     {
@@ -9393,7 +9420,7 @@ static void ESPI_FLASH_HandleAutoModeErr_l (BOOLEAN useDMA)
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable DMA request                                                                             */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Restore interrupts handling                                                                     */
@@ -9446,7 +9473,7 @@ static void ESPI_FLASH_ExitAutoReadRequest_l (DEFS_STATUS status, BOOLEAN useDMA
         /*-------------------------------------------------------------------------------------------------*/
         /* Disable DMA                                                                                     */
         /*-------------------------------------------------------------------------------------------------*/
-        SET_REG_FIELD(ESPI_FLASHCTL, FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
+        ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_DMATHRESH, ESPI_FLASH_DMA_THRESHOLD_DISABLE);
 #endif
 #endif
     }
@@ -9527,7 +9554,7 @@ static void ESPI_FLASH_TAF_SendRes_l(UINT8 comp, BOOLEAN forceSend)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Notify host transfer buffer is full                                                                 */
     /*-----------------------------------------------------------------------------------------------------*/
-    SET_REG_FIELD(ESPI_FLASHCTL,FLASHCTL_FLASH_ACC_TX_AVAIL,0x01);
+    ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_TX_AVAIL, 0x01);
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

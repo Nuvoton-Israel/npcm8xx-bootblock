@@ -105,23 +105,23 @@ typedef enum
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_ERR_INVCMD,
-    ESPI_ERR_INVCYC,
-    ESPI_ERR_CRCERR,
-    ESPI_ERR_ABCOMP,
-    ESPI_ERR_PROTERR,
-    ESPI_ERR_BADSIZE,
-    ESPI_ERR_NPBADALN,
-    ESPI_ERR_PCBADALN,
-    ESPI_ERR_FLBADALN,
-    ESPI_ERR_UNCMD,
-    ESPI_ERR_EXTRACYC,
-    ESPI_ERR_VWERR,
+    ESPI_ERR_INVCMD     = 0,
+    ESPI_ERR_INVCYC     = 1,
+    ESPI_ERR_CRCERR     = 2,
+    ESPI_ERR_ABCOMP     = 3,
+    ESPI_ERR_PROTERR    = 4,
+    ESPI_ERR_BADSIZE    = 5,
+    ESPI_ERR_NPBADALN   = 6,
+    ESPI_ERR_PCBADALN   = 7,
+    ESPI_ERR_FLBADALN   = 8,
+    ESPI_ERR_UNCMD      = 9,
+    ESPI_ERR_EXTRACYC   = 10,
+    ESPI_ERR_VWERR      = 11,
 #ifdef ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
-    ESPI_ERR_UNPBM,
+    ESPI_ERR_UNPBM      = 14,
 #endif
 #ifdef ESPI_CAPABILITY_FLASH_UC_ERR
-    ESPI_ERR_UNFLASH
+    ESPI_ERR_UNFLASH    = 15
 #endif
 } ESPI_ERR_T;
 
@@ -870,6 +870,7 @@ void                ESPI_Reset_ConfigInterrupt      (UINT intType, ESPI_RST_T ca
 /*---------------------------------------------------------------------------------------------------------*/
 
 void                ESPI_FLASH_Config               (ESPI_FLASH_ACCESS_MODE flashAccess, UINT32 writePageSize);
+ESPI_FLASH_ACCESS_MODE ESPI_FLASH_GetAccessMode     (void);
 void                ESPI_FLASH_RegisterCallback     (ESPI_INT_HANDLER handler);
 
 DEFS_STATUS         ESPI_FLASH_SendReq              (ESPI_FLASH_REQ_T reqType, UINT32 offset, UINT32 size,

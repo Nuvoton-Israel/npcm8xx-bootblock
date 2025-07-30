@@ -9739,9 +9739,6 @@ P4
 
 
 #undef VALIDATION_ALLOCATION
-#undef SECURE_DDR
-
-
 
 
 #define DENALI_SECURITY_ADDRESSES_START                  (MC_BASE + 0x031c)
@@ -9831,7 +9828,7 @@ typedef enum RANGE_SECURITY_MODE_tag
     #define PORTz_SECURE_END_RANGE(m)                      (PORT_START_RANGES + PORT_RANGE_LEN)
 
 
-#endif //VALIDATION_ALLOCATION
+#endif // VALIDATION_ALLOCATION
 #endif // SECURE_DDR
 #endif // _MC_REGS_H
 

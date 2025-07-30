@@ -267,19 +267,13 @@
 #else
 #define ESPIIE_PC_BM            0,  0
 #endif
-#ifdef ESPI_CAPABILITY_SAF
-#define ESPIIE_SAF              25, 5
-#else
-#define ESPIIE_SAF              0,  0
-#endif
 #ifdef ESPI_CAPABILITY_PC_BM_BURST_WRITE
 #define ESPIIE_PC_BM_BW         30, 2
 #else
 #define ESPIIE_PC_BM_BW         0,  0
 #endif
 #define ESPIIE_ALL              (MASK_FIELD(ESPIIE_GENERAL)   | MASK_FIELD(ESPIIE_VW)    | MASK_FIELD(ESPIIE_AM)  | \
-                                 MASK_FIELD(ESPIIE_FLNPRQSIE) | MASK_FIELD(ESPIIE_PC_BM) | MASK_FIELD(ESPIIE_SAF) | \
-                                 MASK_FIELD(ESPIIE_PC_BM_BW))
+                                 MASK_FIELD(ESPIIE_FLNPRQSIE) | MASK_FIELD(ESPIIE_PC_BM) | MASK_FIELD(ESPIIE_PC_BM_BW))
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_ESPIWE fields                                                                                      */
@@ -346,7 +340,7 @@
 #ifdef ESPI_CAPABILITY_TAF
 #define FLASHCFG_TRGFLEBLKSIZE      16, 8
 #define FLASHCFG_FLCAPA             24, 2
-#endif // ESPI_CAPABILITY_SAF
+#endif // ESPI_CAPABILITY_TAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_FLASHCTL fields                                                                                    */

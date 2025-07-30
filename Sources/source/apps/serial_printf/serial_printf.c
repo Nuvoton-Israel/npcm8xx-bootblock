@@ -571,43 +571,31 @@ int serial_printf(const char *fmt, ...)
 
 void serial_printf_init (void)
 {
-		/* If STRAP5 is active (low), set MFSEL4 bit BSPASEL (Select BMC debug Serial Port (BSP) on Serial Interface 2), using UART0.
+	/* If STRAP5 is active (low), set MFSEL4 bit BSPASEL (Select BMC debug Serial Port (BSP) on Serial Interface 2), using UART0.
 	Otherwise, TIP and BMC print to different serials (BSP and SI2) */
 	UART_DEV_T dev = UART0_DEV;
 	UART_BAUDRATE_T baud;
-
+	/* if UART is not enabled for TIP_ROM then don't print */
+	if (READ_REG_FIELD (FUSTRAP2, FUSTRAP2_TIP_UART_DIS) == 1) {
+		gUartLog = UART_MAX_DEV;
+		return;
+	}
 	gUartLog = dev;
 
-	CHIP_Mux_Uart(gUartLog, TRUE, FALSE, TRUE); // don't touch SPMOD.
+	UART_ResetFIFOs(gUartLog, TRUE, TRUE);
 
-	if (READ_REG_FIELD(PWRON, PWRON_BSPA) == 0)
-	{
-		SET_REG_FIELD(MFSEL4, MFSEL4_BSPASEL, 1);
-
-		// Note: If this bit is set, MFSEL1 bit 9 and 11 must be set to 0.
-		SET_REG_FIELD(MFSEL1, MFSEL1_BSPSEL, 0);
-		SET_REG_FIELD(MFSEL1, MFSEL1_HSI2ASEL, 0);
-	}
-	else
-	{
-		SET_REG_FIELD(MFSEL4, MFSEL4_BSPASEL, 0);
-		SET_REG_FIELD(MFSEL1, MFSEL1_BSPSEL, 1);
-	}
-
-	baud = BOOTBLOCK_GetUartBaud();
-	if (baud == UART_BAUDRATE_115200)
+	baud = UART_GetBaudrate (gUartLog);
+	
+	if (0 == READ_REG_FIELD(FUSTRAP1, FUSTRAP1_oFAST_UART))
 	{
 		CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_CLKREF, 7);
+		UART_Init(gUartLog, UART_MODE1_HSP1_SI2____HSP2_UART2__UART1_s_HSP1__UART3_s_SI2, UART_BAUDRATE_115200);
 	}
-	else
+	else /*FAST_UART*/
 	{
-		CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_PLL2, 16);
+		CLK_ConfigureUartClockEx(CLKSEL_UARTCKSEL_PLL2, 20);
+		UART_Init(gUartLog, UART_MODE1_HSP1_SI2____HSP2_UART2__UART1_s_HSP1__UART3_s_SI2, UART_BAUDRATE_750000);
 	}
-
-	UART_Init(gUartLog, UART_SKIP_MUX , baud);
-
-	CLK_Delay_MicroSec(1000);
-
 	serial_printf("\nbootblock use UART%d baud %d\n", dev, (int)baud);
 
 }

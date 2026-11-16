@@ -556,6 +556,26 @@ typedef enum
     }                                                                                                      \
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Macro:           DEFS_SEC_COND_CHECK_NO_DELAY                                                           */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  cond        - condition to check                                                       */
+/*                  failureFunc - a function that should be called in case of lost integrity               */
+/*                  ..          - parameters to failure function                                           */
+/*                                                                                                         */
+/* Returns:                                                                                                */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This macro does condition check and calls a failure function if the comparison fails   */
+/*---------------------------------------------------------------------------------------------------------*/
+#define DEFS_SEC_COND_CHECK_NO_DELAY(cond, failureFunc, ...)                                               \
+{                                                                                                          \
+    if (!(cond))                                                                                           \
+    {                                                                                                      \
+        failureFunc(__VA_ARGS__);                                                                          \
+    }                                                                                                      \
+}
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*                               Secured Execution of a function from pointer                              */
@@ -793,34 +813,30 @@ typedef enum
 #define DEFS_SEC_COND_FLOW_2(x, cond, failureFunc, ...)                                                    \
 {                                                                                                          \
     volatile BOOLEAN __tempRes = (cond);    /* to avoid double execution in case 'cond' is a function */   \
-    volatile UINT8   __j = 0;                                                                              \
     volatile UINT8   __d;                                                                                  \
                                                                                                            \
-    __d = 1 + DEFS_SEC_COND_FLOW_2_DELAY(x, __j);                                                          \
-    DEFS_SEC_COND_DELAY_LOOP_AND_CHECK(__d, __tempRes, failureFunc, (__VA_ARGS__));                        \
-    __j += 2;                                                                                              \
+    DEFS_FLOW_MONITOR_DECLARE(0);                                                                          \
                                                                                                            \
-    __d =  1 + DEFS_SEC_COND_FLOW_2_DELAY(x, __j);                                                         \
-    DEFS_SEC_COND_DELAY_LOOP_AND_CHECK(__d, __tempRes, failureFunc, (__VA_ARGS__));                        \
-    __j += 2;                                                                                              \
+    DEFS_SEC_COND_CHECK_NO_DELAY(__tempRes, failureFunc, (__VA_ARGS__));                                   \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
                                                                                                            \
-    __d =  1 + DEFS_SEC_COND_FLOW_2_DELAY(x, __j);                                                         \
+    __d =  1 + DEFS_SEC_COND_FLOW_2_DELAY(x, 0);                                                           \
     DEFS_SEC_COND_DELAY_LOOP_AND_CHECK(__d, __tempRes, failureFunc, (__VA_ARGS__));                        \
-    __j += 2;                                                                                              \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
                                                                                                            \
-    __d =  1 + DEFS_SEC_COND_FLOW_2_DELAY(x, __j);                                                         \
+    DEFS_SEC_COND_CHECK_NO_DELAY(__tempRes, failureFunc, (__VA_ARGS__));                                   \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
+                                                                                                           \
+    __d =  1 + DEFS_SEC_COND_FLOW_2_DELAY(x, 2);                                                           \
     DEFS_SEC_COND_DELAY_LOOP_AND_CHECK(__d, __tempRes, failureFunc, (__VA_ARGS__));                        \
-    __j += 2;                                                                                              \
+    DEFS_FLOW_MONITOR_INCREMENT();                                                                         \
                                                                                                            \
-    if (__j != 8 || !__tempRes)                                                                            \
-    {                                                                                                      \
-        failureFunc(__VA_ARGS__);                                                                          \
-    }                                                                                                      \
+    DEFS_FLOW_MONITOR_COMPARE(4, failureFunc, __VA_ARGS__);                                                \
 }
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Delay computing for condition flow 1: takes 3 bits of (x) number from an offset that is based on (n)    */
+/* Delay computing for condition flow 3: takes 3 bits of (x) number from an offset that is based on (n)    */
 /*---------------------------------------------------------------------------------------------------------*/
 #define DEFS_SEC_COND_FLOW_3_DELAY(x,n)   (((x) >> ((n) * 3)) & 0x07)
 
@@ -839,7 +855,7 @@ typedef enum
 /* Returns:                                                                                                */
 /* Side effects:    This macro defines its own flowCounter                                                 */
 /* Description:                                                                                            */
-/*                  This macro checks a condition according to the "secured condition 1" flow,             */
+/*                  This macro checks a condition according to the "secured condition 3" flow,             */
 /*                  and executes 'Yes' path accordingly.                                                   */
 /*                                                                                                         */
 /* Example:                                                                                                */
@@ -848,7 +864,7 @@ typedef enum
 /*                                                                                                         */
 /*    {                                                                                                    */
 /*        ...                                                                           // Some code       */
-/*        DEFS_SEC_COND_FLOW_1( x, cond, action, FailureFunc, arg1, arg2, ..., argn )   // Call macro      */
+/*        DEFS_SEC_COND_FLOW_3( x, cond, action, FailureFunc, arg1, arg2, ..., argn )   // Call macro      */
 /*        ...                                                                                              */
 /*    }                                                                                                    */
 /*                                                                                                         */
@@ -906,7 +922,6 @@ typedef enum
     _var = NULL;                                                                                            \
 }
 
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Macro:           DEFS_SEC_BRANCH_ADDRESS_SET                                                            */
 /*                                                                                                         */
@@ -926,7 +941,6 @@ typedef enum
     _var = (void*)(_addr);                                                                                  \
 }
 
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Macro:           DEFS_SEC_RUN_TWICE                                                                     */
 /*                                                                                                         */
@@ -938,7 +952,6 @@ typedef enum
 /*                  This macro runs a function twice usually used to avoid glitching attack                */
 /*---------------------------------------------------------------------------------------------------------*/
 #define DEFS_SEC_RUN_TWICE(func)    {{func;}{func;}}
-
 
 #endif /* __DEFS_SECURED_H__ */
 

@@ -62,7 +62,7 @@ endif
 
 
 CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER -ftrack-macro-expansion=0
-CFLAGS += -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h
+CFLAGS += -DEXTERNAL_INCLUDE_FILE=../../$(FW_DIR)/hal_cfg.h
 CFLAGS += -mcpu=Cortex-A35 -march=armv8-a -mcmodel=large -D__AARCH64__ -D__LP64__
 CFLAGS += -Wno-empty-body -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -lm  -mstrict-align
 CFLAGS += -fno-PIC
@@ -173,6 +173,27 @@ export SourceGroup_arbel_a35_bootblock
 TARGET = arbel
 TargetType = a35_bootblock_$(ENCLAVE)
 
+ifeq ($(TargetType),a35_bootblock_sip)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock_no_tip)
+CFLAGS += -D_NOTIP_ -D_BOOTBLOCK_ -D_SIP_TEST_
+endif
+
+ifeq ($(TargetType),a35_bootblock_no_tip)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock_no_tip)
+CFLAGS += -D_NOTIP_ -D_BOOTBLOCK_
+endif
+
+ifeq ($(BuildVariant),tip)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock)
+CFLAGS += -DSECURE_DDR
+endif
+
+ifeq ($(BuildVariant),tfa)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock)
+ASFLAGS += -DTFA_BL31_RESET
+CFLAGS += -DTFA_BL31_RESET -D_BOOTBLOCK_
+endif
+
 #
 # Output directories and files
 #
@@ -188,13 +209,13 @@ BUILD_DIR ?= $(OUTDIR_Release)/objects
 Release: $(OUTFILE_Release)
 
 arbel_a35_bootblock:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" CFLAGS+="-DSECURE_DDR"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock BuildVariant=tip
 arbel_a35_bootblock_no_tip:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip
 arbel_a35_bootblock_sip_test:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_sip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_ -D_SIP_TEST_"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_sip
 arbel_a35_bootblock_tfa:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" ASFLAGS+="-DTFA_BL31_RESET" CFLAGS+="-DTFA_BL31_RESET -D_BOOTBLOCK_"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock BuildVariant=tfa
 
 #
 # Clean

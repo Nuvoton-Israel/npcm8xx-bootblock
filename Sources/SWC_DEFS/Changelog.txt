@@ -1,6 +1,11 @@
+v1.96
+-------
+- defs_types.h                          - Fixed UINT32 and INT32 types for __GNUC__ and __ARMCC_VERSION
+
 v1.95
 -------
 - defs_core_arm.h                       - Fixed INTERRUPTS_SAVE_DISABLE/INTERRUPTS_RESTORE for __ARM_ARCH_7EM__
+- Tools\Releases\npcx0mnx               - Added utility script for npcx0mnx SWC DEFS source release
 
 v1.94
 -------

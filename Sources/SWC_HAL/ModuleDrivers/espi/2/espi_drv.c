@@ -6900,6 +6900,10 @@ static DEFS_STATUS ESPI_PC_BM_WriteReqAuto_l (
             /* Configure Unlimited Burst and requestor                                                     */
             /*---------------------------------------------------------------------------------------------*/
             FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_UNLIMITED);
+#ifdef FIU_CAPABILITY_DMA_REQUEST_CONFIG
+            FIU_ConfigDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_DMA_DIRECTION_READ,
+                                 GDMA_GetTransferWidthBytes(transferWidth));
+#endif
             (void)GDMA_ConfigRequestor(ESPI_PC_BM_gdmaChannelId, GDMA_FROM_FIU_BURST_TO_ESPI_PCBM(fiuDevNum));
             FIU_EnableDmaRequest(ESPI_PC_BM_usrReqInfo_L.fiu_module, TRUE);
         }

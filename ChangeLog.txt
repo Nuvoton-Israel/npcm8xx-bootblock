@@ -1,3 +1,8 @@
+version 0.5.9     - Nov 11th 2026
+=============
+- Add SIP-only manual DDR write-leveling fallback after normal training failure.
+- Fix SIP CS1 sector erase detection before primary and recovery programming.
+
 version 0.5.8     - Jul 7th 2026
 =============
 - Add SIP testing code for testing internal DDR and internal SPI

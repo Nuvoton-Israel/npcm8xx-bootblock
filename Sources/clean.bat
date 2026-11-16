@@ -30,6 +30,7 @@ for /f "delims=" %%I in ('where make.exe 2^>nul') do (
 
 rem Fallback for common local MinGW location.
 if exist "C:\MinGW\bin\make.exe" set MAKE_BIN_PATH=C:\MinGW\bin\
+if not defined MAKE_BIN_PATH if exist "%MAKE_MSYS_PATH%\make.exe" set MAKE_BIN_PATH=%MAKE_MSYS_PATH%\
 
 :make_found
 if not defined MAKE_BIN_PATH goto missing_tools
@@ -50,7 +51,7 @@ del /s /q *.d
 rd /s /q .\Images
 
 
-make clean-all
+make clean-all || goto ERROR_CLEAN
 @set PATH=%PATH_BACKUP%
 
 if exist .\Src\*.o          goto ERROR_CLEAN
@@ -64,6 +65,15 @@ goto pass
 
 @rem ============================================================================================================================
 @rem Error handling
+
+:missing_tools
+color C
+set ERRORLEVEL=1
+@echo.
+@echo ============================== ERROR ===============================
+@echo Missing GNU Make. Add make.exe to PATH or install it under C:\MinGW\bin.
+@echo ====================================================================
+goto end
 
 :ERROR_CLEAN
 color C

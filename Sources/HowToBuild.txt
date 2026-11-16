@@ -32,15 +32,66 @@ Build process
 --------------
 Windows:
     1. Run  clean.bat
-    2. Run  build.bat [tip\no_tip]
+    2. Run  build.bat [tip\no_tip\sip]
     (or call: make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH%)
 Linux:
     1. Run  ./clean.sh
     2. Run  ./build.sh [tip|no_tip]
+
+SIP test build and deployment (Windows)
+---------------------------------------
+The commands below assume:
+    - BootBlock source: H:\GitHub\BMC_ARBEL_A35_BOOTBLOCK
+    - IGPS package:     H:\Desktop\IGPS_4.4.3_Internal_SIP_TEST
+
+Build the production package:
+
+    cd /d H:\GitHub\BMC_ARBEL_A35_BOOTBLOCK
+    set NoDefaultCurrentDirectoryInExePath=
+    call production.bat
+
+Expected output:
+
+    H:\GitHub\BMC_ARBEL_A35_BOOTBLOCK\deliverables\Images\sip\
+        arbel_a35_bootblock_sip.bin
+
+Generate an image using the BootBlock built from this source tree:
+
+    cd /d H:\Desktop\IGPS_4.4.3_Internal_SIP_TEST
+    call Generate_SIP.bat
+    copy /Y H:\GitHub\BMC_ARBEL_A35_BOOTBLOCK\deliverables\Images\sip\arbel_a35_bootblock_sip.bin ^
+        py_scripts\ImageGeneration\inputs\arbel_a35_bootblock_no_tip.bin
+    set PATH=%CD%\py_scripts\ImageGeneration;%PATH%
+    python .\py_scripts\GenerateAll.py
+
+Generate_SIP.bat first refreshes all IGPS inputs and imports the latest
+published BootBlock. The copy and second GenerateAll.py invocation are required
+to replace that published BootBlock with the local test build.
+
+Generated programming image:
+
+    H:\Desktop\IGPS_4.4.3_Internal_SIP_TEST\py_scripts\ImageGeneration\
+        output_binaries\Secure\image_no_tip_SA.bin
+
+Program an EVB:
+
+    cd /d H:\Desktop\IGPS_4.4.3_Internal_SIP_TEST
+    call Program_NO_TIP_A1_EVB.bat
+
+Program an SVB with DediProg:
+
+    cd /d H:\Desktop\IGPS_4.4.3_Internal_SIP_TEST
+    call Program_NO_TIP_A1_DediProg.bat
+
+Close serial-terminal applications before EVB programming. Verify that the
+required EVB automation jumpers are installed as described in
+Program_NO_TIP_A1_EVB.bat.
  
 Deliverables
 ------------
 Files:
     - ./Images/tip/Arbel_a35_bootblock.bin
     - ./Images/no_tip/Arbel_a35_bootblock_no_tip.bin
+    - ./Images/sip/arbel_a35_bootblock_sip.bin
+    - ./deliverables/Images/sip/arbel_a35_bootblock_sip.bin
 

@@ -1,0 +1,502 @@
+===============================================================================
+  Nuvoton Technology Corporation
+  NCL API ChangeLog
+  Copyright (c) 2013-2026 Nuvoton Technology Corporation. All Rights Reserved.
+===============================================================================
+
+OPEN ISSUES:
+============
+None
+
+Version 4.0.1:
+    * AES:  Fixed issue AK-993 - [Booter] AES/SHA reset: the booter writes to the wrong register.
+            Fixed issue AK-1100 - [SWC_HAL] AES timing issue: fixed AES_WAIT() timeout to scale with AES_SOURCE_CLOCK via USEC_TO_ITERATIONS().
+    * ECC:  Changed ECC_PointVer()/NCL_ECC_PointVerify() isVerified parameter from BOOLEAN*/uint8_t* to DEFS_STATUS*/NCL_STATUS_T*.
+            Removed redundant PMC_OperCryptoModules() call from ECC_PointMultTest().
+    * RSA:  Fix SW HAL issue #921 - Increase PKA memory registers size to 0xC000.
+    * SHA:  Configure the FIU DMA request when enabling unlimited burst for SHA flash transfers.
+    * DRBG: Add fault-injection / side-channel hardening to the HW SHA-based DRBG driver (flow monitors, secure compares, secret zeroization).
+            Fixed entropy health tests returning incorrect failure status codes.
+    * MISC: Add security event handler (NCL_MISC_InitSecurityEventHandler()) and NCL_STATUS_SECURITY_ERROR to report security errors
+            propagated from lower crypto layers.
+            Add PMC_TurnOnCryptoModules() to power-up cryptographic modules with retry.
+
+Version 4.0.0:
+    * AES:  Fix SW HAL issue #283 - Added NCL_AES_KEY_SIZE_DO_NOT_CFG to key size enum.
+            Fix SW HAL issue #282 - verify the relevant SetParams() function has been called previous to AES_GCM/CCM_Encrypt/Decrypt.
+    * ECC:  Integrate PKA driver version 89.
+    * RSA:  Integrate PKA driver version 89.
+    * MISC: Generate NCL version string dynamically instead of hardcoded text to ensure accuracy
+
+
+History:
+========
+Version 3.3.2:
+    * LMS:  Modify msg[] variable in self-test to be static, for HAL binary consistency.
+    * HSS:  Modify msg[] variable in self-test to be static, for HAL binary consistency.
+    * DRBG: Put HAL level DFT Extended APT helath-test under #if 0 for SWQA purposes.
+
+Version 3.3.1:
+    * SHA:  Fixed NCL_SHA_Update doesn't call user callback (Ramon Issue #836).
+            Fixed NCL_SHA_Clear after NCL_SHA_Calc with moduleNum=1 resets module 0 (Ramon Issue #803).
+    * HSS:  Fixed macro NCL_HSS_SERVICES_SET_STATUS was missing, therefore selftest didn't run (HAL Issue #8).
+            Fixed unnecessary call to NCL_DFT_Init inside NCL_HSS_SelfTest_l() (Ramon issue #936).
+    * LMS:  Support LMS APIs.
+    * DFT:  Added NCL_DFT_GetHalRetStatus function.
+    * AES:  Modified status variable initialization in various APIs.
+            Modified self-test to only use a single key slot at index 1.
+
+Version 3.0.8:
+    * AES:  Add FI protection to AES_GCM_Decrypt(), AES_CCM_Decrypt(), AES_CMAC_Verify().
+    * ECC:  Add FI protection to ECC_ECDSAVerifyHash().
+    * HSS:  Add FI protection to HSS_Verify() and open source verify functions.
+            Fixed NCL_DFT_KAT_HSS_VERIFY needs to be supported as part of NCL_DFT_KAT_T enumeration (HAL issue #284).
+    * SHA:  Fixed NCL_SHA_Calc doesn't clear digest from registers at operation end (HAL Issue #280).
+    * MISC: Add FI protection to NCL_convertToApiStatus_l(), NCL_AES_GCM_Decrypt(), NCL_AES_CCM_Decrypt(),
+            NCL_HSS_VerifyFinish() and NCL_HSS_VerifyData().
+
+Version 3.0.7:
+    * SHA:  Enhance self test to validate both HW SHA modules (Ramon issue #819).
+            Fixed SHA_Update DMA non blocking mode (Ramon issue #825).
+    * DRBG: Align context.seed and context.cnst size and address to 4B (Ramon issue #481).
+            NCL_DRBG_Instantiate: do not force security strength when in DFT mode.
+
+Version 3.0.6:
+    * RSA:  RSA Public Key Validation bug fix.
+
+Version 3.0.5:
+    * SHA:  Support DMA with relevant APIs.
+    * RSA:  Support RSA Public Key Validation with relevant API.
+
+Version 3.0.4:
+    * AES:  Support SCA counter measures with relevant APIs.
+    * HMAC: Support SCA counter measures with relevant APIs. Relevant for HKDF as well.
+    * SHA:  Fixed NCL_SHA_Clear zeroization bug (issue #803).
+            Changed NCL_SHA_Config and NCL_SHA_Calc parameters order (move context to be first).
+    * ECC:  Fixed NCL_ECC_GetCurveData error check in NON_FIPS mode (HAL issue #446).
+    * DRBG: Fixed external Entropy Healthtests issue in FIPS mode (Ramon issue #790).
+
+Version 3.0.3:
+    * AES:  New HAL driver, supports Ramon B1 DWORD order.
+    * AES:  Fixed NCL_AES_LockKey input check issue (issue #555).
+    * AES:  Added new API: NCL_AES_GetLockKeyStatus (issue #563).
+    * SHA:  Allow NULL pointer input buffer for NCL_SHA_Update() and NCL_SHA_Calc() (Ramon only).
+
+Version 3.0.2:
+    * SHA:  HAL level performance enhancements.
+    * DRBG: New HAL level RNG driver.
+    * MISC: Added new project targets for NPCX4MNX project (EC Ramon).
+    * DFT:  Added NCL_DFT_DRBG_SetRngClkParams() to support RNG new features.
+
+Version 3.0.1:
+    * ECC:  New PKA HAL driver for ECC enhancements.
+    * ECC:  Added new enum NCL_ECC_KEY_SIZE_DWORD_T.
+    * HSS:  Support HSS APIs.
+
+Version 3.0.0:
+    * SHA:  New API: NCL_DRBG_Config.
+    * SHA:  Support for multiple SHA modules.
+    * AES:  Adapted SCA related APIs to new HAL API.
+    * DRBG: Added conditioning component usage to the NCL extended self test.
+    * DRBG: Modified Shared Context's security strength to include FIPS MODE.
+
+Version 2.3.8:
+    * DRBG: Performance improvment of initial entropy generation.
+
+Version 2.3.7:
+    * ECC:  Fixed Minerva attack countermeasure behavior
+            MSB will not be set on external KDF data, only on internally generated.
+
+Version 2.3.5:
+    * DRBG: Added DFT for conditioning component usage.
+    * DRBG: Fixed Issue #940 - Conditioning component entropy sizes mismatch
+
+Version 2.3.4:
+    * DRBG: Added conditioning component to RNG output.
+
+Version 2.3.3:
+    * DFT:  Fixed KAT buffer corruption DFT for RSA and ECC verify
+    * RSA:  Added support for non-NULL associated data in KTS (RSA encrypt/decrypt)
+    * RSA:  Fixed key size overriding issue (added key size to the the context)
+    * RSA:  Updated context size
+
+Version 2.3.2:
+    * AES:  Updated HW issue bypass (run 256b dummy at reset and before key size change). For
+            Arbel only
+    * MISC: Fixed return value of Initializaion when selftest fails
+    * MISC: Warning fixes
+
+Version 2.3.1:
+    * DFT:  Added KAT failure DFT for DRBG
+    * DRBG: *Non-FIPS mode only* - Fixed DRBG module initialization
+    * MISC: *Non-FIPS mode only* - Fixed RSA/ECC service status setting when skipping ST
+
+Version 2.3.0:
+    * AES:  Removed AES_CAPABILITY_KEY_SELECT_AND_LOCK capability code. Instead,
+            NCL_AES_SelectKey should be called before any setting and calculations.
+    * ECC:  Added NCL_ECC_SetSeed API to set random seed for the ECC module
+    * HKDF: Fixed calculation issue when using SHA384 and SHA512
+    * MISC: Incremented library name to "Nuvoton Cryptographic Library v2.3"
+    * MISC: Leaved SHA module powered-on after finishing NCL_MISC_Init
+    * MISC: Automatic selftests are performed only from NCL_<module>_Init APIs (no
+            service is allowed before the module initialization/selftest)
+    * RSA:  Removed encrypt-decrypt KAT from RSA selftest
+
+Version 2.2.1:
+    * ECC:  In non-fips mode, skip the Pairwise Consistency Test after key generation
+
+Version 2.2.0:
+    * DFT:  Added NCL_DFT_MISC_GetKatStatus to return a status of a given KAT
+    * ECC:  Added NCL_ECC_GetCurveData() API and NCL_ECC_CURVE_DATA_T enum type
+    * ECC:  Changed context size from 0x140 to 0x13c (bug fix)
+    * ECC:  Seperated conditional KAT for each service (Key exchange, sign and verify)
+    * HKDF: Added NCL_SHA_HKDF_Calc API (including internal selftest)
+    * MISC: Added 'fipsMode' argument to the NCL_MISC_Init API to support also non-FIPS mode (POST
+            and conditional ST are not mandatory), and added a fipsMode indicator to the
+            NCL_MODULE_DESC_T structure
+    * MISC: Disallowed any service before NCL initialization (internal: changed the operational mode
+            state machine, and separated the operational mode check and the module ST check)
+    * RSA:  Changed context size from 0x258 to 0x98 (bug fix)
+    * RSA:  Seperated conditional KAT for each service (Encrypt, decrypt, sign and verify)
+
+Version 2.1.3:
+    * AES:  Replaced the CTR mode KAT with CBC KAT in the mandatory AES selftest
+    * DFT:  Added DFT (NCL_DFT_MISC_FailKAT) for KAT buffer corruption
+    * DFT:  In NCL_DFT_DRBG_GenerateAndTestEntropy, replaced the 1st argument 'interruptEnable' (will
+            always work in polling mode) by 'powerOff' to control the RNG power off after use
+
+Version 2.1.1:
+    * AES:  Operate the module using double buffer
+    * RSA:  Change NCL_RSA_InitContext to clear the whole context
+
+Version 2.1.0:
+    * DRBG: Increased the random generation (RNG) rate to maximum
+    * DRBG: When DRBG selftest is called from NCL_DRBG_Init (first use in DRBG), the generated
+            entropy will not be initialized
+    * DRBG: Added NCL_DFT_DRBG_GenerateAndTestEntropy DFT API to generate and test RNG entropy
+    * DRBG: Enter fail mode when DRBG healthtest fails
+    * ECC:  NCL_ECC_GenKey clears the generated key pair if PCT fails
+    * ECC:  Added identity and order public key validation to ECC_ECDHKeyExchange
+    * MISC: Removed NCL_MISC_Init from the NCL interface
+    * MISC: Set 'approvedMode' in NCL_MISC_Init
+
+Version 2.0.9:
+    * AES:  Performance improvement
+
+Version 2.0.8:
+    * ECC:  Changed NCL_ECC_KdfFuncPtr type to return NCL_STATUS_T instead of uint32_t. It
+            is a paramter for NCL_ECC_ECDSASign* and NCL_ECC_GenKey APIs
+    * AES:  In GCM mode, IV is generated internally by DRBG in ENCRYPT ops and exports to the user,
+            and only IV size between 96 to 128 bits is supported
+
+Version 2.0.7:
+    * MISC: Changed RSA and ECC selftests to call SignData instead of SignHash
+            Added sign KAT to RSA and ECC selftest
+            Added RSA Encrypt KAT to RSA selftest
+
+Version 2.0.6:
+    * AES:  Code refactor and performance improvements
+    * DFT:  Renamed NCL_DFT_MISC_STATUS_SYSTEM_NOT_INITIALIZED to NCL_DFT_MISC_STATUS_FAIL
+    * DRBG: Always use the highest security strength (in non-DFT mode)
+    * DRBG: Removed securityStrength parameter from NCL_DRBG_Reseed
+    * DRBG: Added NCL_DRBG_SECURITY_STRENGTH_256b_TEST enumeration value. External entropies
+            of other security strength value will not be healthtested
+    * DRBG: Removed rng enable/disable control from NCL_DRBG_Power API (it is controlled by
+            the RNG driver automatically)
+    * HMAC: Added NCL_SHA_HMAC_* (Start/Update/Finish) APIs, renamed NCL_SHA_HMAC
+            to NCL_SHA_HMAC_Calc
+    * SHA:  Removed NCL HKDF support
+
+Version 2.0.5:
+    * MISC: Added 'approved mode' indicator to the module description structure, changed
+            NCL_MISC_GetModuleDescription to return status
+            Removed all module selftest APIs (now ST can be done only by NCL_MISC_SelfTest)
+    * DFT:  Changed NCL_DFT_DRBG_GetHwEntropy to return a pointer to the HW entropy buffer
+    * AES:  Added 'isVerified' arguement to NCL_AES_CMAC_Verify to return the verification result
+    * DRBG: Changes in the DRBG shared context behavior:
+            - Can be used by the user (context = NULL) only for reseeding and generating.
+            - Instantiated in first use (and not during selftest)
+            - Cleared in NCL_MISC_Init and NCL_DRBG_Clear
+    * RSA:  Added 'sigOK' argument to NCL_RSA_VerifyData and NCL_RSA_VerifyHash to return
+            the verification result
+
+Version 2.0.4:
+    * NCL: Added NCL_<MODULE>_Clear API for each of the NCL modules to clear SSPs
+    * AES: Changed API names: NCL_AES_SetGcmParams => NCL_AES_GCM_SetParams and
+           NCL_AES_SetCcmParams => NCL_AES_CCM_SetParams
+
+Version 2.0.3:
+    * ECC: Verified input point length doesn't exceed the key length (issue #254)
+    * AES: Added address 4-byte alignment check for plaintext, ciphertext and tag in
+           CCM and GCM modes (issue #521)
+    * DFT: Set NCL status according to the DFT status if ST fails
+    * AES: New CMAC APIs:
+           NCL_AES_CMAC_Generate()
+           NCL_AES_CMAC_Verify()
+           Both APIs support all input sizes, all tag sizes up to 16B (included)
+    * AES: Changed API names: NCL_AES_Gcm* => NCL_AES_GCM_*; NCL_AES_Ccm* => NCL_AES_CCM_*
+    * AES: Added NCL_AES_Clear, for SSP zeroisation.
+    * DRBG: Added NCL_DRBG_Clear(), for SSP zeroisation
+
+Version 2.0.2:
+    * AES: Support capabilities of big/little endian, DPA countermeasure, automatic start,
+      key selection and key locking
+    * ECC: Use key size 256 for selftest (instead of 521)
+    * ECC: Use the global DRBG context to create the an ECC key (using a HKDF callback)
+    * HMAC: Clear local temporary buffers of HMAC and HKDF after use
+    * DRBG: Add ctxIsReady parameter to the DRBG context, in order to prevent generating random bits
+      with an uninitialized (instantiated) context.
+    * DRBG: Add security strength parameter to the DRBG context. Now when there is an auto-reseed inside
+      the Generate flow, the security strength is maintained.
+    * DRBG: Modify entropyInput buffer to single pointer. This way we can spare several heavy memcpy
+      commands.
+    * DRBG: Entropy health tests for external entropy - only for security strength of 256b. That way
+      the tests are performed over 1024 bits and not less.
+    * DRBG: removed DRBG_EntroptyHealthtest call from the MISC_INIT DRBG self-test. This reduces boot
+      time for the TIP.
+    * DRBG: NCL_DRBG_* APIs may be called with NULL context. When the context is NULL, the NCL
+      driver will use the internal global DRBG context. For that purpose, NCL_DRBG_CONTEXT_NULL_CHECK macro
+      was added.
+    * DRBG: Fixed healthtest of entropies shorter than 1024b (issue #513)
+    * MISC: NCL module name changed from NCL 2.0 to "Nuvoton Cryptographic Library v2.0".
+    * MISC: When any selftest fails, NCL enters fail mode and can be recovered only by successful completion
+      of full selftest.
+    * MISC: Removed the ST completion requirement from all Power, InitializeContext and
+      FinalizeContext APIs of all modules. It is the user's responsibility to power on
+      a module before running selftest.
+
+Version 2.0.1:
+    * DRBG: DRBG can work with interrupt mode or polling mode, using a new parameter in NCL_DRBG_Init ('intEnable'). DRBG selftest
+      will always work in polling mode
+    * DRBG: Fixed DRBG_AddBigNums_l to handle two 0xFFs with carry
+    * AES: Returned AUTHENTICATION_FAIL when AES_CcmDecrypt fails to authenticate tag
+    * MISC: Added return value (SHA selftest status) from NCL_MISC_Init
+    * DFT: Changed DFT_SetStatus behaviour - now it set the status of the next selftests that will run (without actually running them)
+
+Version 2.0.0:
+    * Compatibility to FIPS140-3
+    * Changed NCL_MISC_Init to run SHA ST only, other selftests will be called on demand (internally)
+      when using a module's APIs
+    * NCL_MISC_SelfTest runs selftest of a single module (a new argument), running all STs is still optional
+    * Holding a separated self-test status for each module; NCL_DFT_MISC_SetStatus
+      and NCL_MISC_GetStatus now gets the module name and returns/sets the relevant status
+    * Fixed AES_CCM tag issue
+    * Changed AES_CcmEncrypt/Decrypt to receive tagsize enum and not a pointer to tag buffer
+    * Added NCL_AES_CCM* to NCL_AES_SelfTest_l()
+    * AES_GcmEncrypt/Decrypt should only receive DWORD aligned addresses - added input check
+    * AES GCM now supports any input text size
+    * Added AES_Update API for basic AES modes
+    * Removed NCL_RNG code
+
+Version 1.5.19:
+    * Based on HAL v3.3.5, which includes
+    * Added NCL_MISC_GetModuleDescription API to get module version and name
+    * Replaced all usage in NCL_RNG with NCL_DRBG
+    * Removed NCL_RNG from the build. NCL_RNG_* code is still there (unused),
+      will be removed later
+    * Fixed NCL_DRBG_SelfTest
+    * Added DRBG security strength support (NCL_DRBG_SECURITY_STRENGTH_T)
+    * Added DFT APIs: NCL_DFT_MISC_SetStatus, NCL_DFT_ECC_SetKeyChange,
+      NCL_DFT_DRBG_SetManualReseed and NCL_DFT_DRBG_GetHwEntropy
+    * Added GCM and CCM Encrypt/Decrypt APIs
+    * Added NCL_AES_SetIv and NCL_AES_SetKey APIs
+    * Changed NCL_AES_SetGcmParams and NCL_AES_SetCcmParams APIs to get also the
+      AES key and its size (NCL_AES_SetParams is not required to be called
+      before anymore)
+    * Added missing paramter validation checks
+
+Version 1.5.18:
+    * Bug fix - NCL_MISC_SelfTest always returnes status OK.
+    * NCL_ECC_SelfTest - use sign/verify hash instead of sign/verify data to reduce timing
+    * NCL_RSA_SelfTest - use sign/verify hash instead of sign/verify data to reduce timing
+    * NCL_AES_SelfTest - Reduce input size to improve timing of test
+    * ncl_if.h - added defines of context sizes, added relevant checks in NCL_***_InitContext() routines
+    * NCL_MISC_TamparDetected - calling AES_Reset, SHA_RESET  in order to clear secrets
+    * Change NCL_MISC_status_l flow from
+      NCL_STATUS_SYSTEM_NOT_INITIALIZED->NCL_STATUS_SYSTEM_BUSY(during self test)->NCL_STATUS_OK(self test passed)/NCL_STATUS_SYSTEM_NOT_INITIALIZED(self test failed)
+      to
+      NCL_STATUS_SYSTEM_NOT_INITIALIZED->NCL_STATUS_SYSTEM_BUSY(during self test)->NCL_STATUS_OK(self test passed)/NCL_STATUS_FAIL(self test failed)
+
+      and NCL_MISC_TamparDetected sets NCL_MISC_status_l to NCL_STATUS_FAIL instead of NCL_STATUS_SYSTEM_NOT_INITIALIZED
+      Added NCL_DFT_MISC_STATE_FAIL to enum  NCL_DFT_MISC_STATE_T
+    * NCL_ECC_GenKey -Added sign/verify check on the generated key pair(FIPS requirement)
+    * Added new DFT function: NCL_DFT_ECC_SetKeyChange
+    * NCL_MISC_SelfTest - in DFT mode: it used to return value according to DFT only, now it rans the self test and at the end,
+      if DFT is required (state != NCL_DFT_MISC_NOT_SET) - it will change the return value as needed.
+    * Fix issue #491:NCL: Attempting to initialize DRBG results error
+
+Version 1.5.17:
+    * Implement all NCL_API_* routines and needed DFT. need to implement DRBG self test
+    * Bug fix on RSA_Textbook : clear PKA memory before PKA_CNTR_STS_RES_RAM_SEL = 0,
+      otherwise recieving junk in out buffer if the output result size < key size
+    * PKA driver: Return error to PKA_CMD_EXP_M option since it is mentioned in spec as untested and
+      also currently result is not copied to output buffer according to spec - does not impact NCL at all
+    * Fix issue #465: NCL_RSA_Encrypt() is addressing data size in bytes instead of DWORDs
+    Therefor changed NCL_RSA_Encrypt API from:
+    NCL_STATUS_T NCL_RSA_Encrypt (
+        void*               context,
+        NCL_BN_T*           data,
+        NCL_RSA_PADDING_T   padding,
+        NCL_SHA_TYPE_T      shaType,
+        uint8_t*            dataOut
+    )
+
+    to:
+
+    NCL_STATUS_T NCL_RSA_Encrypt (
+        void*               context,
+        const uint8_t*      data,
+        uint32_t            dataLen,
+        NCL_RSA_PADDING_T   padding,
+        NCL_SHA_TYPE_T      shaType,
+       uint8_t*            dataOut
+    );
+    * Added function NCL_ECC_PointVerify needed for CAVP vectors
+    * Remove RSA_Textbook routine from NCL APIs
+
+Version 1.5.16:
+    * Version release to Microsoft
+
+Version 1.5.15:
+    * Rename NCL_FIPS_* API's to NCL_MISC_* API's
+    * Moved to Doxygen format of comments
+    * Changed sigOK parameter type from uint8_t* to NCL_STATUS_T*
+      in NCL_ECC_ECDSAVerifyHash and NCL_ECC_ECDSAVerifyData routines
+
+Version 1.5.14:
+    * Added NCL_FIPS_* API's
+
+Version 1.5.13:
+    *bug fix on RSA textbook
+     remove extra unneeded copy in RSA SIGN/ENCRYPT
+     remove unneeded msg struct from RSA_finish decrypt mode
+    * Fix issue #423 NCL: AES GCM results with ivSize=0xC are incorrect
+    * Fix issue #424 NCL: NCL_RSA_VerifyData() is failing
+    * Fix issue #427 NCL: RSA_ClearKey() is clearing the entire RSA context, including its interrupt handler
+    * Under NCL_*_FinalizeContext() routines - initialize context to zero.
+
+Version 1.5.12:
+    * change ivSize from uint8 to uint32 in NCL_AES_GCM_DATA struct
+
+Version 1.5.11:
+    * Use NCL/DEFS status !=0/1 values
+    * Move operation status under RSA definition
+    * ECC security enhancement
+
+Version 1.5.10:
+    * Remove addData parameter from NCL_AES_SetParams and added another API function
+      called NCL_AES_GcmModeSetParams that should be called before any AES GCM enc/dec operation
+
+Version 1.5.9:
+    * Added mac size to AES GCM data structure.
+
+Version 1.5.8:
+    * Added AES GCM support.
+
+Version 1.5.7:
+    * Fix RAM SWAP issue - it handles only addresses in rang 0x1000 0000 and not rang 0x2000 0000
+      changed: #define CHIP_RAM_SWAP32(addr)       (*((UINT32*)((((UINT32)addr) & 0xFFFFF) | 0x10200000)))
+      to:      #define CHIP_RAM_SWAP32(addr)       (*((UINT32*)(((UINT32)addr) | 0x200000)))
+    * Merge with AES new IP driver, currently operating modes are all old modes + CFB
+
+Version 1.5.6:
+    * NCL_RSA_Decrypt    - changed data parameter from NCL_BN_T* to uint8_t*
+                         - changed dataOut parameter from uint32_t* to uint8_t*
+                         - Added dataOutLen output parameter
+    * NCL_RSA_Encrypt    - changed dataOut parameter from NCL_BN_T* to uint8_t*
+    * NCL_RSA_SignData   - changed sig parameter from NCL_BN_T* to uint8_t*
+    * NCL_RSA_SignHash   - changed sig parameter from NCL_BN_T* to uint8_t*
+                         - changed hash parameter from  uint8_t* to  const uint8_t*
+    * NCL_RSA_VerifyData - changed sig parameter from NCL_BN_T* to const uint8_t*
+    * NCL_RSA_VerifyHash - changed sig parameter from NCL_BN_T* to const uint8_t*
+                         - changed hash parameter from  uint8_t* to  const uint8_t*
+                         - Remove Busy Wait
+    * Fix issue #368:Textbook RSA not supported in NCL lib. (Added NCL_RSA_Textbook)
+
+Version 1.5.5:
+    * Removed SHA-1 support
+    * Changed NCL_ECC_CURVE_DATA_T h parameter to uint8_t
+    * NCL_AES_ClearParams to call AES_Reset
+    * Remove RAM SWAP as it causes failures in SWQA
+
+Version 1.5.4:
+    * Fix issue #125: NCL: RSA Signing with PSS padding is not random
+    * Fix issue #351: NCL: RSA Sign tests fail when using PSS padding
+
+Version 1.5.3:
+    * Compile library with Gamla chip file.
+    * Added RAM SWAP feature to RSA
+    * AES API's will not work - did not update driver.
+
+
+                                    Arad
+                                 ==========
+Version 1.5.2:
+    * RSA supports PSS padding.
+    * Bug fixes on RSA with PKCS padding with diff SHA sizes.
+
+Version 1.5.1:
+    * Fix issue #342:NCL RSA verify data and sign data failes to work.
+    * Fix issue #339:NCL HMAC using SHA384 or SHA512 may give out incorrect output data.
+    * Added support in RSA 3072
+    * Added support in SHA384/512 for RSA pkcs padding
+
+Version 1.5.0:
+    * Configurable NCL - RSA/SHA/AES/RNG/ECC - done NCL API AND HAL level
+    * Move NCL to HAL logical driver instead of standalone library
+
+Version 1.4.1:
+    * Fix issue 337: Unable to set ECC curves that there key size is bigger than 256
+    * ECC key generation(issue #229)  - if KDF function return bad key (0<k<n) - return error,
+      if not given KDF function use simple hash +30 retries.
+      Do not set the upper bit on  (bit 256/384/512)
+      (need to handle ECC generate key hash 512, with ECC521, need to rand more bytes and zero unneeded bits)
+    * Fix RSA enc/dec OAEP padding for sha384/512 (not tested)
+    * merge padding enums for OAEP for 1 enum.
+    * Add enum for RSA PSS padding - not supported yet
+    * Add padding type checks - return error if chosen wrong padding. (RSA enc/dec - OAEP, RSA sign/verify - PKCS/PSS(not supported yet))
+    * Added self test for brainpoolP384t1 (with SHA384) under ECC HAL driver, under ECC_ECDSASelfTest
+    * handled ECC generate key hash 512, with ECC521, perform 2*SHA512,
+      second hash truncated first (512-32)b of the first hash, using first 32b
+      of first hash as seed. zero unneeded extra bits.
+    * Use NCL_STATUS_COND_CHECK instead of if...
+    * Need to update headers in .h file as well
+    * add local routines declarations, Move all locals routines to the end of the file
+    * Add self test decleration to header
+
+Version 1.4.0:
+    * Add documentation to ECC API's
+    * Rename NCL_RSA_Sign to NCL_RSA_SignData, Added NCL_RSA_SignHash
+    * Rename NCL_RSA_Verify to NCL_RSA_VerifyData, Added NCL_RSA_VerifyHash
+    * Rename NCL_ECC_ECDSASign to NCL_ECC_ECDSASignData, Added NCL_ECC_ECDSASignHash
+    * Rename NCL_ECC_ECDSAVerify to NCL_ECC_ECDSAVerifyData, Added NCL_ECC_ECDSAVerifyHash
+    * Add Support for SHA sizes 384/512b
+    * RSA padding - return error for usage of other padding methods beside PKCSv1
+    * Added SHA384 self test to NCL_SHA_SelfTest routine
+    * Added SHA384 test to NCL_RSA_VerifySelfTest routine
+    * Fix issue #228 "NCL API ecdsa sign is not random"
+
+                                  mRider17
+                                 ==========
+ Version 1.3.4:
+    * Fix issue 226 "API function NCL_RSA_SetKey only works when you input a public key."
+    * Fix issue 225 "NCL API RSA verify negative scenario failure"
+    * ECC 256: shorten random time using SHA+RNG instead of RNG only
+    * Fix issue 223 "NCL_RSA_GetStatus is not working as expected."
+    * Add documentation to the APIs
+
+ Version 1.3.3:
+    * NCL_ECC_ECDSAVerifyData/ NCL_ECC_ECDSASignData - remove support of SHA1 as shaType
+
+Version 1.3.2:
+    * Fix ECC bug: when private key size is less then curve order size than ECC API functions may return error.
+    * Change ncl_api.h to use only known types included in stdint.h
+
+Version 1.3.1:
+    * Fix RSA
+
+Version 1.3.0:
+    * Initial library
+    * RSA API not functional
+    * ECC256 API's implemented
+

@@ -44,18 +44,20 @@ RMDIR         ?= rm -rf
 
 # OS detection
 ifeq ($(OS),Windows_NT)
-   set ENCLAVE=%1
    CC = $(CROSS_COMPILE)aarch64-none-elf-gcc.exe
    LD = $(CROSS_COMPILE)aarch64-none-elf-ld.exe
    AR = $(CROSS_COMPILE)aarch64-none-elf-ar.exe
-   OBJCOPY = $(CROSS_COMPILE)\aarch64-none-elf-objcopy.exe
-   OBJDUMP = $(CROSS_COMPILE)\aarch64-none-elf-objdump.exe
+   OBJCOPY = $(CROSS_COMPILE)aarch64-none-elf-objcopy.exe
+   OBJDUMP = $(CROSS_COMPILE)aarch64-none-elf-objdump.exe
+   # Convert backslashes to forward slashes for bash compatibility
+   OBJDUMP_BASH = $(subst \,/,$(OBJDUMP))
 else
    CC = $(CROSS_COMPILE)gcc
    AR = $(CROSS_COMPILE)ar
    LD = $(CROSS_COMPILE)ld
    OBJCOPY = $(CROSS_COMPILE)objcopy
    OBJDUMP = $(CROSS_COMPILE)objdump
+   OBJDUMP_BASH = $(OBJDUMP)
 endif  
 
 
@@ -189,6 +191,8 @@ arbel_a35_bootblock:
 	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" CFLAGS+="-DSECURE_DDR"
 arbel_a35_bootblock_no_tip:
 	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_"
+arbel_a35_bootblock_sip_test:
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_sip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_ -D_SIP_TEST_"
 arbel_a35_bootblock_tfa:
 	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" ASFLAGS+="-DTFA_BL31_RESET" CFLAGS+="-DTFA_BL31_RESET -D_BOOTBLOCK_"
 
@@ -242,6 +246,9 @@ LINKER_FILE := $(PROJ_DIR)/$(FW_DIR)/bootblock.ld
 ifeq ($(ENCLAVE),no_tip)
 	LINKER_FILE := $(PROJ_DIR)/$(FW_DIR)/bootblock_NOTIP.ld
 endif
+ifeq ($(ENCLAVE),sip)
+	LINKER_FILE := $(PROJ_DIR)/$(FW_DIR)/bootblock_SIP.ld
+endif
 LINKER_TMP = $(BUILD_DIR)/bootblock.ld
 
 LINKER_FLAGS := --entry=start64 --gc-sections --build-id=none --print-memory-usage -Map=$(Map_File)
@@ -275,15 +282,14 @@ $(OUTFILE_Release): $(OUTDIR_Release) $(OBJS_Release)
 	@echo .
 	@echo Linking: Create bin file
 	@echo $(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)  $(subst .elf,.bin,$(OUTFILE_Release)) 
-	 $(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)       $(subst .elf,.bin,$(OUTFILE_Release)) 
+	$(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)       $(subst .elf,.bin,$(OUTFILE_Release)) 
 	@echo .
 	@echo Linking: Create dat file
 	@echo $(OBJCOPY) $(ONLY_SECTIONS) -O verilog $(OUTFILE_Release) $(subst .elf,.dat,$(OUTFILE_Release)) 
 	$(OBJCOPY) $(ONLY_SECTIONS) -O verilog $(OUTFILE_Release)       $(subst .elf,.dat,$(OUTFILE_Release)) 
 	@echo .
 	@echo Linking: Create asm file
-	@echo $(OBJDUMP)  -S  $(OUTFILE_Release)   >                    $(subst .elf,.asm,$(OUTFILE_Release))  2>&1
-	$(OBJDUMP)    -h   -S    $(OUTFILE_Release)      >              $(subst .elf,.asm,$(OUTFILE_Release))  2>&1
+	bash -c '$(OBJDUMP_BASH) -h -S $(OUTFILE_Release) > $(subst .elf,.asm,$(OUTFILE_Release))'
 	@echo Linking done
 
 

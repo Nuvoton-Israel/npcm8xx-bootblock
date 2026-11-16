@@ -1537,7 +1537,7 @@ static DEFS_STATUS MC_ConfigureDDR_l (DDR_Setup *ddr_setup, unsigned int try)
 	{
 		HAL_PRINT("TRIM2 sweep fail \n" KNRM);
 	}
-	
+
 	status_out_sweep |= Sweep_DQn_Trim_l(ddr_setup, SWEEP_OUT_DM, TRUE, 0);		   // Run Parametric Sweep on WRITE side (Output DM) and find the center for each DQn and average for each DM lane.
 	if (status_out_sweep != DEFS_STATUS_OK)
 	{

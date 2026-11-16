@@ -1,0 +1,1716 @@
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/startup.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/startup.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/startup.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/vectors.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/vectors.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/vectors.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/MP_GIC.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/MP_GIC.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/v8_aarch64.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/v8_aarch64.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/v8_utils.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/v8_utils.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_GetCurrReqSize_l
+                0x0000000000000000       0xa8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_Reset_l
+                0x0000000000000000      0x140 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_Default_Handler_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_IntHandler
+                0x0000000000000000       0x80 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_PrintRegsModules_l
+                0x0000000000000000      0x3d0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_HandleInputPacket_l
+                0x0000000000000000      0x168 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_SendReq_l
+                0x0000000000000000      0x120 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_SetRequest_l
+                0x0000000000000000       0xe8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_ReceiveCmd_l
+                0x0000000000000000      0x9d0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_RunCmd_l
+                0x0000000000000000      0x148 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_Mux_RMII
+                0x0000000000000000       0x9c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_SetDacSense
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_Mux_GMII
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_Mux_SIOXH
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_Mux_GSPI
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_PowerOn_GetMemorySize
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_ConfigUSBBurstSize
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_ResetTypeIsPor
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_ResetTypeIsCor
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_MarkCfgDone
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_CfgWasDone
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_EnableJtag
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_DisableJtag
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_DisableModules
+                0x0000000000000000       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_Disable_CPU1
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_MuxESPI
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_MuxLPC
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapJ3EN
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapFUP
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapSECEN
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapBSPA
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapJ2EN
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_StrapSPI0F18
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.CHIP_PrintRegs_GCR.str1.8
+                0x0000000000000000      0x600 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_PrintRegs_GCR
+                0x0000000000000000      0x698 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.HAL_PrintVars.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_PrintVars
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.HAL_PrintVersions.str1.8
+                0x0000000000000000       0xe2 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_PrintVersions
+                0x0000000000000000      0x158 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_SEC_memcmp_action
+                0x0000000000000000      0x244 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_SEC_memcmp
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_SEC_memcpy8
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_SEC_memcpy32
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_SEC_memcpy
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ConfigureTimerClock
+                0x0000000000000000       0x38 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_GetTimeStamp
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_GetUpTimeSeconds
+                0x0000000000000000       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_GetFIUClockDiv
+                0x0000000000000000       0x8c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ResetUART
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ResetTIMER
+                0x0000000000000000       0x7c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ConfigureADCClock
+                0x0000000000000000       0x54 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ResetFIU
+                0x0000000000000000       0xcc ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ResetMC_async
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ResetMC
+                0x0000000000000000       0x90 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ConfigureUSBClock
+                0x0000000000000000      0x1f8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ConfigureSDClock
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_ConfigureUartClock
+                0x0000000000000000       0x5c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_Delay_Since
+                0x0000000000000000       0x74 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_Delay_Cycles
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_SetCPFreq
+                0x0000000000000000       0x58 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.CLK_PrintRegs.str1.8
+                0x0000000000000000      0x5ee ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_PrintRegs
+                0x0000000000000000      0x4c8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CLK_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_Init
+                0x0000000000000000      0x130 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_Config
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetOpFreq
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetIoModeSelect
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetAlertMode
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetCrcCheckEnable
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_ChannelSlaveSupport
+                0x0000000000000000       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_ChannelSlaveEnable
+                0x0000000000000000      0x1a0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_IsChannelSlaveEnable
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_ChannelMasterEnable
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_IntEnable
+                0x0000000000000000       0xec ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_WakeUpEnable
+                0x0000000000000000       0xd8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetError
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetConfigUpdateEnable
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_GetConfigUpdate
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_ConfigAutoHandshake
+                0x0000000000000000       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_IsReadyForHostReset
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_IsChannelReadyForReset
+                0x0000000000000000       0xbc ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.ESPI_PrintRegs.str1.8
+                0x0000000000000000      0x2f9 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_PrintRegs
+                0x0000000000000000      0x350 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_Config
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_ConfigIndexOut
+                0x0000000000000000       0xa8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_ConfigIndexIn
+                0x0000000000000000       0xac ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_ConfigWire
+                0x0000000000000000       0xcc ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_Init
+                0x0000000000000000       0x58 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_SetWire
+                0x0000000000000000      0x10c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_GetWire
+                0x0000000000000000      0x104 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_WireIsRead
+                0x0000000000000000       0xac ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_SetIndex
+                0x0000000000000000       0xd4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_GetIndex
+                0x0000000000000000      0x100 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_SendBootLoad
+                0x0000000000000000       0x80 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_IntHandler
+                0x0000000000000000      0x5d0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_VW_EnableBootLoad
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_Config
+                0x0000000000000000       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_GetAccessMode
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_RegisterCallback
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_SendReq
+                0x0000000000000000      0x628 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_ResetReqTrans
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_GetStatus
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_FLASH_TransmitQueueFull
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_ReadPchTemp
+                0x0000000000000000       0x48 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_ReadPchRtc
+                0x0000000000000000       0x48 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_ReadCrashLog
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_Init
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_SetAddress
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_Trans
+                0x0000000000000000      0x180 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_Ping
+                0x0000000000000000       0xb8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_GetDIB
+                0x0000000000000000       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_GetTemp
+                0x0000000000000000       0xc0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_RdPkgConfig
+                0x0000000000000000       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_WrPkgConfig
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_RdIAMSR
+                0x0000000000000000       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_RdPCIConfig
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_RdPCIConfigLocal
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_WrPCIConfigLocal
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_PECI_GetCompletionCode
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_USB_Init
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_USB_Connect
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_USB_Disconnect
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_CRASHLOG_Init
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_HW_Init
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_MCTP_Init
+                0x0000000000000000       0x48 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_MCTP_SetReceiveMsg
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_AMD_Init
+                0x0000000000000000       0x58 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_AMD_SetReceiveMsg
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.ESPI_OOB_Send
+                0x0000000000000000       0xc0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.FIU_Reset.str1.8
+                0x0000000000000000        0xb ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_Reset
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_Init
+                0x0000000000000000       0x74 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigCommand
+                0x0000000000000000       0xec ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigFlashSize
+                0x0000000000000000       0xe0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigBurstSize
+                0x0000000000000000       0x5c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigIADTrap
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SPI_Quad_Enable
+                0x0000000000000000       0x94 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.CHIP_MuxFIU
+                0x0000000000000000      0x440 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ManualWrite
+                0x0000000000000000      0x14c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_UMA_ioctl
+                0x0000000000000000      0x430 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_Config
+                0x0000000000000000       0x7c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_Get4ByteAddress
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigDummyCyles
+                0x0000000000000000       0x54 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_GetDummyCyles
+                0x0000000000000000       0x54 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_GetDummyCylesEnable
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigDummyCyclesCount
+                0x0000000000000000      0x188 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_SetDirection
+                0x0000000000000000       0xfc ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_SetProtectionRegion
+                0x0000000000000000       0x8c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_SetProtectionCommand
+                0x0000000000000000      0x128 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_ConfigProtection
+                0x0000000000000000      0x180 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_GetProtectionViolationStatus
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_PrintRegs
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FIU_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_WaitForOTPReadyWithTimeout
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_SetBlockAccess
+                0x0000000000000000       0x48 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_BitIsProgrammed
+                0x0000000000000000       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_ProgramBit
+                0x0000000000000000      0x140 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_ProgramByte
+                0x0000000000000000       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_SelectKey
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_DisableKeyAccess
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_NibParEccEncode
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_MajRulEccDecode
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_MajRulEccEncode
+                0x0000000000000000       0x64 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_Get_Fustrap
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.FUSE_PrintModuleRegs.str1.8
+                0x0000000000000000       0xed ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_PrintModuleRegs
+                0x0000000000000000      0x140 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.FUSE_PrintRegs.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_PrintRegs
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FUSE_PrintVersion
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.__enable_irq_ret_psr_i
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.__disable_irq_ret_psr_i
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_InitTab
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_Init
+                0x0000000000000000       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_InstallTrap
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_InstallHandler
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_EnableInt
+                0x0000000000000000       0x54 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_IntEnabled
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_ClearInt
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_PendingInt
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_ConfigPriority
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_ConfigTrapPriority
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_Isr_L
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.GIC_PrintRegs.str1.8
+                0x0000000000000000      0x21a ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_PrintRegs
+                0x0000000000000000      0x2e0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_RES0_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_RST_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_UNDEF_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_SWI_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_PABT_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_DABT_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_HVC_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_IRQ_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_FIQ_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_SYSERR_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_SPURIOUS_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_SMC_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_EXT_ABT_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_VIRQ_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_NMI_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GIC_TrapRouting_DEBUG_L
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ConfigDir
+                0x0000000000000000       0x88 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ConfigOutBufferType
+                0x0000000000000000       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ConfigPull
+                0x0000000000000000       0x88 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_Init
+                0x0000000000000000       0x44 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_GetDir
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_GetPullUp
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_Read
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ReadOutput
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ConfigPortDir
+                0x0000000000000000       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ConfigPortPull
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_ReadPort
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.GPIO_PrintModuleRegs.str1.8
+                0x0000000000000000      0x2f0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_PrintModuleRegs
+                0x0000000000000000      0x348 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.GPIO_PrintRegs.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_PrintRegs
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.GPIO_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.Sweep_DQn_Trim_l
+                0x0000000000000000       0x90 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.print_full_window_diffs.str1.8
+                0x0000000000000000       0x32 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.print_full_window_diffs
+                0x0000000000000000      0x1d0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.LogLevelingData
+                0x0000000000000000       0xa8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.setup_vref_training_registers_
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.set_scl_all_cs
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.restore_scl_cs
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_MemStressTest
+                0x0000000000000000      0x588 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_DSCL_Enable.str1.8
+                0x0000000000000000       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_DSCL_Enable
+                0x0000000000000000       0xf8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_PrintVersion
+                0x0000000000000000       0x38 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_Init
+                0x0000000000000000       0xa8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_Config
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_EspiRegisterCallback
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_WindowConfig
+                0x0000000000000000       0xa0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_WindowProtect
+                0x0000000000000000       0x38 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_GetWindowProtect
+                0x0000000000000000       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_EnableSemaphoreInterrupt
+                0x0000000000000000       0x7c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_SemaphoreRead
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_SemaphoreWrite
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_FlashConfig
+                0x0000000000000000       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_HostAccessEnable
+                0x0000000000000000       0x34 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_HostAccessState
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_ReleaseHostWait
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_ClearInterrupts
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.SHM_PrintRegs.str1.8
+                0x0000000000000000      0x3f6 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_PrintRegs
+                0x0000000000000000      0x410 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.SHM_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_WatchdogReset
+                0x0000000000000000       0x24 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_WatchdogTouch
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_StartWatchDog
+                0x0000000000000000      0x110 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.TMC_PrintModuleRegs.str1.8
+                0x0000000000000000       0x46 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_PrintModuleRegs
+                0x0000000000000000       0xa0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.TMC_PrintRegs.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_PrintRegs
+                0x0000000000000000       0x60 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.TMC_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_GetC
+                0x0000000000000000       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_PutC_NB
+                0x0000000000000000       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_GetC_NB
+                0x0000000000000000       0x44 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_TestRX
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_TestTX
+                0x0000000000000000       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetTxIrqState
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetRxIrqState
+                0x0000000000000000       0x74 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetRxConfig
+                0x0000000000000000       0x5c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetParity
+                0x0000000000000000       0x88 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetBitsPerChar
+                0x0000000000000000       0x8c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetBaudrate
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetDivisor
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetStopBit
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_SetBreak
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_Isr
+                0x0000000000000000       0xb0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.UART_PrintModuleRegs.str1.8
+                0x0000000000000000      0x14e ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_PrintModuleRegs
+                0x0000000000000000      0x1a0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.UART_PrintRegs.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_PrintRegs
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.HAL_PrintRegs.str1.8
+                0x0000000000000000       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_PrintRegs
+                0x0000000000000000      0x190 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.UART_PrintVersion
+                0x0000000000000000       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ConfigFlashAuto
+                0x0000000000000000      0x104 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ConfigFlashManual
+                0x0000000000000000       0x34 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ConfigQuadPins
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ConfigReadMode
+                0x0000000000000000       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_Read
+                0x0000000000000000       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ReadStatus
+                0x0000000000000000       0x6c ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_WritePage
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_WriteStatus
+                0x0000000000000000      0x108 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_EraseType
+                0x0000000000000000       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ReadAddresMode
+                0x0000000000000000       0xe4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_Enter4ByteAddrMode
+                0x0000000000000000       0x64 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_EnableQuadRead
+                0x0000000000000000      0x114 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_Reset
+                0x0000000000000000       0xcc ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_ReleasePowerDown
+                0x0000000000000000       0x80 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_SetDieSelect
+                0x0000000000000000       0x64 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.HAL_Version
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.SHM_espiCallback
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.SHM_callback
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.GIC_SW_DispatchTable
+                0x0000000000000000      0xad0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_FLASH_userIntHandler_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_FLASH_WritePageSize_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_FLASH_status_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_FLASH_currReqInfo_L
+                0x0000000000000000       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_FLASH_currReqTag_L
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.ESPI_OOB_PECI_crc8_table
+                0x0000000000000000      0x100 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_AMD_bufferSize_L
+                0x0000000000000000        0x2 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_AMD_buffer_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_AMD_callback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_MCTP_callback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_hwCallback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_crashLogCallback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_usbCallback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_mctpInfo_L
+                0x0000000000000000       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_usbMsg_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciMsg_L
+                0x0000000000000000        0xd ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciRetryCount_L
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciCurrentCommand_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciCallback_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciCc_L
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciClientAddress_L
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_peciReadBuff_L
+                0x0000000000000000        0xb ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_Status_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_currReqTag_L
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_OutBuf_L
+                0x0000000000000000       0x49 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_InBuf_L
+                0x0000000000000000       0x49 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_cmdInfo
+                0x0000000000000000       0x80 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_currInCmdInfo_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_currOutCmdInfo_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_OOB_msgFormat_L
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_VW_Handler_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_userIntHandler_L
+                0x0000000000000000        0x8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_configUpdateMask
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_configUpdateEnable
+                0x0000000000000000        0x1 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_errorMask
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_bootLoad
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.ESPI_bootLoadEnable
+                0x0000000000000000        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.FLASH_ADDR_ARRAY_NPCM850
+                0x0000000000000000       0x50 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/cfg.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/cfg.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/cfg.o
+ .text.CFG_SHM_ReleaseHostWait
+                0x0000000000000000       0x1c ./Images/sip/objects/./source/cfg.o
+ .rodata.CFG_SW_reset.str1.8
+                0x0000000000000000       0x24 ./Images/sip/objects/./source/cfg.o
+ .text.CFG_SW_reset
+                0x0000000000000000       0x38 ./Images/sip/objects/./source/cfg.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/images.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/images.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/images.o
+ .rodata.image_memcpy.str1.8
+                0x0000000000000000       0x42 ./Images/sip/objects/./source/images.o
+ .text.image_memcpy
+                0x0000000000000000      0x138 ./Images/sip/objects/./source/images.o
+ .rodata.image_firmware_get_fw_name.str1.8
+                0x0000000000000000       0xf9 ./Images/sip/objects/./source/images.o
+ .text.image_firmware_get_fw_name
+                0x0000000000000000      0x1d8 ./Images/sip/objects/./source/images.o
+ .rodata.print_reset_indication.str1.8
+                0x0000000000000000      0x1b0 ./Images/sip/objects/./source/images.o
+ .text.print_reset_indication
+                0x0000000000000000      0x170 ./Images/sip/objects/./source/images.o
+ .rodata.update_reset_indication.str1.8
+                0x0000000000000000       0xdd ./Images/sip/objects/./source/images.o
+ .text.update_reset_indication
+                0x0000000000000000      0x130 ./Images/sip/objects/./source/images.o
+ .rodata.bmc_firmware_init.str1.8
+                0x0000000000000000      0x1e3 ./Images/sip/objects/./source/images.o
+ .text.bmc_firmware_init
+                0x0000000000000000      0x378 ./Images/sip/objects/./source/images.o
+ .rodata.__func__.0
+                0x0000000000000000       0x19 ./Images/sip/objects/./source/images.o
+ .rodata.__func__.1
+                0x0000000000000000       0x1a ./Images/sip/objects/./source/images.o
+ .rodata.optee_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.bl31_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.uboot_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.bb_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.tip_fw_l1_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.skmt_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.tip_fw_l0_header_tag_crc
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.tip_fw_l0_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.kmt_header_tag_crc
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .rodata.kmt_header_tag
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/images.o
+ .debug_info    0x0000000000000000     0x1292 ./Images/sip/objects/./source/images.o
+ .debug_abbrev  0x0000000000000000      0x38c ./Images/sip/objects/./source/images.o
+ .debug_loc     0x0000000000000000     0x16c2 ./Images/sip/objects/./source/images.o
+ .debug_aranges
+                0x0000000000000000       0x70 ./Images/sip/objects/./source/images.o
+ .debug_ranges  0x0000000000000000      0x140 ./Images/sip/objects/./source/images.o
+ .debug_line    0x0000000000000000      0x78a ./Images/sip/objects/./source/images.o
+ .debug_str     0x0000000000000000      0x9c1 ./Images/sip/objects/./source/images.o
+ .comment       0x0000000000000000       0x45 ./Images/sip/objects/./source/images.o
+ .debug_frame   0x0000000000000000      0x130 ./Images/sip/objects/./source/images.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_boot.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_boot.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_boot.o
+ .text.BOOTBLOCK_GetUartBaud
+                0x0000000000000000       0x20 ./Images/sip/objects/./source/bootblock_boot.o
+ .text.BOOTBLOCK_Get_host_if
+                0x0000000000000000        0xc ./Images/sip/objects/./source/bootblock_boot.o
+ .text.BOOTBLOCK_Get_SPI_clk_divider
+                0x0000000000000000       0x2c ./Images/sip/objects/./source/bootblock_boot.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_version.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_version.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_version.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_main.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_main.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/bootblock_main.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .text.str_printf
+                0x0000000000000000       0x70 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .text.serial_printf_stop
+                0x0000000000000000       0x20 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .text.serial_printf_start
+                0x0000000000000000       0x18 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .text          0x0000000000000000        0x0 ./Images/sip/objects/./source/mailbox.o
+ .data          0x0000000000000000        0x0 ./Images/sip/objects/./source/mailbox.o
+ .bss           0x0000000000000000        0x0 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_Reset
+                0x0000000000000000       0x20 ./Images/sip/objects/./source/mailbox.o
+ .rodata.PCIMBX_Print.str1.8
+                0x0000000000000000       0xe9 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_Print
+                0x0000000000000000      0x218 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_LogVersion
+                0x0000000000000000       0x38 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_UpdateStatus
+                0x0000000000000000       0x38 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_UpdateStatusAndInfo
+                0x0000000000000000       0x50 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_UpdateLastReset
+                0x0000000000000000       0x70 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_UpdateSpiDevice
+                0x0000000000000000       0x28 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_StoreFustrap2
+                0x0000000000000000       0x38 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_StoreHeaderAddress
+                0x0000000000000000       0x38 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_StoreHeaderKeyStatus
+                0x0000000000000000       0x30 ./Images/sip/objects/./source/mailbox.o
+ .text.PCIMBX_StoreOtpKnVAL
+                0x0000000000000000       0x20 ./Images/sip/objects/./source/mailbox.o
+ .bss.ROM_msgPtr
+                0x0000000000000000        0x8 ./Images/sip/objects/./source/mailbox.o
+ .debug_info    0x0000000000000000      0x52e ./Images/sip/objects/./source/mailbox.o
+ .debug_abbrev  0x0000000000000000      0x137 ./Images/sip/objects/./source/mailbox.o
+ .debug_loc     0x0000000000000000       0x3d ./Images/sip/objects/./source/mailbox.o
+ .debug_aranges
+                0x0000000000000000       0xd0 ./Images/sip/objects/./source/mailbox.o
+ .debug_ranges  0x0000000000000000       0xc0 ./Images/sip/objects/./source/mailbox.o
+ .debug_line    0x0000000000000000      0x257 ./Images/sip/objects/./source/mailbox.o
+ .debug_str     0x0000000000000000      0x3a1 ./Images/sip/objects/./source/mailbox.o
+ .comment       0x0000000000000000       0x45 ./Images/sip/objects/./source/mailbox.o
+ .debug_frame   0x0000000000000000      0x130 ./Images/sip/objects/./source/mailbox.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+SPI0CS0          0x0000000080000000 0x0000000008000000
+FLASH_XIP        0x0000000080000200 0x0000000000040000
+SPI0CS1          0x0000000088000000 0x0000000008000000
+SPI1CS0          0x0000000090000000 0x0000000001000000
+SPI1CS1          0x0000000091000000 0x0000000001000000
+SPI1CS2          0x0000000092000000 0x0000000001000000
+SPI1CS3          0x0000000093000000 0x0000000001000000
+SPIXCS0          0x00000000f8000000 0x0000000001000000
+SPIXCS1          0x00000000f9000000 0x0000000001000000
+SPI3CS0          0x00000000a0000000 0x0000000008000000
+SPI3CS1          0x00000000a8000000 0x0000000008000000
+SPI3CS2          0x00000000b0000000 0x0000000008000000
+SPI3CS3          0x00000000b8000000 0x0000000008000000
+SHM              0x00000000c0001000 0x0000000000000800
+RAM3             0x00000000c0008000 0x0000000000004000
+GICD             0x00000000dfff9000 0x0000000000001000
+GICC             0x00000000dfffa000 0x0000000000006000
+ROMa             0x00000000fff40000 0x0000000000010000
+ROMb             0x00000000fff50000 0x0000000000010000
+RAM2             0x00000000fffb0200 0x0000000000027e00
+RAM2_DATA        0x00000000fffd8000 0x0000000000018000
+VECTa            0x00000000ffff0000 0x0000000000000100
+VECTb            0x00000000ffff0000 0x0000000000000100
+ROM              0x00000000ffff0100 0x000000000000ff00
+null_data        0x0000000000100000 0x0000000000000000
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD ./Images/sip/objects/./source/startup.o
+LOAD ./Images/sip/objects/./source/vectors.o
+LOAD ./Images/sip/objects/./source/MP_GIC.o
+LOAD ./Images/sip/objects/./source/v8_aarch64.o
+LOAD ./Images/sip/objects/./source/v8_utils.o
+LOAD ./Images/sip/objects/./SWC_HAL/hal.o
+LOAD ./Images/sip/objects/./source/cfg.o
+LOAD ./Images/sip/objects/./source/images.o
+LOAD ./Images/sip/objects/./source/bootblock_boot.o
+LOAD ./Images/sip/objects/./source/bootblock_version.o
+LOAD ./Images/sip/objects/./source/bootblock_main.o
+LOAD ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+LOAD ./Images/sip/objects/./source/mailbox.o
+
+.StartUp        0x0000000080000200      0x230
+                0x0000000080000200                PROVIDE (_ram_start = .)
+                0x0000000080000200                PROVIDE (__flash_copy_src = .)
+ ./Images/sip/objects/./source/startup.o(.text.start64*)
+ ./Images/sip/objects/./source/startup.o(.text.el3_primary*)
+ .StartUp       0x0000000080000200      0x230 ./Images/sip/objects/./source/startup.o
+                0x0000000080000200                start64
+                0x00000000800003b8                el3_primary
+
+.StartUp_secondary
+                0x0000000080000430     0x2920
+ ./Images/sip/objects/./source/bootblock_main.o(.text.*)
+ .text.SIP_CopyToRAM
+                0x0000000080000430      0x228 ./Images/sip/objects/./source/bootblock_main.o
+ *fill*         0x0000000080000658        0x8 
+ .text.print_die_information
+                0x0000000080000660       0xc0 ./Images/sip/objects/./source/bootblock_main.o
+ .text.print_timestamp_information
+                0x0000000080000720       0xa0 ./Images/sip/objects/./source/bootblock_main.o
+ .text.SIP_CopyPageToCS1Slot.constprop.0
+                0x00000000800007c0      0x310 ./Images/sip/objects/./source/bootblock_main.o
+ .text.errHandler
+                0x0000000080000ad0      0x360 ./Images/sip/objects/./source/bootblock_main.o
+                0x0000000080000ad0                errHandler
+ .text.irqHandler
+                0x0000000080000e30       0x50 ./Images/sip/objects/./source/bootblock_main.o
+                0x0000000080000e30                irqHandler
+ .text.fiqHandler
+                0x0000000080000e80       0x50 ./Images/sip/objects/./source/bootblock_main.o
+                0x0000000080000e80                fiqHandler
+ .text.bootblock_main
+                0x0000000080000ed0     0x1df0 ./Images/sip/objects/./source/bootblock_main.o
+                0x0000000080000ed0                bootblock_main
+ ./Images/sip/objects/./source/startup.o(.text.el3_secondary*)
+ ./Images/sip/objects/./source/startup.o(.data.el3_secondary*)
+ .StartUp_secondary
+                0x0000000080002cc0       0x90 ./Images/sip/objects/./source/startup.o
+                0x0000000080002cc0                el3_secondary
+
+.text           0x0000000080002d50    0x14b30
+ *(.text*)
+ .text          0x0000000080002d50      0x238 ./Images/sip/objects/./source/MP_GIC.o
+                0x0000000080002d50                SetIrqGroup
+                0x0000000080002d80                SetIRQTarget
+                0x0000000080002da8                SetBlockGroup
+                0x0000000080002dc0                SetSPIGroup
+                0x0000000080002de8                SetIRQPriority
+                0x0000000080002e1c                EnableIRQ
+                0x0000000080002e44                DisableIRQ
+                0x0000000080002e64                TestIRQ
+                0x0000000080002e84                EnableGICD
+                0x0000000080002e98                DisableGICD
+                0x0000000080002eac                EnableGICC
+                0x0000000080002ec0                EnableSecureFIQ
+                0x0000000080002ed4                DisableSecureFIQ
+                0x0000000080002ee8                DisableGICC
+                0x0000000080002efc                SetPriorityMask
+                0x0000000080002f0c                SetBinaryPoint
+                0x0000000080002f18                ReadIAR
+                0x0000000080002f24                WriteEOI
+                0x0000000080002f30                SendSGI
+                0x0000000080002f4c                ClearSGI
+ .text          0x0000000080002f88      0x168 ./Images/sip/objects/./source/v8_aarch64.o
+                0x0000000080002f88                EnableCachesEL1
+                0x0000000080002fa0                DisableCaches
+                0x0000000080002fd8                DisableCachesEL1
+                0x0000000080002ff0                InvalidateUDCaches
+                0x0000000080003084                GetMIDR
+                0x000000008000308c                GetMPIDR
+                0x0000000080003094                GetCPUID
+                0x00000000800030d0                CoreResetRequest
+                0x00000000800030e0                L2ErrorGen
+ .text          0x00000000800030f0       0xac ./Images/sip/objects/./source/v8_utils.o
+                0x00000000800030f0                ZeroBlock
+                0x000000008000311c                ZeroRegs
+ *fill*         0x000000008000319c        0x4 
+ .text.mc_init_2133
+                0x00000000800031a0     0x185c ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800049fc        0x4 
+ .text.mc_init_sweep_arrays
+                0x0000000080004a00      0x150 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_ohm_to_reg
+                0x0000000080004b50       0xc0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_PrintPhy
+                0x0000000080004c10     0x1038 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080005c48        0x8 
+ .text.MC_SetBankRowCol
+                0x0000000080005c50       0x70 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_PrintOhm
+                0x0000000080005cc0      0x1e0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_mem_test_long.constprop.0
+                0x0000000080005ea0      0x230 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.MC_PrintTrim.constprop.0
+                0x00000000800060d0      0x500 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FindMidBiggestEyeBitwise_l.constprop.0
+                0x00000000800065d0       0xf8 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800066c8        0x8 
+ .text.MC_PrintLeveling.constprop.0
+                0x00000000800066d0      0x578 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080006c48        0x8 
+ .text.GetECCSyndrom.isra.0
+                0x0000000080006c50       0x68 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080006cb8        0x8 
+ .text.CHIP_Mux_Uart
+                0x0000000080006cc0      0x1b8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080006cc0                CHIP_Mux_Uart
+ *fill*         0x0000000080006e78        0x8 
+ .text.CHIP_Mux_GPIO
+                0x0000000080006e80       0xd0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080006e80                CHIP_Mux_GPIO
+ .text.CHIP_Get_Version
+                0x0000000080006f50       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080006f50                CHIP_Get_Version
+ .text.CLK_ConfigureGMACClock
+                0x0000000080006f60       0xd0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080006f60                CLK_ConfigureGMACClock
+ .text.CLK_ConfigureRootComplexClock
+                0x0000000080007030       0xac ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007030                CLK_ConfigureRootComplexClock
+ *fill*         0x00000000800070dc        0x4 
+ .text.CLK_Configure_I3C_Clock
+                0x00000000800070e0       0x38 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800070e0                CLK_Configure_I3C_Clock
+ *fill*         0x0000000080007118        0x8 
+ .text.CLK_GetADCClock
+                0x0000000080007120       0xdc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007120                CLK_GetADCClock
+ *fill*         0x00000000800071fc        0x4 
+ .text.CLK_GetUpTimeMiliseconds
+                0x0000000080007200       0x4c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007200                CLK_GetUpTimeMiliseconds
+ *fill*         0x000000008000724c        0x4 
+ .text.CLK_ConfigureFIUClock
+                0x0000000080007250      0x130 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007250                CLK_ConfigureFIUClock
+ .text.CLK_GetPLL0toAPBdivisor
+                0x0000000080007380       0xf8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007380                CLK_GetPLL0toAPBdivisor
+ *fill*         0x0000000080007478        0x8 
+ .text.CLK_Delay_MicroSec
+                0x0000000080007480       0xd4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007480                CLK_Delay_MicroSec
+ *fill*         0x0000000080007554        0xc 
+ .text.CLK_ConfigureUartClockEx
+                0x0000000080007560      0x138 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007560                CLK_ConfigureUartClockEx
+ *fill*         0x0000000080007698        0x8 
+ .text.CLK_ConfigureSDClock.part.0
+                0x00000000800076a0      0x224 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800078c4        0xc 
+ .text.CLK_Delay_Sec
+                0x00000000800078d0       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800078d0                CLK_Delay_Sec
+ .text.CLK_GetCPUFreq
+                0x00000000800078f0       0xa0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800078f0                CLK_GetCPUFreq
+ .text.CLK_GetMCFreq
+                0x0000000080007990       0x78 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007990                CLK_GetMCFreq
+ *fill*         0x0000000080007a08        0x8 
+ .text.CLK_GetAPBFreq
+                0x0000000080007a10       0x3c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007a10                CLK_GetAPBFreq
+ *fill*         0x0000000080007a4c        0x4 
+ .text.CLK_GetCPFreq
+                0x0000000080007a50       0x30 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007a50                CLK_GetCPFreq
+ .text.CLK_GetSDClock
+                0x0000000080007a80       0xfc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007a80                CLK_GetSDClock
+ *fill*         0x0000000080007b7c        0x4 
+ .text.CLK_ConfigurePCIClock
+                0x0000000080007b80      0x104 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007b80                CLK_ConfigurePCIClock
+ *fill*         0x0000000080007c84        0xc 
+ .text.CLK_GetPCIClock
+                0x0000000080007c90       0xdc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007c90                CLK_GetPCIClock
+ *fill*         0x0000000080007d6c        0x4 
+ .text.CLK_GetGFXClock
+                0x0000000080007d70       0xdc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007d70                CLK_GetGFXClock
+ *fill*         0x0000000080007e4c        0x4 
+ .text.CLK_GetPll0Freq
+                0x0000000080007e50       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007e50                CLK_GetPll0Freq
+ .text.CLK_GetPll1Freq
+                0x0000000080007e90       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007e90                CLK_GetPll1Freq
+ .text.CLK_GetPll2Freq
+                0x0000000080007ed0       0x44 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007ed0                CLK_GetPll2Freq
+ *fill*         0x0000000080007f14        0xc 
+ .text.CLK_Configure_CPU_MC_Clock
+                0x0000000080007f20      0x808 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080007f20                CLK_Configure_CPU_MC_Clock
+ *fill*         0x0000000080008728        0x8 
+ .text.CLK_Verify_and_update_dividers
+                0x0000000080008730      0x594 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008730                CLK_Verify_and_update_dividers
+ *fill*         0x0000000080008cc4        0xc 
+ .text.CLK_GetClkoutFreq
+                0x0000000080008cd0      0x110 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008cd0                CLK_GetClkoutFreq
+ .text.CLK_SetPixelClock
+                0x0000000080008de0       0x18 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008de0                CLK_SetPixelClock
+ *fill*         0x0000000080008df8        0x8 
+ .text.CLK_GetPixelClock
+                0x0000000080008e00       0x6c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008e00                CLK_GetPixelClock
+ *fill*         0x0000000080008e6c        0x4 
+ .text.CLK_GetUSB_OHCI_Clock
+                0x0000000080008e70       0xf4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008e70                CLK_GetUSB_OHCI_Clock
+ *fill*         0x0000000080008f64        0xc 
+ .text.CLK_GetUSB_UTMI_Clock
+                0x0000000080008f70       0xf4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080008f70                CLK_GetUSB_UTMI_Clock
+ *fill*         0x0000000080009064        0xc 
+ .text.CLK_Get_RC_Phy_and_I3C_Clock
+                0x0000000080009070       0xa4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009070                CLK_Get_RC_Phy_and_I3C_Clock
+ *fill*         0x0000000080009114        0xc 
+ .text.CLK_GetUartClock
+                0x0000000080009120       0xec ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009120                CLK_GetUartClock
+ *fill*         0x000000008000920c        0x4 
+ .text.UART_SetBaudrate.part.0
+                0x0000000080009210       0xb4 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800092c4        0xc 
+ .text.CLK_GetGMACClock
+                0x00000000800092d0       0xa4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800092d0                CLK_GetGMACClock
+ *fill*         0x0000000080009374        0xc 
+ .text.FIU_BusyWait_l
+                0x0000000080009380       0xe0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009380                FIU_BusyWait_l
+ .text.FIU_ConfigReadMode
+                0x0000000080009460      0x120 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009460                FIU_ConfigReadMode
+ .text.FIU_GetReadMode
+                0x0000000080009580       0x6c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009580                FIU_GetReadMode
+ *fill*         0x00000000800095ec        0x4 
+ .text.FIU_UMA_Read
+                0x00000000800095f0      0x374 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800095f0                FIU_UMA_Read
+ *fill*         0x0000000080009964        0xc 
+ .text.FIU_UMA_Write
+                0x0000000080009970      0x2ec ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009970                FIU_UMA_Write
+ *fill*         0x0000000080009c5c        0x4 
+ .text.FIU_PageWrite
+                0x0000000080009c60      0x2b4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009c60                FIU_PageWrite
+ *fill*         0x0000000080009f14        0xc 
+ .text.FIU_Config4ByteAddress
+                0x0000000080009f20       0xdc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080009f20                FIU_Config4ByteAddress
+ *fill*         0x0000000080009ffc        0x4 
+ .text.FUSE_Init
+                0x000000008000a000       0x90 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a000                FUSE_Init
+ .text.CLK_ConfigureClocks
+                0x000000008000a090      0x4b4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a090                CLK_ConfigureClocks
+ *fill*         0x000000008000a544        0xc 
+ .text.FUSE_Read
+                0x000000008000a550       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a550                FUSE_Read
+ *fill*         0x000000008000a618        0x8 
+ .text.FUSE_NibParEccDecode
+                0x000000008000a620       0xc8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a620                FUSE_NibParEccDecode
+ *fill*         0x000000008000a6e8        0x8 
+ .text.FUSE_WRPR_get
+                0x000000008000a6f0       0xd0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a6f0                FUSE_WRPR_get
+ .text.GPIO_Write
+                0x000000008000a7c0       0x34 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a7c0                GPIO_Write
+ *fill*         0x000000008000a7f4        0xc 
+ .text.GPIO_InitPort
+                0x000000008000a800       0x48 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a800                GPIO_InitPort
+ *fill*         0x000000008000a848        0x8 
+ .text.GPIO_WritePort
+                0x000000008000a850       0x14 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a850                GPIO_WritePort
+ *fill*         0x000000008000a864        0xc 
+ .text.memset   0x000000008000a870       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a870                memset
+ *fill*         0x000000008000a898        0x8 
+ .text.memcpy   0x000000008000a8a0       0x2c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a8a0                memcpy
+ *fill*         0x000000008000a8cc        0x4 
+ .text.arbel_mc_init
+                0x000000008000a8d0      0x3e8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000a8d0                arbel_mc_init
+ *fill*         0x000000008000acb8        0x8 
+ .text.MC_MemStressTestLong
+                0x000000008000acc0      0x5e0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000acc0                MC_MemStressTestLong
+ .text.Sweep_DQn_Trim_l.part.0
+                0x000000008000b2a0      0xa80 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.Sweep_DQS_Trim_l
+                0x000000008000bd20      0xa98 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000bd20                Sweep_DQS_Trim_l
+ *fill*         0x000000008000c7b8        0x8 
+ .text.Sweep_adrctrl_ma_l
+                0x000000008000c7c0      0x4d8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000c7c0                Sweep_adrctrl_ma_l
+ *fill*         0x000000008000cc98        0x8 
+ .text.Sweep_adrctrl_l
+                0x000000008000cca0      0x4e0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000cca0                Sweep_adrctrl_l
+ .text.Sweep_trim2_lane_l
+                0x000000008000d180      0x728 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000d180                Sweep_trim2_lane_l
+ *fill*         0x000000008000d8a8        0x8 
+ .text.Sweep_VREF_l
+                0x000000008000d8b0      0x7c8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000d8b0                Sweep_VREF_l
+ *fill*         0x000000008000e078        0x8 
+ .text.Sweep_IP_DQS_l
+                0x000000008000e080      0x748 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000e080                Sweep_IP_DQS_l
+ *fill*         0x000000008000e7c8        0x8 
+ .text.Sweep_OP_DQS_l
+                0x000000008000e7d0      0x738 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000e7d0                Sweep_OP_DQS_l
+ *fill*         0x000000008000ef08        0x8 
+ .text.MC_Init_DDR_Setup
+                0x000000008000ef10       0xe8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000ef10                MC_Init_DDR_Setup
+ *fill*         0x000000008000eff8        0x8 
+ .text.MC_Init_DDR_Setup_re_calc
+                0x000000008000f000      0x2a8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000f000                MC_Init_DDR_Setup_re_calc
+ *fill*         0x000000008000f2a8        0x8 
+ .text.ddr_phy_cfg1
+                0x000000008000f2b0      0xce0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000f2b0                ddr_phy_cfg1
+ .text.setup_vref_training_registers
+                0x000000008000ff90       0xb0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x000000008000ff90                setup_vref_training_registers
+ .text.vref_dq_training_ddr4
+                0x0000000080010040      0xe40 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080010040                vref_dq_training_ddr4
+ .text.run_write_leveling
+                0x0000000080010e80      0x2a0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080010e80                run_write_leveling
+ .text.run_bit_leveling
+                0x0000000080011120      0x368 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080011120                run_bit_leveling
+ *fill*         0x0000000080011488        0x8 
+ .text.ddr_phy_cfg2
+                0x0000000080011490      0x338 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080011490                ddr_phy_cfg2
+ *fill*         0x00000000800117c8        0x8 
+ .text.MC_ClearInterrupts
+                0x00000000800117d0      0x4d8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800117d0                MC_ClearInterrupts
+ *fill*         0x0000000080011ca8        0x8 
+ .text.MC_write_mr_regs_single
+                0x0000000080011cb0       0x90 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.Sweep_DRAM_l
+                0x0000000080011d40      0xac8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080011d40                Sweep_DRAM_l
+ *fill*         0x0000000080012808        0x8 
+ .text.MC_BIST_Init_DRAM_mem.constprop.0
+                0x0000000080012810      0x4b8 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080012cc8        0x8 
+ .text.MC_CheckWrapAround
+                0x0000000080012cd0      0x5a0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080012cd0                MC_CheckWrapAround
+ .text.MC_CheckDramSize
+                0x0000000080013270      0x2a8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080013270                MC_CheckDramSize
+ *fill*         0x0000000080013518        0x8 
+ .text.MC_manual_issue_DRAM_ZQ
+                0x0000000080013520      0x210 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080013520                MC_manual_issue_DRAM_ZQ
+ .text.MC_UpdateDramSize
+                0x0000000080013730      0x178 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080013730                MC_UpdateDramSize
+ *fill*         0x00000000800138a8        0x8 
+ .text.MC_PrintRegs
+                0x00000000800138b0      0xda8 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800138b0                MC_PrintRegs
+ *fill*         0x0000000080014658        0x8 
+ .text.MC_ConfigureDDR
+                0x0000000080014660     0x1030 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080014660                MC_ConfigureDDR
+ .text.TMC_StopWatchDog
+                0x0000000080015690       0x20 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015690                TMC_StopWatchDog
+ .text.UART_Init
+                0x00000000800156b0      0x120 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800156b0                UART_Init
+ .text.UART_PutC
+                0x00000000800157d0       0x44 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800157d0                UART_PutC
+ *fill*         0x0000000080015814        0xc 
+ .text.UART_ResetFIFOs
+                0x0000000080015820       0x58 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015820                UART_ResetFIFOs
+ *fill*         0x0000000080015878        0x8 
+ .text.UART_GetBaudrate
+                0x0000000080015880       0x84 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015880                UART_GetBaudrate
+ *fill*         0x0000000080015904        0xc 
+ .text.FLASH_DEV_Init
+                0x0000000080015910      0x16c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015910                FLASH_DEV_Init
+ *fill*         0x0000000080015a7c        0x4 
+ .text.FLASH_DEV_ReadID
+                0x0000000080015a80       0x6c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015a80                FLASH_DEV_ReadID
+ *fill*         0x0000000080015aec        0x4 
+ .text.FLASH_DEV_PollOnBusyBit
+                0x0000000080015af0      0x17c ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015af0                FLASH_DEV_PollOnBusyBit
+ *fill*         0x0000000080015c6c        0x4 
+ .text.FLASH_DEV_WritePage_l
+                0x0000000080015c70      0x154 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080015dc4        0xc 
+ .text.FLASH_DEV_Write
+                0x0000000080015dd0       0xe4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080015dd0                FLASH_DEV_Write
+ *fill*         0x0000000080015eb4        0xc 
+ .text.FLASH_DEV_EraseType_l
+                0x0000000080015ec0      0x270 ./Images/sip/objects/./SWC_HAL/hal.o
+ .text.FLASH_DEV_Erase
+                0x0000000080016130      0x400 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080016130                FLASH_DEV_Erase
+ .text.FLASH_DEV_ReadSFDP
+                0x0000000080016530      0x138 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080016530                FLASH_DEV_ReadSFDP
+ *fill*         0x0000000080016668        0x8 
+ .text.FLASH_DEV_GetFlashSize
+                0x0000000080016670       0xd0 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x0000000080016670                FLASH_DEV_GetFlashSize
+ .text.CFG_PrintResetType
+                0x0000000080016740      0x158 ./Images/sip/objects/./source/cfg.o
+                0x0000000080016740                CFG_PrintResetType
+ *fill*         0x0000000080016898        0x8 
+ .text.BOOTBLOCK_GetBoardType
+                0x00000000800168a0        0xc ./Images/sip/objects/./source/bootblock_boot.o
+                0x00000000800168a0                BOOTBLOCK_GetBoardType
+ *fill*         0x00000000800168ac        0x4 
+ .text.BOOTBLOCK_Get_DDR_Setup
+                0x00000000800168b0      0x260 ./Images/sip/objects/./source/bootblock_boot.o
+                0x00000000800168b0                BOOTBLOCK_Get_DDR_Setup
+ .text.BOOTBLOCK_GetVendorType
+                0x0000000080016b10        0xc ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b10                BOOTBLOCK_GetVendorType
+ *fill*         0x0000000080016b1c        0x4 
+ .text.BOOTBLOCK_Get_MC_freq
+                0x0000000080016b20        0xc ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b20                BOOTBLOCK_Get_MC_freq
+ *fill*         0x0000000080016b2c        0x4 
+ .text.BOOTBLOCK_Get_CPU_freq
+                0x0000000080016b30        0xc ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b30                BOOTBLOCK_Get_CPU_freq
+ *fill*         0x0000000080016b3c        0x4 
+ .text.BOOTBLOCK_Get_FIU_DRD_CFG
+                0x0000000080016b40       0x28 ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b40                BOOTBLOCK_Get_FIU_DRD_CFG
+ *fill*         0x0000000080016b68        0x8 
+ .text.BOOTBLOCK_Get_i3c_RC_clk_divider
+                0x0000000080016b70        0xc ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b70                BOOTBLOCK_Get_i3c_RC_clk_divider
+ *fill*         0x0000000080016b7c        0x4 
+ .text.BOOTBLOCK_Get_pll0_override
+                0x0000000080016b80       0x14 ./Images/sip/objects/./source/bootblock_boot.o
+                0x0000000080016b80                BOOTBLOCK_Get_pll0_override
+ *fill*         0x0000000080016b94        0xc 
+ .text.number   0x0000000080016ba0      0x348 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ *fill*         0x0000000080016ee8        0x8 
+ .text.serial_vsprintf
+                0x0000000080016ef0      0x780 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .text.serial_printf
+                0x0000000080017670      0x110 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+                0x0000000080017670                serial_printf
+ .text.serial_printf_init
+                0x0000000080017780       0xf0 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+                0x0000000080017780                serial_printf_init
+                0x0000000080017880                . = ALIGN (0x40)
+ *fill*         0x0000000080017870       0x10 
+
+.iplt           0x0000000080017880        0x0
+ .iplt          0x0000000080017880        0x0 ./Images/sip/objects/./source/startup.o
+
+EL1VECTORS      0x0000000080018000      0x784
+ EL1VECTORS     0x0000000080018000      0x784 ./Images/sip/objects/./source/vectors.o
+                0x0000000080018000                el1_vectors
+                0x0000000080018000                c0sync1
+
+EL2VECTORS      0x0000000080018800      0x784
+ EL2VECTORS     0x0000000080018800      0x784 ./Images/sip/objects/./source/vectors.o
+                0x0000000080018800                el2_vectors
+
+EL3VECTORS      0x0000000080019000      0x788
+ EL3VECTORS     0x0000000080019000      0x788 ./Images/sip/objects/./source/vectors.o
+                0x0000000080019000                el3_vectors
+
+InterruptHandlers
+                0x0000000080019788       0x40
+ InterruptHandlers
+                0x0000000080019788       0x40 ./Images/sip/objects/./source/vectors.o
+                0x0000000080019788                irqFirstLevelHandler
+                0x0000000080019798                fiqFirstLevelHandler
+                0x00000000800197a8                l64serr3Handler
+                0x00000000800197b8                l32serr3Handler
+
+.rodata         0x00000000800197d0     0x8290
+                0x00000000800197d0                __bootblock_start = .
+ *(.rodata .rodata.*)
+ .rodata.FIU_PrintRegsModules_l.str1.8
+                0x00000000800197d0     0x7bc7 ./Images/sip/objects/./SWC_HAL/hal.o
+                                        0x3ba (size before relaxing)
+ .rodata.MC_ohm_to_reg.str1.8
+                0x0000000080021397       0x28 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_PrintPhy.str1.8
+                0x0000000080021397      0xd1a ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_SetBankRowCol.str1.8
+                0x0000000080021397       0x16 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_PrintOhm.str1.8
+                0x0000000080021397       0x76 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_mem_test_long.constprop.0.str1.8
+                0x0000000080021397       0x8b ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_PrintTrim.constprop.0.str1.8
+                0x0000000080021397      0x18c ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_PrintLeveling.constprop.0.str1.8
+                0x0000000080021397       0xfd ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.CLK_ResetMC_async.str1.8
+                0x0000000080021397        0xa ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.CLK_Configure_CPU_MC_Clock.str1.8
+                0x0000000080021397       0x4a ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.FUSE_Init.str1.8
+                0x0000000080021397       0x24 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.arbel_mc_init.str1.8
+                0x0000000080021397      0x45b ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_DQn_Trim_l.part.0.str1.8
+                0x0000000080021397      0x40d ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_DQn_Trim_l.str1.8
+                0x0000000080021397       0x10 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_DQS_Trim_l.str1.8
+                0x0000000080021397      0x26f ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_adrctrl_ma_l.str1.8
+                0x0000000080021397      0x279 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_adrctrl_l.str1.8
+                0x0000000080021397      0x1e2 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_trim2_lane_l.str1.8
+                0x0000000080021397      0x49a ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_VREF_l.str1.8
+                0x0000000080021397      0x3d2 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_IP_DQS_l.str1.8
+                0x0000000080021397      0x36b ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_OP_DQS_l.str1.8
+                0x0000000080021397      0x343 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_Init_DDR_Setup.str1.8
+                0x0000000080021397       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_Init_DDR_Setup_re_calc.str1.8
+                0x0000000080021397       0xbf ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.ddr_phy_cfg1.str1.8
+                0x0000000080021397      0x693 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.LogLevelingData.str1.8
+                0x0000000080021397       0x22 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.setup_vref_training_registers.str1.8
+                0x0000000080021397        0xa ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.vref_dq_training_ddr4.str1.8
+                0x0000000080021397      0x544 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.run_write_leveling.str1.8
+                0x0000000080021397      0x1c8 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.run_bit_leveling.str1.8
+                0x0000000080021397      0x2d3 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.ddr_phy_cfg2.str1.8
+                0x0000000080021397      0x1c0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_ClearInterrupts.str1.8
+                0x0000000080021397      0x1cf ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_write_mr_regs_single.str1.8
+                0x0000000080021397       0x1c ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.Sweep_DRAM_l.str1.8
+                0x0000000080021397      0x597 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_BIST_Init_DRAM_mem.constprop.0.str1.8
+                0x0000000080021397       0xb5 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_CheckWrapAround.str1.8
+                0x0000000080021397      0x1f6 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_CheckDramSize.str1.8
+                0x0000000080021397      0x12b ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_manual_issue_DRAM_ZQ.str1.8
+                0x0000000080021397       0xcd ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_UpdateDramSize.str1.8
+                0x0000000080021397      0x113 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_PrintRegs.str1.8
+                0x0000000080021397      0x72f ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.MC_ConfigureDDR.str1.8
+                0x0000000080021397      0x7a8 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x0000000080021397        0x1 
+ .rodata.CSWTCH.2186
+                0x0000000080021398       0x24 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800213bc        0x4 
+ .rodata.CSWTCH.2185
+                0x00000000800213c0       0x24 ./Images/sip/objects/./SWC_HAL/hal.o
+ *fill*         0x00000000800213e4        0xc 
+ .rodata.Golden_Numbers
+                0x00000000800213f0      0x400 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000800213f0                Golden_Numbers
+ .rodata        0x00000000800217f0      0x110 ./Images/sip/objects/./SWC_HAL/hal.o
+ .rodata.CFG_PrintResetType.str1.8
+                0x0000000080021900       0xdf ./Images/sip/objects/./source/cfg.o
+ .rodata.bb_version
+                0x0000000080021900       0xb8 ./Images/sip/objects/./source/bootblock_version.o
+                0x0000000080021900                bb_version
+ .rodata.SIP_CopyToRAM.str1.8
+                0x00000000800219b8      0x1bb ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.print_die_information.str1.8
+                0x00000000800219b8       0xb3 ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.print_timestamp_information.str1.8
+                0x00000000800219b8       0x73 ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.SIP_CopyPageToCS1Slot.constprop.0.str1.8
+                0x00000000800219b8       0x8d ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.errHandler.str1.8
+                0x00000000800219b8      0x12b ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.irqHandler.str1.8
+                0x00000000800219b8       0x27 ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.fiqHandler.str1.8
+                0x00000000800219b8       0x27 ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.bootblock_main.str1.8
+                0x00000000800219b8     0x121d ./Images/sip/objects/./source/bootblock_main.o
+ .rodata.number.str1.8
+                0x00000000800219b8       0x4d ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .rodata.serial_vsprintf.str1.8
+                0x00000000800219b8        0x7 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .rodata.serial_vsprintf
+                0x00000000800219b8       0xa8 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ .rodata.serial_printf_init.str1.8
+                0x0000000080021a60       0x1f ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+                0x0000000080021a60                __bootblock_end = .
+                0x0000000080022be0                . = ALIGN (0x10)
+                0x0000000080021a60                PROVIDE (__flash_copy_end = .)
+                0x00000000fffb0200                PROVIDE (__ram_copy_dst = ORIGIN (RAM2))
+
+.rela.dyn       0x0000000080021a60        0x0
+ .rela.iplt     0x0000000080021a60        0x0 ./Images/sip/objects/./source/startup.o
+ .rela.StartUp  0x0000000080021a60        0x0 ./Images/sip/objects/./source/startup.o
+ .rela.text     0x0000000080021a60        0x0 ./Images/sip/objects/./source/startup.o
+ .rela.text.SIP_CopyToRAM
+                0x0000000080021a60        0x0 ./Images/sip/objects/./source/startup.o
+ .rela.text.bootblock_main
+                0x0000000080021a60        0x0 ./Images/sip/objects/./source/startup.o
+
+.ttb0_l1        0x00000000fffd8000        0x0
+                0x00000000fffd8000                . = ALIGN (0x1000)
+                0x00000000fffd8000                __ttb0_l1 = .
+ *(ttb0_l1)
+                0x00000000fffd8000                __ttb0_l1_end = .
+
+.bss            0x00000000fffd8000     0x6260
+                0x00000000fffd8000                . = ALIGN (0x4)
+                0x00000000fffd8000                __bss_start__ = .
+ *(.bss*)
+ .bss.bucket_save_diff_lane
+                0x00000000fffd8000       0xfc ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000fffd8000                bucket_save_diff_lane
+ *fill*         0x00000000fffd80fc        0x4 
+ .bss.g_Table_MinEyeSize
+                0x00000000fffd8100      0x250 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_Table_Z2_BitStatus
+                0x00000000fffd8350     0x1720 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_Table_Z_BitStatus
+                0x00000000fffd9a70     0x1720 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_Table_Y_BestTrim_EyeSize
+                0x00000000fffdb190       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_Table_Y_BestTrim_EyeCenter
+                0x00000000fffdb1d0       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_PresetTrim
+                0x00000000fffdb210       0x40 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000fffdb210                g_PresetTrim
+ .bss.g_Table_Y_LaneStatus
+                0x00000000fffdb250      0x100 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000fffdb250                g_Table_Y_LaneStatus
+ .bss.g_Table_Y_BitStatus
+                0x00000000fffdb350      0x100 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000fffdb350                g_Table_Y_BitStatus
+ .bss.g_fail_rate_1
+                0x00000000fffdb450        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.g_fail_rate_0
+                0x00000000fffdb454        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.bPrint    0x00000000fffdb458        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+                0x00000000fffdb458                bPrint
+ *fill*         0x00000000fffdb45c        0x4 
+ .bss.fuse_encoded
+                0x00000000fffdb460      0x100 ./Images/sip/objects/./SWC_HAL/hal.o
+ .bss.readbuf.0
+                0x00000000fffdb560     0x1000 ./Images/sip/objects/./source/bootblock_main.o
+ .bss.pagebuf.1
+                0x00000000fffdc560     0x1000 ./Images/sip/objects/./source/bootblock_main.o
+ .bss.sip_crc32_ready
+                0x00000000fffdd560        0x4 ./Images/sip/objects/./source/bootblock_main.o
+ *fill*         0x00000000fffdd564        0xc 
+ .bss.sip_crc32_table
+                0x00000000fffdd570      0x400 ./Images/sip/objects/./source/bootblock_main.o
+ .bss.ddr_setup
+                0x00000000fffdd970       0xf0 ./Images/sip/objects/./source/bootblock_main.o
+ .bss.buf       0x00000000fffdda60      0x800 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+ *(COMMON)
+                0x00000000fffde260                . = ALIGN (0x4)
+                0x00000000fffde260                __bss_end__ = .
+
+.data           0x00000000fffde260        0x8
+                0x00000000fffde260                . = ALIGN (0x4)
+ *(.data*)
+ .data.NUM_OF_LANES
+                0x00000000fffde260        0x4 ./Images/sip/objects/./SWC_HAL/hal.o
+ .data.gUartLog
+                0x00000000fffde264        0x4 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+                0x00000000fffde264                gUartLog
+ *(COMMON)
+                0x00000000fffde268                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (_ram_end = .)
+
+.igot.plt       0x00000000fffde268        0x0
+ .igot.plt      0x00000000fffde268        0x0 ./Images/sip/objects/./source/startup.o
+
+.el3_stack      0x00000000fffde268     0x4018
+                0x00000000fffde268                PROVIDE (_stack_end = .)
+                0x00000000fffde280                . = ALIGN (0x40)
+ *fill*         0x00000000fffde268       0x18 
+                0x00000000fffe2280                . = (. + 0x4000)
+ *fill*         0x00000000fffde280     0x4000 
+                0x00000000fffe2280                __el3_stack = .
+                0x00000000fffe2280                PROVIDE (_stack_start = .)
+
+.gicd           0x00000000dfff9000        0x0
+                0x00000000dfff9000                __gicd = .
+
+.gicc           0x00000000dfffa000        0x0
+                0x00000000dfffa000                __gicc = .
+OUTPUT(./Images/sip/arbel_a35_bootblock_sip.elf elf64-littleaarch64)
+LOAD linker stubs
+
+.debug_line     0x0000000000000000    0x1d2ca
+ .debug_line    0x0000000000000000      0x101 ./Images/sip/objects/./source/startup.o
+ .debug_line    0x0000000000000101       0xf8 ./Images/sip/objects/./source/vectors.o
+ .debug_line    0x00000000000001f9       0xf8 ./Images/sip/objects/./source/MP_GIC.o
+ .debug_line    0x00000000000002f1       0xaa ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_line    0x000000000000039b       0x71 ./Images/sip/objects/./source/v8_utils.o
+ .debug_line    0x000000000000040c    0x19c09 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_line    0x000000000001a015      0x213 ./Images/sip/objects/./source/cfg.o
+ .debug_line    0x000000000001a228      0x59a ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_line    0x000000000001a7c2       0x60 ./Images/sip/objects/./source/bootblock_version.o
+ .debug_line    0x000000000001a822     0x1cd7 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_line    0x000000000001c4f9      0xdd1 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_info     0x0000000000000000    0x2a627
+ .debug_info    0x0000000000000000       0x22 ./Images/sip/objects/./source/startup.o
+ .debug_info    0x0000000000000022       0x22 ./Images/sip/objects/./source/vectors.o
+ .debug_info    0x0000000000000044       0x2e ./Images/sip/objects/./source/MP_GIC.o
+ .debug_info    0x0000000000000072       0x2e ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_info    0x00000000000000a0       0x2e ./Images/sip/objects/./source/v8_utils.o
+ .debug_info    0x00000000000000ce    0x2387a ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_info    0x0000000000023948      0x3e5 ./Images/sip/objects/./source/cfg.o
+ .debug_info    0x0000000000023d2d      0xf5b ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_info    0x0000000000024c88       0xe5 ./Images/sip/objects/./source/bootblock_version.o
+ .debug_info    0x0000000000024d6d     0x4a52 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_info    0x00000000000297bf      0xe68 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_abbrev   0x0000000000000000     0x1797
+ .debug_abbrev  0x0000000000000000       0x12 ./Images/sip/objects/./source/startup.o
+ .debug_abbrev  0x0000000000000012       0x12 ./Images/sip/objects/./source/vectors.o
+ .debug_abbrev  0x0000000000000024       0x14 ./Images/sip/objects/./source/MP_GIC.o
+ .debug_abbrev  0x0000000000000038       0x14 ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_abbrev  0x000000000000004c       0x14 ./Images/sip/objects/./source/v8_utils.o
+ .debug_abbrev  0x0000000000000060      0x9e7 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_abbrev  0x0000000000000a47      0x131 ./Images/sip/objects/./source/cfg.o
+ .debug_abbrev  0x0000000000000b78      0x23c ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_abbrev  0x0000000000000db4       0x81 ./Images/sip/objects/./source/bootblock_version.o
+ .debug_abbrev  0x0000000000000e35      0x565 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_abbrev  0x000000000000139a      0x3fd ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_aranges  0x0000000000000000     0x1b70
+ .debug_aranges
+                0x0000000000000000       0x40 ./Images/sip/objects/./source/startup.o
+ .debug_aranges
+                0x0000000000000040       0x60 ./Images/sip/objects/./source/vectors.o
+ .debug_aranges
+                0x00000000000000a0       0x30 ./Images/sip/objects/./source/MP_GIC.o
+ .debug_aranges
+                0x00000000000000d0       0x30 ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_aranges
+                0x0000000000000100       0x30 ./Images/sip/objects/./source/v8_utils.o
+ .debug_aranges
+                0x0000000000000130     0x17d0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_aranges
+                0x0000000000001900       0x50 ./Images/sip/objects/./source/cfg.o
+ .debug_aranges
+                0x0000000000001950       0xd0 ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_aranges
+                0x0000000000001a20       0x20 ./Images/sip/objects/./source/bootblock_version.o
+ .debug_aranges
+                0x0000000000001a40       0xa0 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_aranges
+                0x0000000000001ae0       0x90 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_str      0x0000000000000000     0x873c
+ .debug_str     0x0000000000000000     0x873c ./Images/sip/objects/./source/startup.o
+                                         0x4c (size before relaxing)
+ .debug_str     0x000000000000873c       0x4c ./Images/sip/objects/./source/vectors.o
+ .debug_str     0x000000000000873c       0x4b ./Images/sip/objects/./source/MP_GIC.o
+ .debug_str     0x000000000000873c       0x4f ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_str     0x000000000000873c       0x4d ./Images/sip/objects/./source/v8_utils.o
+ .debug_str     0x000000000000873c     0x7ca2 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_str     0x000000000000873c      0x23f ./Images/sip/objects/./source/cfg.o
+ .debug_str     0x000000000000873c      0xe78 ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_str     0x000000000000873c      0x1ef ./Images/sip/objects/./source/bootblock_version.o
+ .debug_str     0x000000000000873c     0x2097 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_str     0x000000000000873c      0xe15 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_ranges   0x0000000000000000     0xa910
+ .debug_ranges  0x0000000000000000       0x40 ./Images/sip/objects/./source/startup.o
+ .debug_ranges  0x0000000000000040       0x60 ./Images/sip/objects/./source/vectors.o
+ .debug_ranges  0x00000000000000a0     0x9fb0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_ranges  0x000000000000a050       0x40 ./Images/sip/objects/./source/cfg.o
+ .debug_ranges  0x000000000000a090       0xc0 ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_ranges  0x000000000000a150      0x5d0 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_ranges  0x000000000000a720      0x1f0 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_frame    0x0000000000000000     0x3fb8
+ .debug_frame   0x0000000000000000      0x1f0 ./Images/sip/objects/./source/MP_GIC.o
+ .debug_frame   0x00000000000001f0       0xe8 ./Images/sip/objects/./source/v8_aarch64.o
+ .debug_frame   0x00000000000002d8       0x40 ./Images/sip/objects/./source/v8_utils.o
+ .debug_frame   0x0000000000000318     0x36f0 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_frame   0x0000000000003a08       0x80 ./Images/sip/objects/./source/cfg.o
+ .debug_frame   0x0000000000003a88      0x130 ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_frame   0x0000000000003bb8      0x258 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_frame   0x0000000000003e10      0x1a8 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.debug_loc      0x0000000000000000    0x3ed35
+ .debug_loc     0x0000000000000000    0x39b58 ./Images/sip/objects/./SWC_HAL/hal.o
+ .debug_loc     0x0000000000039b58       0xa1 ./Images/sip/objects/./source/cfg.o
+ .debug_loc     0x0000000000039bf9      0x4b5 ./Images/sip/objects/./source/bootblock_boot.o
+ .debug_loc     0x000000000003a0ae     0x2d02 ./Images/sip/objects/./source/bootblock_main.o
+ .debug_loc     0x000000000003cdb0     0x1f85 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o
+
+.comment        0x0000000000000000       0x44
+ .comment       0x0000000000000000       0x44 ./Images/sip/objects/./SWC_HAL/hal.o
+                                         0x45 (size before relaxing)
+ .comment       0x0000000000000044       0x45 ./Images/sip/objects/./source/cfg.o
+ .comment       0x0000000000000044       0x45 ./Images/sip/objects/./source/bootblock_boot.o
+ .comment       0x0000000000000044       0x45 ./Images/sip/objects/./source/bootblock_version.o
+ .comment       0x0000000000000044       0x45 ./Images/sip/objects/./source/bootblock_main.o
+ .comment       0x0000000000000044       0x45 ./Images/sip/objects/./source/apps/serial_printf/serial_printf.o

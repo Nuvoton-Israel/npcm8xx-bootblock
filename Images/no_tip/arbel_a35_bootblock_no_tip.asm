@@ -27,23 +27,23 @@ Idx Name          Size      VMA               LMA               File off  Algn
                   ALLOC
  11 .el3_stack    00010028  00000000fffd4e58  00000000fffd4e58  00020200  2**0
                   ALLOC
- 12 .debug_line   0001be33  0000000000000000  0000000000000000  0001f8d0  2**0
+ 12 .debug_line   0001bddf  0000000000000000  0000000000000000  0001f8d0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_info   000272c8  0000000000000000  0000000000000000  0003b703  2**0
+ 13 .debug_info   000272c8  0000000000000000  0000000000000000  0003b6af  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_abbrev 000019e1  0000000000000000  0000000000000000  000629cb  2**0
+ 14 .debug_abbrev 000019e1  0000000000000000  0000000000000000  00062977  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_aranges 00001a40  0000000000000000  0000000000000000  000643b0  2**4
+ 15 .debug_aranges 00001a40  0000000000000000  0000000000000000  00064360  2**4
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_str    00008407  0000000000000000  0000000000000000  00065df0  2**0
+ 16 .debug_str    00008407  0000000000000000  0000000000000000  00065da0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_ranges 00009c70  0000000000000000  0000000000000000  0006e200  2**4
+ 17 .debug_ranges 00009c00  0000000000000000  0000000000000000  0006e1b0  2**4
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_frame  00003a28  0000000000000000  0000000000000000  00077e70  2**3
+ 18 .debug_frame  00003a20  0000000000000000  0000000000000000  00077db0  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_loc    00037c77  0000000000000000  0000000000000000  0007b898  2**0
+ 19 .debug_loc    00037b8b  0000000000000000  0000000000000000  0007b7d0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000044  0000000000000000  0000000000000000  000b350f  2**0
+ 20 .comment      00000044  0000000000000000  0000000000000000  000b335b  2**0
                   CONTENTS, READONLY
 
 Disassembly of section .StartUp:
@@ -987,6 +987,7 @@ __attribute__((noreturn)) void bootblock_main (void)
     800009d4:	b9000001 	str	w1, [x0]
 
 	for (int i = 4; i <= 9; i++)
+	{
 		REG_WRITE(SCRPAD_10_41(i), 0);
     800009d8:	b900101f 	str	wzr, [x0, #16]
     800009dc:	b900141f 	str	wzr, [x0, #20]
@@ -1065,7 +1066,7 @@ __attribute__((noreturn)) void bootblock_main (void)
     80000ab0:	b0000000 	adrp	x0, 80001000 <bootblock_main+0x670>
     80000ab4:	f946e800 	ldr	x0, [x0, #3536]
     80000ab8:	9400544a 	bl	80015be0 <serial_printf>
-	bootblock_PrintLogo();
+#endif
 #ifdef BOOTBLOCK_STACK_PROFILER
 	stack_profiler ();
 #endif
@@ -1100,9 +1101,9 @@ __attribute__((noreturn)) void bootblock_main (void)
 	TMC_StopWatchDog(2);
     80000b18:	52800040 	mov	w0, #0x2                   	// #2
     80000b1c:	94004d5d 	bl	80014090 <TMC_StopWatchDog>
-	/*   bit 22 == 1 => Timestamp (machineID/mfgID/seconds/year)         */
-	/* The raw 40-bit value is stored in SCRATCHPADs 30/31 regardless of */
-	/* read success, so OP-TEE can always retrieve it.                   */
+	/*   bit 22 == 1 => Timestamp (machineID/mfgID/seconds/year)          */
+	/* The raw 40-bit value is stored in SCRATCHPADs 30/31 regardless of  */
+	/* read success, so OP-TEE can always retrieve it.                    */
 	/*--------------------------------------------------------------------*/
 	buff.u64 = 0;
 	status = FUSE_WRPR_get(DEVICE_ID_PROPERTY, buff.u8);
@@ -1127,9 +1128,9 @@ __attribute__((noreturn)) void bootblock_main (void)
 
 	if (status == DEFS_STATUS_OK)
     80000b50:	34007520 	cbz	w0, 800019f4 <bootblock_main+0x1064>
-	/* The raw value is printed only when DEVICE_ID_PROPERTY was DIE     */
+	/* The raw value is printed only when DEVICE_ID_PROPERTY was DIE      */
 	/* (device_id_is_die == TRUE), since in the Timestamp case offset 187 */
-	/* is expected to be zero and printing it would be misleading.       */
+	/* is expected to be zero and printing it would be misleading.        */
 	/*--------------------------------------------------------------------*/
 	buff.u64 = 0;
 	status = FUSE_WRPR_get(DIE_INFORMATION_PROPERTY, buff.u8);
@@ -2133,7 +2134,7 @@ __attribute__((noreturn)) void bootblock_main (void)
 		MC_ClearInterrupts();
 		status = DEFS_STATUS_OK;
 	}
-#ifdef _NOTIP_
+#if defined(_NOTIP_) && !defined(_SIP_TEST_)
 	else if (status != DEFS_STATUS_OK)
     80001798:	35001640 	cbnz	w0, 80001a60 <bootblock_main+0x10d0>
 							 BUILD_FIELD_VAL(FSWCR_WTRE, 1) |

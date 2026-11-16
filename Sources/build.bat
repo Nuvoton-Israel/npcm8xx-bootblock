@@ -24,17 +24,39 @@ set ENCLAVE=%1
 
 @set PATH_BACKUP=%PATH%
 
-@set CROSS_COMPILER=C:\\cross-compiler\\arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-aarch64-none-elf
+@set CROSS_COMPILER=
+@set CROSS_COMPILER_PATH=
 
-@set CROSS_COMPILER_PATH=%CROSS_COMPILER%\\bin\\
-@set CROSS_COMPILER_LIB=%CROSS_COMPILER%\\lib\\
-@set CROSS_COMPILER_INC=%CROSS_COMPILER%\\include\\
+rem Prefer PATH (where) so user environment is the primary source of truth.
+for /f "delims=" %%I in ('where aarch64-none-elf-gcc.exe 2^>nul') do (
+    set CROSS_COMPILER_PATH=%%~dpI
+    goto cross_compiler_found
+)
 
-@set MAKE_PATH=C:\MinGW\bin;C:\MinGW\msys\1.0\bin
+rem Fallback for common local install locations.
+for %%R in (
+    "C:\cross-compiler\arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-aarch64-none-elf"
+    "H:\cross-compiler\arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-aarch64-none-elf"
+) do (
+    if not defined CROSS_COMPILER_PATH if exist "%%~R\bin\aarch64-none-elf-gcc.exe" set CROSS_COMPILER_PATH=%%~R\bin\
+)
+
+:cross_compiler_found
+if defined CROSS_COMPILER_PATH (
+    for %%R in ("%CROSS_COMPILER_PATH%..") do set CROSS_COMPILER=%%~fR
+)
+
+@set CROSS_COMPILER_LIB=%CROSS_COMPILER%\lib\
+@set CROSS_COMPILER_INC=%CROSS_COMPILER%\include\
+
+@set MAKE_BIN_PATH=C:\MinGW\bin
+@set MAKE_MSYS_PATH=C:\MinGW\msys\1.0\bin
+@set MAKE_PATH=%MAKE_BIN_PATH%;%MAKE_MSYS_PATH%
 
 
-IF NOT EXIST %CROSS_COMPILER_PATH% goto missing_tools
-IF NOT EXIST %MAKE_PATH%           goto missing_tools
+IF NOT EXIST "%CROSS_COMPILER_PATH%" goto missing_tools
+IF NOT EXIST "%MAKE_BIN_PATH%"      goto missing_tools
+IF NOT EXIST "%MAKE_MSYS_PATH%"     goto missing_tools
      
 echo ================================
 echo === using GNU tools locally ====
@@ -54,9 +76,11 @@ SET OPTIONAL_FLAGS=''
 @echo = Building Arbel %TARGET% %ENCLAVE% code
 @echo ==========================================
 if "%1%" EQU "no_tip" (
-	make arbel_a35_bootblock_no_tip CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% || goto ERROR_COMPILATION
+	make arbel_a35_bootblock_no_tip CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% ENCLAVE=%ENCLAVE% || goto ERROR_COMPILATION
+) else if "%1%" EQU "sip" (
+	make arbel_a35_bootblock_sip_test CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% ENCLAVE=%ENCLAVE% || goto ERROR_COMPILATION
 ) else (
-	make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% || goto ERROR_COMPILATION
+	make arbel_a35_bootblock CROSS_COMPILE=%CROSS_COMPILER_PATH% OPTIONAL_FLAGS=%OPTIONAL_FLAGS% ENCLAVE=%ENCLAVE% || goto ERROR_COMPILATION
 )
 
 :continue
@@ -66,7 +90,13 @@ echo Compile done
 
 
 @rem Make sure outputs are ready
-if not exist .\%DELIV_DIR%\Arbel_a35_bootblock.bin set ERRORLEVEL=1
+if "%1%" EQU "sip" (
+    if not exist .\%DELIV_DIR%\Arbel_a35_bootblock_sip.bin set ERRORLEVEL=1
+) else if "%1%" EQU "no_tip" (
+    if not exist .\%DELIV_DIR%\Arbel_a35_bootblock_no_tip.bin set ERRORLEVEL=1
+) else (
+    if not exist .\%DELIV_DIR%\Arbel_a35_bootblock.bin set ERRORLEVEL=1
+)
 
 IF ERRORLEVEL 1 goto ERROR_COMPILATION
 

@@ -6,7 +6,7 @@ The Arbel NPCM8XX requires a bootblock image that will initiate the DRAM and bas
 
 ## Notes
 The `Sources` directory and the prebuilt images in `Images` are from the
-0.5.7 release.
+0.5.8 release.
 
 ## Usage
 Bootblock full image build requires the use of IGPS:

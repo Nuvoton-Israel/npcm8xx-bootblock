@@ -96,6 +96,7 @@ extern const BOOTBLOCK_Version_T bb_version;
 static DDR_Setup ddr_setup;
 
 
+
 typedef __attribute__((noreturn)) void (*jumpFunction)();
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -684,7 +685,9 @@ __attribute__((noreturn)) void bootblock_main (void)
 	REG_WRITE(SCRPAD_10_41(0), 0xAAAAAAAA);
 
 	for (int i = 4; i <= 9; i++)
+	{
 		REG_WRITE(SCRPAD_10_41(i), 0);
+	}
 
 	bootblock_PrintLogo();
 #ifdef BOOTBLOCK_STACK_PROFILER
@@ -700,14 +703,14 @@ __attribute__((noreturn)) void bootblock_main (void)
 	/*--------------------------------------------------------------------*/
 	/* Read Device ID information and send to OPTEE (HUK)                 */
 	/*                                                                    */
-	/* DEVICE_ID_PROPERTY (OTP offset 168, 5 bytes, no ECC) is a 40-bit  */
+	/* DEVICE_ID_PROPERTY (OTP offset 168, 5 bytes, no ECC) is a 40-bit   */
 	/* field used as the Hardware Unique Key (HUK) for OP-TEE. It is      */
-	/* written by the chip production process and encodes either DIE info   */
+	/* written by the chip production process and encodes either DIE info */
 	/* or a Timestamp, discriminated by bit 22:                           */
-	/*   bit 22 == 0 => DIE Information (lot/week/wafer/X/Y/year)        */
-	/*   bit 22 == 1 => Timestamp (machineID/mfgID/seconds/year)         */
-	/* The raw 40-bit value is stored in SCRATCHPADs 30/31 regardless of */
-	/* read success, so OP-TEE can always retrieve it.                   */
+	/*   bit 22 == 0 => DIE Information (lot/week/wafer/X/Y/year)         */
+	/*   bit 22 == 1 => Timestamp (machineID/mfgID/seconds/year)          */
+	/* The raw 40-bit value is stored in SCRATCHPADs 30/31 regardless of  */
+	/* read success, so OP-TEE can always retrieve it.                    */
 	/*--------------------------------------------------------------------*/
 	buff.u64 = 0;
 	status = FUSE_WRPR_get(DEVICE_ID_PROPERTY, buff.u8);
@@ -742,21 +745,21 @@ __attribute__((noreturn)) void bootblock_main (void)
 	}
 
 	/*--------------------------------------------------------------------*/
-	/* Read DIE Information Property (OTP offset 187, 5 bytes, no ECC)   */
+	/* Read DIE Information Property (OTP offset 187, 5 bytes, no ECC)    */
 	/*                                                                    */
 	/* DIE_INFORMATION_PROPERTY is programmed by the CP (chip probe) step */
-	/* and always contains DIE information (lot/week/wafer/X/Y/year).    */
+	/* and always contains DIE information (lot/week/wafer/X/Y/year).     */
 	/*                                                                    */
-	/* If non-zero: decode and print as DIE info.                        */
+	/* If non-zero: decode and print as DIE info.                         */
 	/* If zero (not programmed): the device was programmed before the CP  */
-	/* step was introduced. In that case DEVICE_ID_PROPERTY holds the    */
+	/* step was introduced. In that case DEVICE_ID_PROPERTY holds the     */
 	/* Timestamp, but due to a hardware bug bit 22 may have been written  */
-	/* as 0 (DIE format) instead of 1 (Timestamp format). We therefore   */
-	/* unconditionally re-parse DEVICE_ID_PROPERTY as Timestamp.         */
+	/* as 0 (DIE format) instead of 1 (Timestamp format). We therefore    */
+	/* unconditionally re-parse DEVICE_ID_PROPERTY as Timestamp.          */
 	/*                                                                    */
-	/* The raw value is printed only when DEVICE_ID_PROPERTY was DIE     */
+	/* The raw value is printed only when DEVICE_ID_PROPERTY was DIE      */
 	/* (device_id_is_die == TRUE), since in the Timestamp case offset 187 */
-	/* is expected to be zero and printing it would be misleading.       */
+	/* is expected to be zero and printing it would be misleading.        */
 	/*--------------------------------------------------------------------*/
 	buff.u64 = 0;
 	status = FUSE_WRPR_get(DIE_INFORMATION_PROPERTY, buff.u8);
@@ -873,7 +876,7 @@ __attribute__((noreturn)) void bootblock_main (void)
 		MC_ClearInterrupts();
 		status = DEFS_STATUS_OK;
 	}
-#ifdef _NOTIP_
+#if defined(_NOTIP_) 
 	else if (status != DEFS_STATUS_OK)
 	{
 		serial_printf(KRED "\n\nNO_TIP: DDR training failed. FSW reset\n\n\n");
@@ -886,6 +889,7 @@ __attribute__((noreturn)) void bootblock_main (void)
 #endif
 
 	serial_printf(KNRM "A35 Bootblock: configure DDR done \n");
+
 
 	/*-----------------------------------------------------------------------------------------------------*/
 	/* eSPI HOST INDEPENDENCE Register write 0x0001_111F  ()                                               */

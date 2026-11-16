@@ -267,7 +267,7 @@ Discarded input sections
  .text.ESPI_OOB_AMD_SetReceiveMsg
                 0x0000000000000000       0x30 ./Images/tip/objects/./SWC_HAL/hal.o
  .text.ESPI_OOB_Send
-                0x0000000000000000      0x118 ./Images/tip/objects/./SWC_HAL/hal.o
+                0x0000000000000000       0xc0 ./Images/tip/objects/./SWC_HAL/hal.o
  .text.FIU_BusyWait_l
                 0x0000000000000000       0xe0 ./Images/tip/objects/./SWC_HAL/hal.o
  .rodata.FIU_Reset.str1.8
@@ -1353,10 +1353,10 @@ InterruptHandlers
  .rodata.MC_ConfigureDDR.str1.8
                 0x00000000fffced47      0x7f8 ./Images/tip/objects/./SWC_HAL/hal.o
  *fill*         0x00000000fffced47        0x1 
- .rodata.CSWTCH.2217
+ .rodata.CSWTCH.2215
                 0x00000000fffced48       0x24 ./Images/tip/objects/./SWC_HAL/hal.o
  *fill*         0x00000000fffced6c        0x4 
- .rodata.CSWTCH.2216
+ .rodata.CSWTCH.2214
                 0x00000000fffced70       0x24 ./Images/tip/objects/./SWC_HAL/hal.o
  *fill*         0x00000000fffced94        0xc 
  .rodata.Golden_Numbers
@@ -1479,18 +1479,18 @@ InterruptHandlers
 OUTPUT(./Images/tip/arbel_a35_bootblock.elf elf64-littleaarch64)
 LOAD linker stubs
 
-.debug_line     0x0000000000000000    0x1bfab
+.debug_line     0x0000000000000000    0x1bf57
  .debug_line    0x0000000000000000      0x101 ./Images/tip/objects/./source/startup.o
  .debug_line    0x0000000000000101       0xf8 ./Images/tip/objects/./source/vectors.o
  .debug_line    0x00000000000001f9       0xf8 ./Images/tip/objects/./source/MP_GIC.o
  .debug_line    0x00000000000002f1       0xaa ./Images/tip/objects/./source/v8_aarch64.o
  .debug_line    0x000000000000039b       0x71 ./Images/tip/objects/./source/v8_utils.o
- .debug_line    0x000000000000040c    0x190d1 ./Images/tip/objects/./SWC_HAL/hal.o
- .debug_line    0x00000000000194dd      0x213 ./Images/tip/objects/./source/cfg.o
- .debug_line    0x00000000000196f0      0x599 ./Images/tip/objects/./source/bootblock_boot.o
- .debug_line    0x0000000000019c89       0x60 ./Images/tip/objects/./source/bootblock_version.o
- .debug_line    0x0000000000019ce9     0x14f1 ./Images/tip/objects/./source/bootblock_main.o
- .debug_line    0x000000000001b1da      0xdd1 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
+ .debug_line    0x000000000000040c    0x1907d ./Images/tip/objects/./SWC_HAL/hal.o
+ .debug_line    0x0000000000019489      0x213 ./Images/tip/objects/./source/cfg.o
+ .debug_line    0x000000000001969c      0x599 ./Images/tip/objects/./source/bootblock_boot.o
+ .debug_line    0x0000000000019c35       0x60 ./Images/tip/objects/./source/bootblock_version.o
+ .debug_line    0x0000000000019c95     0x14f1 ./Images/tip/objects/./source/bootblock_main.o
+ .debug_line    0x000000000001b186      0xdd1 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
 
 .debug_info     0x0000000000000000    0x26607
  .debug_info    0x0000000000000000       0x22 ./Images/tip/objects/./source/startup.o
@@ -1556,31 +1556,31 @@ LOAD linker stubs
  .debug_str     0x0000000000007e28     0x199c ./Images/tip/objects/./source/bootblock_main.o
  .debug_str     0x0000000000007e28      0xe15 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
 
-.debug_ranges   0x0000000000000000     0xa3b0
+.debug_ranges   0x0000000000000000     0xa340
  .debug_ranges  0x0000000000000000       0x40 ./Images/tip/objects/./source/startup.o
  .debug_ranges  0x0000000000000040       0x60 ./Images/tip/objects/./source/vectors.o
- .debug_ranges  0x00000000000000a0     0x9cf0 ./Images/tip/objects/./SWC_HAL/hal.o
- .debug_ranges  0x0000000000009d90       0x40 ./Images/tip/objects/./source/cfg.o
- .debug_ranges  0x0000000000009dd0       0xc0 ./Images/tip/objects/./source/bootblock_boot.o
- .debug_ranges  0x0000000000009e90      0x330 ./Images/tip/objects/./source/bootblock_main.o
- .debug_ranges  0x000000000000a1c0      0x1f0 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
+ .debug_ranges  0x00000000000000a0     0x9c80 ./Images/tip/objects/./SWC_HAL/hal.o
+ .debug_ranges  0x0000000000009d20       0x40 ./Images/tip/objects/./source/cfg.o
+ .debug_ranges  0x0000000000009d60       0xc0 ./Images/tip/objects/./source/bootblock_boot.o
+ .debug_ranges  0x0000000000009e20      0x330 ./Images/tip/objects/./source/bootblock_main.o
+ .debug_ranges  0x000000000000a150      0x1f0 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
 
-.debug_frame    0x0000000000000000     0x3908
+.debug_frame    0x0000000000000000     0x3900
  .debug_frame   0x0000000000000000      0x1f0 ./Images/tip/objects/./source/MP_GIC.o
  .debug_frame   0x00000000000001f0       0xe8 ./Images/tip/objects/./source/v8_aarch64.o
  .debug_frame   0x00000000000002d8       0x40 ./Images/tip/objects/./source/v8_utils.o
- .debug_frame   0x0000000000000318     0x3168 ./Images/tip/objects/./SWC_HAL/hal.o
- .debug_frame   0x0000000000003480       0x80 ./Images/tip/objects/./source/cfg.o
- .debug_frame   0x0000000000003500      0x130 ./Images/tip/objects/./source/bootblock_boot.o
- .debug_frame   0x0000000000003630      0x130 ./Images/tip/objects/./source/bootblock_main.o
- .debug_frame   0x0000000000003760      0x1a8 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
+ .debug_frame   0x0000000000000318     0x3160 ./Images/tip/objects/./SWC_HAL/hal.o
+ .debug_frame   0x0000000000003478       0x80 ./Images/tip/objects/./source/cfg.o
+ .debug_frame   0x00000000000034f8      0x130 ./Images/tip/objects/./source/bootblock_boot.o
+ .debug_frame   0x0000000000003628      0x130 ./Images/tip/objects/./source/bootblock_main.o
+ .debug_frame   0x0000000000003758      0x1a8 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
 
-.debug_loc      0x0000000000000000    0x36e7a
- .debug_loc     0x0000000000000000    0x33421 ./Images/tip/objects/./SWC_HAL/hal.o
- .debug_loc     0x0000000000033421       0xa1 ./Images/tip/objects/./source/cfg.o
- .debug_loc     0x00000000000334c2      0x4b7 ./Images/tip/objects/./source/bootblock_boot.o
- .debug_loc     0x0000000000033979     0x157c ./Images/tip/objects/./source/bootblock_main.o
- .debug_loc     0x0000000000034ef5     0x1f85 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
+.debug_loc      0x0000000000000000    0x36d8e
+ .debug_loc     0x0000000000000000    0x33335 ./Images/tip/objects/./SWC_HAL/hal.o
+ .debug_loc     0x0000000000033335       0xa1 ./Images/tip/objects/./source/cfg.o
+ .debug_loc     0x00000000000333d6      0x4b7 ./Images/tip/objects/./source/bootblock_boot.o
+ .debug_loc     0x000000000003388d     0x157c ./Images/tip/objects/./source/bootblock_main.o
+ .debug_loc     0x0000000000034e09     0x1f85 ./Images/tip/objects/./source/apps/serial_printf/serial_printf.o
 
 .comment        0x0000000000000000       0x44
  .comment       0x0000000000000000       0x44 ./Images/tip/objects/./SWC_HAL/hal.o

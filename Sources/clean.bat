@@ -18,17 +18,28 @@ if not "%1"=="" set TARGET=%1
 @set ERRORLEVEL=0
 @set PATH_BACKUP=%PATH%
 
-@set CROSS_COMPILER_PATH=C:\cross-compiler\gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-elf\bin\
-@set CROSS_COMPILER_LIB= C:\cross-compiler\gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-elf\aarch64-elf\libc\usr\lib\
-@set MAKE_PATH=C:\MinGW\bin;C:\MinGW\msys\1.0\bin
+@set MAKE_BIN_PATH=
+@set MAKE_MSYS_PATH=C:\MinGW\msys\1.0\bin
+@set MAKE_PATH=
 
-IF NOT EXIST %CROSS_COMPILER_PATH% goto missing_tools
-IF NOT EXIST %MAKE_PATH%           goto missing_tools
-     
+rem Prefer PATH (where) so user environment is the primary source of truth.
+for /f "delims=" %%I in ('where make.exe 2^>nul') do (
+    set MAKE_BIN_PATH=%%~dpI
+    goto make_found
+)
+
+rem Fallback for common local MinGW location.
+if exist "C:\MinGW\bin\make.exe" set MAKE_BIN_PATH=C:\MinGW\bin\
+
+:make_found
+if not defined MAKE_BIN_PATH goto missing_tools
+@set MAKE_PATH=%MAKE_BIN_PATH%
+if exist "%MAKE_MSYS_PATH%\sh.exe" @set MAKE_PATH=%MAKE_PATH%;%MAKE_MSYS_PATH%
+      
 echo ================================
 echo === using GNU tools locally ====
 echo ================================
-@set PATH=%CROSS_COMPILER_PATH%;%MAKE_PATH%;%PATH%
+@set PATH=%MAKE_PATH%;%PATH%
 
 
 @echo ==========================================

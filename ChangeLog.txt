@@ -1,3 +1,10 @@
+version 0.5.8     - Jul 7th 2026
+=============
+- Add SIP testing code for testing internal DDR and internal SPI
+  It also copies code to internal SPI
+  See SIP_BootBlock_test.md
+- Fix SiP test CRC accumulation, duration formatting, and dual-slot copy flow
+
 version 0.5.7     - Apr 20th 2026
 =============
 - Better Device ID and DIE info prints.

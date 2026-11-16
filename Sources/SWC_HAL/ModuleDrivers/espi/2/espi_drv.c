@@ -5673,14 +5673,13 @@ void ESPI_OOB_AMD_SetReceiveMsg (UINT8* buffer, UINT16 bufferSize)
 DEFS_STATUS ESPI_OOB_Send (UINT8* buffer, UINT16 size)
 {
     UINT16 index        = 0;
-    UINT16 writeSize    = (ESPI_OOB_msgFormat_L == ESPI_OOB_MSG_FORMAT_AMD) ? ESPI_OOB_MCTP_MAX_PAYLOAD :
-                                                                              (ESPI_OOB_MAX_PAYLOAD - 1);
+    UINT16 writeSize    = 0;
 
     do
     {
         BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_OOBCTL, OOBCTL_OOB_AVAIL) == 1), ESPI_OOB_TIMEOUT);
 
-        writeSize = MIN(size, writeSize);
+        writeSize = MIN(size, ESPI_OOB_MAX_PAYLOAD);
 
         /*-------------------------------------------------------------------------------------------------*/
         /* Build the OOB Channel request                                                                   */

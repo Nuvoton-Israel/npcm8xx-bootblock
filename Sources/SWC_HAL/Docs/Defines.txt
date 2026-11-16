@@ -147,4 +147,4 @@ TWD_NO_INTERRUPT                     - Remove TWD_INTERRUPT_EN capability
 
 PS2
 ----
-PS2_SUPPORT_1MS_START_STOP_FUNC      – Enable the FW to supply a start/stop functions for the PS2 1ms periodic timer.
+PS2_SUPPORT_1MS_START_STOP_FUNC      - Enable the FW to supply a start/stop functions for the PS2 1ms periodic timer.

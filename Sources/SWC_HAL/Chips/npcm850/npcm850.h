@@ -403,18 +403,18 @@
 /*---------------------------------------------------------------------------------------------------------*/
 
 
-/*  8000_0000h – 87FF_FFFFh SPI0CS0_BA SPI0 with chip select 0 (128 MB)   */
-/*  8800_0000h – 8FFF_FFFFh SPI0CS1_BA SPI0 with chip select 1 (128 MB)   */
+/*  8000_0000h - 87FF_FFFFh SPI0CS0_BA SPI0 with chip select 0 (128 MB)   */
+/*  8800_0000h - 8FFF_FFFFh SPI0CS1_BA SPI0 with chip select 1 (128 MB)   */
 
-/*  9000_0000h – 90FF_FFFFh SPI1CS0_BA SPI1 with chip select 0 (16 MB)    */
-/*  9100_0000h – 91FF_FFFFh SPI1CS1_BA SPI1 with chip select 1 (16 MB)    */
-/*  9200_0000h – 92FF_FFFFh SPI1CS2_BA SPI1 with chip select 2 (16 MB)    */
-/*  9300_0000h – 93FF_FFFFh SPI1CS3_BA SPI1 with chip select 3 (16 MB)    */
+/*  9000_0000h - 90FF_FFFFh SPI1CS0_BA SPI1 with chip select 0 (16 MB)    */
+/*  9100_0000h - 91FF_FFFFh SPI1CS1_BA SPI1 with chip select 1 (16 MB)    */
+/*  9200_0000h - 92FF_FFFFh SPI1CS2_BA SPI1 with chip select 2 (16 MB)    */
+/*  9300_0000h - 93FF_FFFFh SPI1CS3_BA SPI1 with chip select 3 (16 MB)    */
 
-/*  A000_0000h – A7FF_FFFFh SPI3CS0_BA SPI3 with chip select 0 (128 MB)   */
-/*  A800_0000h – AFFF_FFFFh SPI3CS1_BA SPI3 with chip select 1 (128 MB)   */
-/*  B000_0000h – B7FF_FFFFh SPI3CS2_BA SPI3 with chip select 2 (128 MB)   */
-/*  B800_0000h – BFFF_FFFFh SPI3CS3_BA SPI3 with chip select 3 (128 MB)   */
+/*  A000_0000h - A7FF_FFFFh SPI3CS0_BA SPI3 with chip select 0 (128 MB)   */
+/*  A800_0000h - AFFF_FFFFh SPI3CS1_BA SPI3 with chip select 1 (128 MB)   */
+/*  B000_0000h - B7FF_FFFFh SPI3CS2_BA SPI3 with chip select 2 (128 MB)   */
+/*  B800_0000h - BFFF_FFFFh SPI3CS3_BA SPI3 with chip select 3 (128 MB)   */
 
 #define SPI0CS0_BASE_ADDR                                       0x80000000
 #define SPI0CS1_BASE_ADDR                                       0x88000000
@@ -535,10 +535,10 @@
 /*---------------------------------------------------------------------------------------------------------*/
 /* ARM core registers                                                                                      */
 /*---------------------------------------------------------------------------------------------------------*/
-// #define SCU_PHYS_BASE_ADDR             0xF03FE000    /* F03F_E000h – F03F_E0FFh ARM SCU Registers                        */
-// #define G_TIMER_PHYS_BASE_ADDR         0xF03FE200    /* F03F_E200h – F03F_E2FFh ARM Global Timer Registers               */
-// #define PTIMER_WD_BASE_ADDR            0xF03FE600    /* F03F_E600h – F03F_E6FFh ARM Private Timer and Watchdog Registers */
-// #define INT_DIST_BASE_ADDR             0xF03FF000    /* F03F_F000h – F03F_FFFFh ARM Interrupt Distribution Registers     */
+// #define SCU_PHYS_BASE_ADDR             0xF03FE000    /* F03F_E000h - F03F_E0FFh ARM SCU Registers                        */
+// #define G_TIMER_PHYS_BASE_ADDR         0xF03FE200    /* F03F_E200h - F03F_E2FFh ARM Global Timer Registers               */
+// #define PTIMER_WD_BASE_ADDR            0xF03FE600    /* F03F_E600h - F03F_E6FFh ARM Private Timer and Watchdog Registers */
+// #define INT_DIST_BASE_ADDR             0xF03FF000    /* F03F_F000h - F03F_FFFFh ARM Interrupt Distribution Registers     */
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Generic interrupt manager ( GIC)                                                                        */

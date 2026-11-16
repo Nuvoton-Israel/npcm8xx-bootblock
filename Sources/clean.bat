@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableExtensions
 color 7
 
 rem ---------------------------------------------------------------------------------------------------------#
@@ -18,17 +19,29 @@ if not "%1"=="" set TARGET=%1
 @set ERRORLEVEL=0
 @set PATH_BACKUP=%PATH%
 
-@set CROSS_COMPILER_PATH=C:\cross-compiler\gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-elf\bin\
-@set CROSS_COMPILER_LIB= C:\cross-compiler\gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-elf\aarch64-elf\libc\usr\lib\
-@set MAKE_PATH=C:\MinGW\bin;C:\MinGW\msys\1.0\bin
+@set MAKE_BIN_PATH=
+@set MAKE_MSYS_PATH=C:\MinGW\msys\1.0\bin
+@set MAKE_PATH=
 
-IF NOT EXIST %CROSS_COMPILER_PATH% goto missing_tools
-IF NOT EXIST %MAKE_PATH%           goto missing_tools
-     
+rem Prefer PATH (where) so user environment is the primary source of truth.
+for /f "delims=" %%I in ('where make.exe 2^>nul') do (
+    set MAKE_BIN_PATH=%%~dpI
+    goto make_found
+)
+
+rem Fallback for common local MinGW location.
+if exist "C:\MinGW\bin\make.exe" set MAKE_BIN_PATH=C:\MinGW\bin\
+if not defined MAKE_BIN_PATH if exist "%MAKE_MSYS_PATH%\make.exe" set MAKE_BIN_PATH=%MAKE_MSYS_PATH%\
+
+:make_found
+if not defined MAKE_BIN_PATH goto missing_tools
+@set MAKE_PATH=%MAKE_BIN_PATH%
+if exist "%MAKE_MSYS_PATH%\sh.exe" @set MAKE_PATH=%MAKE_PATH%;%MAKE_MSYS_PATH%
+      
 echo ================================
 echo === using GNU tools locally ====
 echo ================================
-@set PATH=%CROSS_COMPILER_PATH%;%MAKE_PATH%;%PATH%
+@set PATH=%MAKE_PATH%;%PATH%
 
 
 @echo ==========================================
@@ -39,7 +52,7 @@ del /s /q *.d
 rd /s /q .\Images
 
 
-make clean-all
+make clean-all || goto ERROR_CLEAN
 @set PATH=%PATH_BACKUP%
 
 if exist .\Src\*.o          goto ERROR_CLEAN
@@ -54,6 +67,15 @@ goto pass
 @rem ============================================================================================================================
 @rem Error handling
 
+:missing_tools
+color C
+set ERRORLEVEL=1
+@echo.
+@echo ============================== ERROR ===============================
+@echo Missing GNU Make. Add make.exe to PATH or install it under C:\MinGW\bin.
+@echo ====================================================================
+goto end
+
 :ERROR_CLEAN
 color C
 set ERRORLEVEL=1
@@ -61,7 +83,6 @@ set ERRORLEVEL=1
 @echo ============================== ERROR ===============================
 @echo Error cleaning %TARGET%
 @echo ====================================================================
-type log.txt
 goto end
 
 @rem ============================================================================================================================

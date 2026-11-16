@@ -17,6 +17,13 @@ BOOTBLOCK="arbel_a35_bootblock"
 
 # ENCLAVE can be tip \ no_tip.  no_tip shoud be used for users who have an external RoT.
 ENCLAVE=${1:-"no_tip"}
+case "$ENCLAVE" in
+    tip|no_tip) ;;
+    *)
+        echo "Usage: $0 [tip|no_tip]" >&2
+        exit 1
+        ;;
+esac
 
 find ./ -type f -name "*.o" -exec rm -vf {} +
 find ./ -type f -name "*.o.d" -exec rm -vf {} +

@@ -17,7 +17,6 @@
 #define COUNTER_FREQUENCY  250000000
 
 
-
 	.section .StartUp, "ax"
 	.balign 4
 

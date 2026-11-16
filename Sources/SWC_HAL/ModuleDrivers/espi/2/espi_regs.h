@@ -293,6 +293,9 @@
 #define ESPIWE_PBMRXWE              20, 1
 #define ESPIWE_PMSGRXWE             21, 1
 #endif // ESPI_CAPABILITY_ESPI_PC_BM_SUPPORT
+#ifdef ESPI_CAPABILITY_TAF
+#define ESPIWE_FLAUTORDSTRWE        26, 1
+#endif // ESPI_CAPABILITY_TAF
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ESPI_ESPIWE Mask                                                                                        */
@@ -349,7 +352,7 @@
 #define FLASHCTL_FLASH_ACC_TX_AVAIL 1,  1
 #define FLASHCTL_STRPHDR            2,  1
 #define FLASHCTL_DMATHRESH          3,  2
-#define FLASHCTL_AMTSIZE            5,  9
+#define FLASHCTL_AMTSIZE            5,  8
 #define FLASHCTL_RSTBUFHEADS        13, 1
 #define FLASHCTL_CRCEN              14, 1
 #define FLASHCTL_CHKSUMSEL          15, 1

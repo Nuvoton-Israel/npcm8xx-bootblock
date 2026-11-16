@@ -98,6 +98,7 @@ typedef enum
 #ifdef ESPI_CAPABILITY_TAF
     ESPI_INT_FLASH_TAF_REQ_HANDELED         = 25,
 #endif // ESPI_CAPABILITY_TAF
+    ESPI_INT_OOB_DATA_RCV_ERR               = 26
 }ESPI_INT_T;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -638,6 +639,15 @@ typedef void (*ESPI_FLASH_HANDLER)(void);//(ESPI_FLASH_EVENT_T event);
 /*---------------------------------------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* OOB Message format (Intel or AMD)                                                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef enum
+{
+    ESPI_OOB_MSG_FORMAT_INTEL,          //(default)
+    ESPI_OOB_MSG_FORMAT_AMD,
+} ESPI_OOB_MSG_FORMAT_T;
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* OOB Channel Maximum Payload Size                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
@@ -757,11 +767,22 @@ typedef enum
 typedef void (*ESPI_OOB_HW_CALLBACK_T)(ESPI_OOB_HW_CMD_T cmd, DEFS_STATUS status);
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* MCTP Callback function                                                                                  */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef void (*ESPI_OOB_MCTP_CALLBACK_T)(ESPI_INT_T event, UINT8 byteCount);
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* AMD Callback function                                                                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef void (*ESPI_OOB_AMD_CALLBACK_T)(ESPI_INT_T event, UINT16 byteCount);
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* OOB Channel SMBus Command Read Size                                                                     */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_OOB_PCH_TEMP_SIZE                  0x01
 #define ESPI_OOB_PCH_RTC_SIZE                   0x08
 #define ESPI_OOB_CRASH_LOG_SIZE                 0x40
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -932,6 +953,12 @@ void                ESPI_OOB_CRASHLOG_Init          (ESPI_OOB_CRASHLOG_CALLBACK_
 
 void                ESPI_OOB_HW_Init                (ESPI_OOB_HW_CALLBACK_T callback);
 
+void                ESPI_OOB_MCTP_Init              (ESPI_OOB_MCTP_CALLBACK_T callback);
+void                ESPI_OOB_MCTP_SetReceiveMsg     (UINT8* buffer, UINT8 bufferSize);
+
+void                ESPI_OOB_AMD_Init               (ESPI_OOB_AMD_CALLBACK_T callback);
+void                ESPI_OOB_AMD_SetReceiveMsg      (UINT8* buffer, UINT16 bufferSize);
+DEFS_STATUS         ESPI_OOB_Send                   (UINT8* buffer, UINT16 size);
 
 #endif  /* _ESPI_IF_H */
 

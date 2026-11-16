@@ -187,7 +187,7 @@
 #define CLKDIV2_APB5CKDIV                     22,   2               /* 22-23 APB5CKDIV (AMBA CLK_APB5 Clock Divider Control) */
 #define CLKDIV2_CLKOUTDIV                     16,   5               /* 16-20 CLKOUTDIV (CLKOUT Pin Divider Control) */
 #define CLKDIV2_GFXCKDIV                      13,   3               /* 13-15 GFXCKDIV*** (Graphics System Clock Divider Control) */
-#define CLKDIV2_SUCKDIV                       8,    5               /* 8-12 SUCKDIV (‘Serial’ USB UTMI Bridge Clock Divider Control) */
+#define CLKDIV2_SUCKDIV                       8,    5               /* 8-12 SUCKDIV (Serial USB UTMI Bridge Clock Divider Control) */
 #define CLKDIV2_SU48CKDIV                     4,    4               /* 4-7 SU48CKDIV (USB Host OHCI Clock Divider Control) */
 #define CLKDIV2_SD1CKDIV                      0,    4               /* 0-3 SD1CKDIV (SDHC1 Clock Divider Control) */
 
@@ -741,7 +741,7 @@ static const unsigned int clk_log_table[64] = {0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 
 /* (TIMCKDIV +1), where TIMCKDIV value is 0-31.                                                            */
 /* Note: in Poleg this field was called TIMCKDIV                                                           */
 /*---------------------------------------------------------------------------------------------------------*/
-#define  CLKDIV1_PRE_ADCCKDIV_DIV(n)   ((n) - 1)     /* • TIMCKDIV value is 0-31. */
+#define  CLKDIV1_PRE_ADCCKDIV_DIV(n)   ((n) - 1)     /* TIMCKDIV value is 0-31. */
 /* Note: After changing this field, assure a delay of 200 selected clock cycles before the timer is used. */
 
 
@@ -803,7 +803,7 @@ static const unsigned int clk_log_table[64] = {0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 
 /* After changing this field, ensure a delay of 200 selected clock cycles before changing GFXCKSEL field in CLKSEL register. */
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* SUCKDIV (‘Serial’ USB UTMI Bridge Clock Divider Control). Sets the division factor from the clock       */
+/* SUCKDIV (Serial USB UTMI Bridge Clock Divider Control). Sets the division factor from the clock       */
 /* selected by                                                                                             */
 /* SUCKSEL to the clock used by the UTMI-to-UTMI bridge, that is nominally 30 MHz.                         */
 /* The division factor is (SUCKDIV+1), where SUCKDIV is 0 to 31. Default is divide by 16.                  */
@@ -843,9 +843,9 @@ static const unsigned int clk_log_table[64] = {0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 
 /* UARTDIV2 (UART Clock Source Divider Control 2). (Added in Arbel) Clock divider for BMC UART 4-6.        */
 /* This resulting clock must be multiples of 24 MHz for UARTs proper operation.                            */
 /* Default is divide by 20. The division factor is (UARTDIV2 +1), where:                                   */
-/* • UARTDIV2 value is 0-31.                                                                               */
-/* • Divider clock is the clock source selected by the UARTSEL control register.                           */
-/* • UART clock must be equal to or slower than the relevant APB clock for proper operation.               */
+/* - UARTDIV2 value is 0-31.                                                                               */
+/* - Divider clock is the clock source selected by the UARTSEL control register.                           */
+/* - UART clock must be equal to or slower than the relevant APB clock for proper operation.               */
 /* Note: After changing this field, ensure a delay of 200 selected clock cycles before the UART is used    */
 /*---------------------------------------------------------------------------------------------------------*/
 #define  CLKDIV3_UARTDIV2_DIV(n)   ((n) - 1)

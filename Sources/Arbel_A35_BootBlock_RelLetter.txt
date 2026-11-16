@@ -1,39 +1,44 @@
 ----------------------------------------------------------------------
  SPDX-License-Identifier: GPL-2.0                                     
- Copyright (c) 2010-2025 by Nuvoton Technology Corporation   
+ Copyright (c) 2010-2026 by Nuvoton Technology Corporation
  All rights reserved       
 
  NPCM8XX (Arbel) A35 BootBlock Release Letter 
 ----------------------------------------------------------------------
 
 # NPCM8XX bootBlock Package Release Letter
-Version: 00.05.06
-Date:    Jul 2025
+Version: 00.06.00
+Date:    Nov 16th 2026
 
 
 # PACKAGE CONTENTS
 ----------------
 This package contains the following files/folders:
 - Sources\Arbel_A35_BootBlock_RelLetter.txt           - This release letter
-- Sources\sources\                                    - Main source files
+- Sources\source\                                     - Main source files
 - Sources\SWC_DEFS\                                   - definition source files
 - Sources\SWC_HAL\                                    - HW drivers files
-- Sources\Build.bat, clean.bat                        - Building batch files for Windows
+- Sources\build.bat, clean.bat                        - Building batch files for Windows
+- Sources\build.sh, clean.sh                         - Build and clean scripts for Linux
 - Sources\makefile                                    - makefile for Windows and Linux
 - Sources\HowToBuild.txt                              - How to build description
+- ChangeLog.txt                                      - Dated release history
+- crc_tip.log, crc_no_tip.log                         - Firmware CRC32 values
 
 Output Files:
 For Arbel device with TIP only:
-- Images\tip\arbel_a35_bootblock .elf                 - Output image elf
-- Images\tip\arbel_a35_bootblock .dat                 - Output image dat
-- Images\tip\arbel_a35_bootblock .bin                 - Output image bin
-- Images\tip\arbel_a35_bootblock .map                 - Output image map
+- Images\tip\arbel_a35_bootblock.elf                  - Output image elf
+- Images\tip\arbel_a35_bootblock.dat                  - Output image dat
+- Images\tip\arbel_a35_bootblock.bin                  - Output image bin
+- Images\tip\arbel_a35_bootblock.map                  - Output image map
+- Images\tip\arbel_a35_bootblock.asm                  - Output disassembly
 
 For Arbel device without TIP only:
 - Images\no_tip\arbel_a35_bootblock_no_tip.elf        - Output image elf
 - Images\no_tip\arbel_a35_bootblock_no_tip.dat        - Output image dat
 - Images\no_tip\arbel_a35_bootblock_no_tip.bin        - Output image bin
 - Images\no_tip\arbel_a35_bootblock_no_tip.map        - Output image map
+- Images\no_tip\arbel_a35_bootblock_no_tip.asm        - Output disassembly
 
 
 # DESCRIPTION
@@ -45,17 +50,37 @@ This package is released in alpha quality.
 # REQUIREMENTS
 ------------
 Hardware:
-- A Nuvoton NPCM8XX Z1\A1\A2 Silicon BMC device.
+- A Nuvoton NPCM8XX (Arbel) BMC device.
 
 
 # INSTALLATION PROCEDURE
 ----------------------
-After compilation (see HowToBuild.txt) program   deliverables\tip\arbel_a35_bootblock.bin
-to flash via the IGPS (https://github.com/Nuvoton-Israel/igps) or other means.
+For build instructions, see Sources\HowToBuild.txt.
+The prebuilt binaries are Images\tip\arbel_a35_bootblock.bin and
+Images\no_tip\arbel_a35_bootblock_no_tip.bin.
+Rebuilt binaries are written under Sources\Images, not the package-level
+Images directory. Use the binary matching the board's boot configuration
+when generating a complete flash image with IGPS:
+https://github.com/Nuvoton-Israel/igps-npcm8xx
 
 
 # ENHANCEMENTS
 ----------------
+version 0.6.0     - Nov 16th 2026
+============
+- Enhance DDR training to add SW based Write Leveling in case needed for specific DDR vendors.
+- Refresh Windows and Linux TIP/NO_TIP build and clean scripts.
+- Fix build-directory ordering, output validation, and toolchain path handling.
+
+# HISTORY
+---------------
+version 0.5.7     - Apr 20th 2026
+============
+- Improve Device ID and DIE information output.
+- Add MC status error reporting under _DEBUG_.
+- Replace non-ASCII characters and update build documentation.
+- Add README.md.
+
 version 0.5.6     - Jul 27th 2025
 ============
 - Add the flag "-ftrack-macro-expansion=0" (easier for handling compilation errors).
@@ -64,8 +89,6 @@ version 0.5.6     - Jul 27th 2025
   No change in NO_TIP mode.
 - Bug fix: reset UART FIFOs during serial_printf_init to avoid UART stuck when switching to 720MHz.
 
-# HISTORY
----------------
 version 0.5.5     - Feb 20th 2025
 ============
 - Read ADC int+ext calibration word to SCRPAD 60, 61.

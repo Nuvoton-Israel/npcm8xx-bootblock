@@ -296,7 +296,7 @@ typedef _ALIGN_(sizeof(UINT32), _PACK_(struct))
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Macro to handle TAG incrementation                                                                      */
+/* Macro to handle TAG increments                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_PC_BM_GET_NEXT_TAG(tag)    ((tag + 1) % (1 << 4))
 
@@ -317,7 +317,7 @@ typedef struct
 #define ESPI_VW_NON_FATAL_ERR_TIMEOUT           0xFFFFFF
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* VW Index reserved values for unallocated registers                                                      */
+/* VW Index reserved values for non-allocated registers                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
 #define VWEVSM_INDEX_RESERVED                   0
 #define VWEVMS_INDEX_RESERVED                   0
@@ -327,7 +327,7 @@ typedef struct
 /*---------------------------------------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* OOB (Tunnelled SMBus) Message cycle Type                                                                */
+/* OOB (Tunneled SMBus) Message cycle Type                                                                 */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_OOB_MESSAGE                        0x21
 
@@ -344,9 +344,16 @@ typedef struct
 #define ESPI_OOB_SMB_SLAVE_SRC_ADDR_EC          0x0F
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* OOB Channel SMBus Slave Address fields Definition                                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+#define ESPI_OOB_ADDRESS_SRC_DEST               0, 1
+#define ESPI_OOB_ADDRESS_SLAVE                  1, 7
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* CSME FW commands                                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_OOB_USB_CMD                        0x08
+#define ESPI_OOB_MCTP_CMD                       0x0F
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* PMC FW commands                                                                                         */
@@ -361,11 +368,12 @@ typedef struct
 /* - PEC (1B)                                                                                              */
 /*---------------------------------------------------------------------------------------------------------*/
 #define ESPI_OOB_MAX_PAYLOAD                    73
+#define ESPI_OOB_MCTP_MAX_PAYLOAD               64
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* OOB RX Timeout                                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-#define ESPI_OOB_RX_TIMEOUT                     0x200000
+#define ESPI_OOB_TIMEOUT                        0x200000
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* PECI Retry bit                                                                                          */
@@ -506,6 +514,22 @@ typedef struct
     ESPI_IntEnable(ESPI_CHANNEL_OOB, var);                 \
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* MCTP buffer                                                                                             */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef struct
+{
+    UINT8*                  bufferPtr;
+    UINT8                   bufferSize;
+} ESPI_OOB_MCTP_BUFFER;
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* MCTP Handled Message                                                                                    */
+/*---------------------------------------------------------------------------------------------------------*/
+typedef struct
+{
+    ESPI_OOB_MCTP_BUFFER    buffer;
+} ESPI_OOB_MCTP_HANDLED_MSG;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*                                                  FLASH                                                  */
@@ -565,7 +589,7 @@ typedef struct
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Macro to handle TAG incrementation                                                                      */
+/* Macro to handle TAG increments                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 #ifdef ESPI_CAPABILITY_FLASH_AUTO_MODE_TAG_CHANGE
 #define ESPI_FLASH_GET_NEXT_TAG(tag)            ((tag + 1) % (1 << 4))
@@ -627,11 +651,11 @@ typedef struct
 /*---------------------------------------------------------------------------------------------------------*/
 typedef enum
 {
-    ESPI_FLASH_TAF_REQ_READ  = 0,
-    ESPI_FLASH_TAF_REQ_WRITE = 1,
-    ESPI_FLASH_TAF_REQ_ERASE = 2,
-    ESPI_FLASH_TAF_REQ_RPMC_OP1  = 3,
-    ESPI_FLASH_TAF_REQ_RPMC_OP2  = 4,
+    ESPI_FLASH_TAF_REQ_READ     = 0,
+    ESPI_FLASH_TAF_REQ_WRITE    = 1,
+    ESPI_FLASH_TAF_REQ_ERASE    = 2,
+    ESPI_FLASH_TAF_REQ_RPMC_OP1 = 3,
+    ESPI_FLASH_TAF_REQ_RPMC_OP2 = 4,
     ESPI_FLASH_TAF_REQ_NUM,
 } ESPI_FLASH_TAF_REQ_T;
 
@@ -753,6 +777,11 @@ static const struct {
 /*---------------------------------------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* OOB message format                                                                                      */
+/*---------------------------------------------------------------------------------------------------------*/
+static ESPI_OOB_MSG_FORMAT_T        ESPI_OOB_msgFormat_L;
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* OOB Command/Request Information                                                                         */
 /*---------------------------------------------------------------------------------------------------------*/
 static ESPI_OOB_CMD_INFO*           ESPI_OOB_currOutCmdInfo_L;
@@ -816,6 +845,11 @@ static ESPI_OOB_PECI_MSG            ESPI_OOB_peciMsg_L;
 static ESPI_OOB_USB_MSG             ESPI_OOB_usbMsg_L;
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* MCTP message and meta data                                                                              */
+/*---------------------------------------------------------------------------------------------------------*/
+static ESPI_OOB_MCTP_HANDLED_MSG    ESPI_OOB_mctpInfo_L;
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* USB callback                                                                                            */
 /*---------------------------------------------------------------------------------------------------------*/
 static ESPI_OOB_USB_CALLBACK_T      ESPI_OOB_usbCallback_L;
@@ -829,6 +863,18 @@ static ESPI_OOB_CRASHLOG_CALLBACK_T ESPI_OOB_crashLogCallback_L;
 /* HW callback                                                                                             */
 /*---------------------------------------------------------------------------------------------------------*/
 static ESPI_OOB_HW_CALLBACK_T       ESPI_OOB_hwCallback_L;
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* MCTP callback                                                                                           */
+/*---------------------------------------------------------------------------------------------------------*/
+static ESPI_OOB_MCTP_CALLBACK_T     ESPI_OOB_MCTP_callback_L;
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* AMD callback and buffer                                                                                 */
+/*---------------------------------------------------------------------------------------------------------*/
+static ESPI_OOB_AMD_CALLBACK_T     ESPI_OOB_AMD_callback_L;
+static UINT8*                      ESPI_OOB_AMD_buffer_L;
+static UINT16                      ESPI_OOB_AMD_bufferSize_L;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* PECI CRC8 table (Polynomial: x8 + x2 + x + 1)                                                           */
@@ -1037,6 +1083,8 @@ static DEFS_STATUS  ESPI_OOB_RunCmd_l                   (void);
 static DEFS_STATUS  ESPI_OOB_SendCmd_l                  (void);
 static DEFS_STATUS  ESPI_OOB_BuildReq_l                 (UINT8 nWrite, UINT8* writeBuf, UINT8 nRead, UINT8* readBuf);
 static DEFS_STATUS  ESPI_OOB_SendReq_l                  (void);
+static DEFS_STATUS  ESPI_OOB_Receive_Intel_Cmd_l        (void);
+static DEFS_STATUS  ESPI_OOB_Receive_Amd_Cmd_l          (void);
 static DEFS_STATUS  ESPI_OOB_ReceiveCmd_l               (void);
 static DEFS_STATUS  ESPI_OOB_ReceiveReq_l               (void);
 static UINT8        ESPI_OOB_PECI_CalcFCS_l             (const UINT8* buff, UINT8 nBytes);
@@ -1044,6 +1092,7 @@ static void         ESPI_OOB_PECI_ReceiveMessage_l      (void);
 static void         ESPI_OOB_USB_ReceiveMessage_l       (void);
 static void         ESPI_OOB_CRASHLOG_ReceiveMessage_l  (void);
 static void         ESPI_OOB_HW_ReceiveMessage_l        (void);
+static DEFS_STATUS  ESPI_OOB_MCTP_ReceiveMessage_l      (const UINT8* msg, UINT8 byteCount);
 static void         ESPI_OOB_ReceiveMessage_l           (void);
 static void         ESPI_OOB_ClearCmdInfo_l             (void);
 #ifdef ESPI_ESPI_RST_ERRATA_ISSUE
@@ -1082,6 +1131,11 @@ void ESPI_Init (ESPI_INT_HANDLER handler)
     /* Reset the eSPI internal state                                                                       */
     /*-----------------------------------------------------------------------------------------------------*/
     ESPI_Reset_l();
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Configure Intel as the default OOB message format                                                   */
+    /*-----------------------------------------------------------------------------------------------------*/
+    ESPI_OOB_msgFormat_L = ESPI_OOB_MSG_FORMAT_INTEL;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Enable the transmission of the Boot Load Virtual Wires upon eSPI slave VW channel being enabled     */
@@ -1540,6 +1594,7 @@ void ESPI_IntEnable (
         /* Target attach flash access channel read detected interrupt                                      */
         /*-------------------------------------------------------------------------------------------------*/
         SET_VAR_FIELD(var, ESPIIE_FLNACSIE, enable);
+        SET_VAR_FIELD(var, ESPIIE_FLAUTORDSTRIE, enable);
 #endif
 
         /*-------------------------------------------------------------------------------------------------*/
@@ -1663,6 +1718,9 @@ void ESPI_WakeUpEnable (
         /* Flash data received interrupt                                                                   */
         /*-------------------------------------------------------------------------------------------------*/
         SET_VAR_FIELD(var, ESPIWE_FLASHRXWE, enable);
+#ifdef ESPI_CAPABILITY_TAF
+        SET_VAR_FIELD(var, ESPIWE_FLAUTORDSTRWE, enable);
+#endif
         break;
 
     case ESPI_CHANNEL_GENERIC:
@@ -1848,6 +1906,10 @@ void ESPI_IntHandler (void)
                 {
                     EXECUTE_FUNC(ESPI_userIntHandler_L, (ESPI_INT_OOB_DATA_RCV));
                 }
+                else
+                {
+                    EXECUTE_FUNC(ESPI_userIntHandler_L, (ESPI_INT_OOB_DATA_RCV_ERR));
+                }
             }
         }
 
@@ -1946,8 +2008,8 @@ void ESPI_IntHandler (void)
         {
             if (READ_VAR_FIELD(intEnable, ESPIIE_FLNACSIE))
             {
-#ifdef SUPPORT_SPLIT_COMPLETION  /* Split completion is currently not supported */  
-                if (ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ) 
+#ifdef SUPPORT_SPLIT_COMPLETION  /* Split completion is currently not supported */
+                if (ESPI_FLASH_TafReqInfo_L.reqType == ESPI_FLASH_TAF_REQ_READ)
                 {
                     if (ESPI_FLASH_TafReqInfo_L.reminder > 0)
                     {
@@ -1959,7 +2021,7 @@ void ESPI_IntHandler (void)
                         /* After all bytes sent, indicate to the Host that the receive buffer is empty     */
                         /*---------------------------------------------------------------------------------*/
                         ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_NP_FREE, 1);
-                    }                    
+                    }
                 }
                 else
                 {
@@ -1973,7 +2035,7 @@ void ESPI_IntHandler (void)
                 /* Indicate to the Host that the receive buffer is empty                                   */
                 /*-----------------------------------------------------------------------------------------*/
                 ESPI_SET_FLASHCTL_REG_FIELD(FLASHCTL_FLASH_ACC_NP_FREE, 1);
-#endif                    
+#endif
             }
         }
 #endif
@@ -4405,8 +4467,8 @@ DEFS_STATUS ESPI_FLASH_TAF_RemapConfig (UINT32 flash_offs, UINT32 dst_base, UINT
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  index         - Index of memory range [0..15]                                          */
-/*                  baseAddr      - Memory range base addr                                                 */
-/*                  highAddr      - Memory range high addr                                                 */
+/*                  baseAddr      - Memory range base address                                              */
+/*                  highAddr      - Memory range high address                                              */
 /*                  readProt      - TRUE if memory range is read protect, FALSE otherwise                  */
 /*                  writeProt     - TRUE if memory range is write protect, FALSE otherwise                 */
 /*                  readTagOvr    - Read tag overrun value, if bit i is set, read request from tag i is    */
@@ -4853,7 +4915,7 @@ DEFS_STATUS ESPI_FLASH_TAF_PreventHostAccess (void)
         ESPI_IntEnable(ESPI_CHANNEL_FLASH, FALSE);
         ESPI_WakeUpEnable(ESPI_CHANNEL_FLASH, FALSE);
         INTERRUPTS_RESTORE(intSave);
-				
+
         if (ESPI_FLASH_TAF_IsPendingRes())
         {
             ESPI_IntEnable(ESPI_CHANNEL_FLASH, TRUE);
@@ -4927,7 +4989,7 @@ DEFS_STATUS ESPI_FLASH_TAF_ReenableHostAccess (void)
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
-/*                            OUT OF BAND (Tunnelled SMBus) INTERFACE FUNCTIONS                            */
+/*                            OUT OF BAND (Tunneled SMBus) INTERFACE FUNCTIONS                             */
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
 
@@ -5488,12 +5550,12 @@ DEFS_STATUS ESPI_OOB_USB_Disconnect (
 /* Function:        ESPI_OOB_CRASHLOG_Init                                                                 */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
-/*                  callback     - OOB hardware interrupt handler                                          */
+/*                  callback     - OOB CrashLog interrupt handler                                          */
 /*                                                                                                         */
 /* Returns:         none                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine registers OOB hardware interrupt handler                                  */
+/*                  This routine registers OOB CrashLog interrupt handler                                  */
 /*---------------------------------------------------------------------------------------------------------*/
 void ESPI_OOB_CRASHLOG_Init (ESPI_OOB_CRASHLOG_CALLBACK_T callback)
 {
@@ -5515,6 +5577,127 @@ void ESPI_OOB_HW_Init (ESPI_OOB_HW_CALLBACK_T callback)
 {
     ESPI_OOB_hwCallback_L = callback;
 }
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_MCTP_Init                                                                     */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  callback     - OOB MCTP interrupt handler that will be called when a full valid MCTP   */
+/*                                 message was received, or after the entire MCTP message has been sent    */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine performs MCTP module initialization                                       */
+/*---------------------------------------------------------------------------------------------------------*/
+void ESPI_OOB_MCTP_Init (ESPI_OOB_MCTP_CALLBACK_T callback)
+{
+    memset(&ESPI_OOB_mctpInfo_L, 0, sizeof(ESPI_OOB_MCTP_HANDLED_MSG));
+
+    ESPI_OOB_MCTP_callback_L = callback;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_MCTP_SetReceiveMsg                                                            */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  buffer      - pointer to a buffer where the next received MCTP message will be copied  */
+/*                                to. Note that the buffer will contain MCTP massage payload of the        */
+/*                                struct 1st byte [IC 1bit, msgType 7bits] and then message payload bytes  */
+/*                  bufferSize  - the size in bytes of buffer                                              */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine configures MCTP module. this message should be called ESPI_OOB_MCTP_Init  */
+/*                  and after user callback has been executed                                              */
+/*---------------------------------------------------------------------------------------------------------*/
+void ESPI_OOB_MCTP_SetReceiveMsg (UINT8* buffer, UINT8 bufferSize)
+{
+    ESPI_OOB_mctpInfo_L.buffer.bufferPtr  = buffer;
+    ESPI_OOB_mctpInfo_L.buffer.bufferSize = bufferSize;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_AMD_Init                                                                      */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  callback     - OOB AMD interrupt handler that will be called when a new message was    */
+/*                                 received, or after the a message has been sent                          */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine performs AMD OOB message initialization                                   */
+/*---------------------------------------------------------------------------------------------------------*/
+void ESPI_OOB_AMD_Init (ESPI_OOB_AMD_CALLBACK_T callback)
+{
+    ESPI_OOB_AMD_callback_L     = callback;
+    ESPI_OOB_msgFormat_L        = ESPI_OOB_MSG_FORMAT_AMD;
+    ESPI_OOB_AMD_buffer_L       = NULL;
+    ESPI_OOB_AMD_bufferSize_L   = 0;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_AMD_SetReceiveMsg                                                             */
+/*                                                                                                         */
+/* Parameters:      buffer              - pointer to a buffer where the next received                      */
+/*                                        message payload will be copied to.                               */
+/*                  bufferSize          - the size in bytes of buffer                                      */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  Configure the buffer to be used for receiving an OOB message from the AMD chipset      */
+/*---------------------------------------------------------------------------------------------------------*/
+void ESPI_OOB_AMD_SetReceiveMsg (UINT8* buffer, UINT16 bufferSize)
+{
+    ESPI_OOB_AMD_buffer_L       = buffer;
+    ESPI_OOB_AMD_bufferSize_L   = bufferSize;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_Send                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  buffer   - pointer to buffer that holds the OOB message to be sent.                    */
+/*                  size     - number of bytes to send                                                     */
+/*                                                                                                         */
+/* Returns:         Status of request                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine sends a message over ESPI OOB channel,                                    */
+/*                  if message size is bigger than max payload size (64) then this message will be         */
+/*                  beak into few messages with a max payload size of 64 byte                              */
+/*---------------------------------------------------------------------------------------------------------*/
+DEFS_STATUS ESPI_OOB_Send (UINT8* buffer, UINT16 size)
+{
+    UINT16 index        = 0;
+    UINT16 writeSize    = 0;
+
+    do
+    {
+        BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_OOBCTL, OOBCTL_OOB_AVAIL) == 1), ESPI_OOB_TIMEOUT);
+
+        writeSize = MIN(size, ESPI_OOB_MAX_PAYLOAD);
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Build the OOB Channel request                                                                   */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_RET_CHECK(ESPI_OOB_BuildReq_l((UINT8)writeSize, &buffer[index], 0, 0));
+
+        /*-------------------------------------------------------------------------------------------------*/
+        /* Send the OOB Channel SMBus request                                                              */
+        /*-------------------------------------------------------------------------------------------------*/
+        DEFS_STATUS_RET_CHECK(ESPI_OOB_SendReq_l());
+
+        index += writeSize;
+        size  -= writeSize;
+    } while (size);
+
+    return DEFS_STATUS_OK;
+}
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------------*/
@@ -6689,7 +6872,7 @@ static DEFS_STATUS ESPI_PC_BM_WriteReqAuto_l (
             transferWidth = GDMA_TRANSFER_WIDTH_16B;
 
             /*---------------------------------------------------------------------------------------------*/
-            /* Enable DMA with a thershold 4 double words                                                  */
+            /* Enable DMA with a threshold 4 double words                                                  */
             /*---------------------------------------------------------------------------------------------*/
             SET_REG_FIELD(ESPI_PERCTLBW, PERCTLBW_BMWDMATHRESH, ESPI_BM_DMA_THRESHOLD_16B);
         }
@@ -6714,7 +6897,7 @@ static DEFS_STATUS ESPI_PC_BM_WriteReqAuto_l (
             ESPI_PC_BM_usrReqInfo_L.fiu_module      = (FIU_MODULE_T)fiuDevNum;
 
             /*---------------------------------------------------------------------------------------------*/
-            /* Config Unlimited Burst and requestor                                                        */
+            /* Configure Unlimited Burst and requestor                                                     */
             /*---------------------------------------------------------------------------------------------*/
             FIU_ConfigReadBurstType(ESPI_PC_BM_usrReqInfo_L.fiu_module, FIU_READ_BURST_UNLIMITED);
             (void)GDMA_ConfigRequestor(ESPI_PC_BM_gdmaChannelId, GDMA_FROM_FIU_BURST_TO_ESPI_PCBM(fiuDevNum));
@@ -7724,7 +7907,7 @@ DEFS_STATUS ESPI_PC_BM_GDMA_Transfer (
     UINT8 module    = (UINT8)(channelId & 1);
     UINT8 channel   = (UINT8)(((UINT8)channelId>>1) & 1);
 
-    UINT8 chunkSize = (GDMA_GetDataTransferWidth(channelId) == GDMA_TRANSFER_WIDTH_16B ? 16 : 4); // TODO: ?
+    UINT8 chunkSize = (GDMA_GetDataTransferWidth(channelId) == GDMA_TRANSFER_WIDTH_16B ? 16 : 4);
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Error checking                                                                                      */
@@ -8580,7 +8763,7 @@ static DEFS_STATUS ESPI_FLASH_ReadReqAuto_l (
 
 #ifdef GDMA_CAPABILITY_REQUEST_SELECT
         /*-------------------------------------------------------------------------------------------------*/
-        /* Alloc a GDMA channel                                                                            */
+        /* Allocate a GDMA channel                                                                         */
         /*-------------------------------------------------------------------------------------------------*/
         DEFS_STATUS_COND_CHECK((GDMA_AllocChannel(&ESPI_FLASH_gdmaChannelId) == DEFS_STATUS_OK), DEFS_STATUS_ALLOCATION_FAILED);
 #else
@@ -8985,7 +9168,7 @@ static void ESPI_FLASH_HandleReqRes_l (void)
     if (ESPI_FLASH_currReqInfo_L.status == DEFS_STATUS_RESPONSE_CANT_BE_PROVIDED)
     {
         /*-------------------------------------------------------------------------------------------------*/
-        /* Read the 4 dummmy DWORDs from the FLASH Rx buffer.                                              */
+        /* Read the 4 dummy DWORDs from the FLASH Rx buffer.                                               */
         /*-------------------------------------------------------------------------------------------------*/
         (void)REG_READ(ESPI_FLASHRXRDHEAD);
         (void)REG_READ(ESPI_FLASHRXRDHEAD);
@@ -9841,7 +10024,7 @@ static DEFS_STATUS ESPI_OOB_RunCmd_l (void)
     /*-----------------------------------------------------------------------------------------------------*/
     /* Polling mode - wait till receive buffer is full                                                     */
     /*-----------------------------------------------------------------------------------------------------*/
-    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_OOBRX) == FALSE), ESPI_OOB_RX_TIMEOUT) ;
+    BUSY_WAIT_TIMEOUT((READ_REG_FIELD(ESPI_ESPISTS, ESPISTS_OOBRX) == FALSE), ESPI_OOB_TIMEOUT) ;
 
     /*-----------------------------------------------------------------------------------------------------*/
     /* Clear status                                                                                        */
@@ -10030,16 +10213,16 @@ static DEFS_STATUS ESPI_OOB_SendReq_l (void)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ESPI_OOB_ReceiveCmd_l                                                                  */
+/* Function:        ESPI_OOB_Receive_Intel_Cmd_l                                                           */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
 /*                                                                                                         */
 /* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
-/*                  This routine handles incoming OOB command                                              */
+/*                  This routine handles incoming Intel OOB commands                                       */
 /*---------------------------------------------------------------------------------------------------------*/
-static DEFS_STATUS ESPI_OOB_ReceiveCmd_l (void)
+static DEFS_STATUS ESPI_OOB_Receive_Intel_Cmd_l (void)
 {
     ESPI_OOB_MCTP_PKT   mctpPct = {0};
     DEFS_STATUS         status  = DEFS_STATUS_OK;
@@ -10067,6 +10250,14 @@ static DEFS_STATUS ESPI_OOB_ReceiveCmd_l (void)
         /*-------------------------------------------------------------------------------------------------*/
         srcAddr = mctpPct.srcAddr;
         CLEAR_VAR_BIT(srcAddr, 0);
+
+        if (mctpPct.cmdCode == ESPI_OOB_MCTP_CMD)
+        {
+            /*---------------------------------------------------------------------------------------------*/
+            /* Return the received message, including MCTP Header (5 bytes) and SMB Header (3 bytes)       */
+            /*---------------------------------------------------------------------------------------------*/
+            return ESPI_OOB_MCTP_ReceiveMessage_l(ESPI_OOB_InBuf_L, mctpPct.byteCount + 3);
+        }
     }
 
     switch (srcAddr)
@@ -10168,6 +10359,104 @@ static DEFS_STATUS ESPI_OOB_ReceiveCmd_l (void)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_Receive_Amd_Cmd_l                                                             */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine handles incoming AMD OOB commands                                         */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_OOB_Receive_Amd_Cmd_l (void)
+{
+    ESPI_FLASH_TRANS_HDR    trasHdr         = {0};
+    UINT16                  tagPlusLength;
+    UINT8                   nRead;
+    UINT8*                  readBuf;
+    UINT                    i               = 0;
+    DEFS_STATUS             status          = DEFS_STATUS_OK;
+    OOB_DATA                data;
+#ifndef ESPI_CAPABILITY_OOBHEAD
+    UINT                    buf             = 0;
+#endif
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Read the OOB transaction header                                                                     */
+    /*-----------------------------------------------------------------------------------------------------*/
+#ifdef ESPI_CAPABILITY_OOBHEAD
+    *((UINT32*)(void*)&trasHdr) = REG_READ(ESPI_OOBRXRDHEAD);
+#else
+    *((UINT32*)(void*)&trasHdr) = REG_READ(ESPI_OOBRXBUF(buf++));
+#endif
+    tagPlusLength               = LE16(trasHdr.tagPlusLength);
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Check header fields                                                                                 */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if ((trasHdr.type != ESPI_OOB_MESSAGE) || (READ_VAR_FIELD(tagPlusLength, HEADER_TAG) != ESPI_OOB_currReqTag_L))
+    {
+        status = DEFS_STATUS_INVALID_DATA_FIELD;
+    }
+
+    nRead   = (UINT8)READ_VAR_FIELD(tagPlusLength, HEADER_LENGTH);
+    nRead   = (UINT8)MIN(nRead, ESPI_OOB_AMD_bufferSize_L);
+    readBuf = ESPI_OOB_AMD_buffer_L;
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Read the OOB Data Payload                                                                           */
+    /*-----------------------------------------------------------------------------------------------------*/
+    while (nRead)
+    {
+#ifdef ESPI_CAPABILITY_OOBHEAD
+        data.value = REG_READ(ESPI_OOBRXRDHEAD);
+#else
+        data.value = REG_READ(ESPI_OOBRXBUF(buf++));
+#endif
+
+        if (readBuf != NULL)
+        {
+                        { readBuf[i++] = data.bytes.lsb0; nRead--; }
+            if (nRead)  { readBuf[i++] = data.bytes.lsb1; nRead--; }
+            if (nRead)  { readBuf[i++] = data.bytes.lsb2; nRead--; }
+            if (nRead)  { readBuf[i++] = data.bytes.lsb3; nRead--; }
+        }
+    }
+
+    REG_WRITE(ESPI_OOBCTL, MASK_FIELD(OOBCTL_OOB_FREE));
+
+    EXECUTE_FUNC(ESPI_OOB_AMD_callback_L, (ESPI_INT_OOB_DATA_RCV, (UINT16)READ_VAR_FIELD(tagPlusLength, HEADER_LENGTH)));
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_ReceiveCmd_l                                                                  */
+/*                                                                                                         */
+/* Parameters:      none                                                                                   */
+/*                                                                                                         */
+/* Returns:         DEFS_STATUS_OK on success and other DEFS_STATUS error on error                         */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine handles incoming OOB commands                                             */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_OOB_ReceiveCmd_l (void)
+{
+    if (ESPI_OOB_msgFormat_L == ESPI_OOB_MSG_FORMAT_INTEL)
+    {
+        return ESPI_OOB_Receive_Intel_Cmd_l();
+    }
+    else if (ESPI_OOB_msgFormat_L == ESPI_OOB_MSG_FORMAT_AMD)
+    {
+        return ESPI_OOB_Receive_Amd_Cmd_l();
+    }
+    else
+    {
+        return DEFS_STATUS_FAIL;
+    }
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        ESPI_OOB_ReceiveReq_l                                                                  */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
@@ -10181,6 +10470,7 @@ static DEFS_STATUS ESPI_OOB_ReceiveReq_l (void)
 {
     ESPI_FLASH_TRANS_HDR    trasHdr         = {0};
     UINT16                  tagPlusLength   = 0;
+    ESPI_OOB_MCTP_PKT       mctpPct         = {0};
     UINT8                   nRead           = ESPI_OOB_cmdInfo[ESPI_OOB_CMD_CUR].nRead;
     UINT8*                  readBuf         = ESPI_OOB_cmdInfo[ESPI_OOB_CMD_CUR].readBuf;
     UINT                    i               = 0;
@@ -10207,10 +10497,34 @@ static DEFS_STATUS ESPI_OOB_ReceiveReq_l (void)
     {
         status = DEFS_STATUS_INVALID_DATA_FIELD;
     }
+
+#ifdef ESPI_CAPABILITY_OOBHEAD
+    *((UINT32*)(void*)&mctpPct) = REG_READ(ESPI_OOBRXRDHEAD);
+#else
+    *((UINT32*)(void*)&mctpPct) = REG_READ(ESPI_OOBRXBUF(buf++));
+#endif
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* If this is an MCTP Packet handle it                                                                 */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (READ_VAR_FIELD(mctpPct.srcAddr, ESPI_OOB_ADDRESS_SLAVE) ==
+        READ_VAR_FIELD(ESPI_OOB_SMB_SLAVE_DEST_ADDR_CSME_FW, ESPI_OOB_ADDRESS_SLAVE))
+    {
+        nRead   = (UINT8)READ_VAR_FIELD(tagPlusLength, HEADER_LENGTH);
+        readBuf = ESPI_OOB_InBuf_L;
+    }
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* If this is not an MCTP Packet verify length                                                         */
+    /*-----------------------------------------------------------------------------------------------------*/
     else if (READ_VAR_FIELD(tagPlusLength, HEADER_LENGTH) != nRead)
     {
         status = DEFS_STATUS_INVALID_DATA_SIZE;
     }
+
+    if (nRead)  { readBuf[i++] = mctpPct.destAddr;  nRead--; }
+    if (nRead)  { readBuf[i++] = mctpPct.cmdCode;   nRead--; }
+    if (nRead)  { readBuf[i++] = mctpPct.byteCount; nRead--; }
+    if (nRead)  { readBuf[i++] = mctpPct.srcAddr;   nRead--; }
 
 #if 0
     /*-----------------------------------------------------------------------------------------------------*/
@@ -10536,6 +10850,35 @@ static void ESPI_OOB_HW_ReceiveMessage_l (void)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ESPI_OOB_MCTP_ReceiveMessage_l                                                         */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                  msg             - pointer to the MCTP message (header and payload)                     */
+/*                  byteCount       - byte count of MCTP message                                           */
+/*                                                                                                         */
+/* Returns:         none                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                  This routine handle received MCTP message                                              */
+/*---------------------------------------------------------------------------------------------------------*/
+static DEFS_STATUS ESPI_OOB_MCTP_ReceiveMessage_l (const UINT8* msg, UINT8 byteCount)
+{
+    /*-----------------------------------------------------------------------------------------------------*/
+    /* Verify buffer can contain the message                                                               */
+    /*-----------------------------------------------------------------------------------------------------*/
+    if (ESPI_OOB_mctpInfo_L.buffer.bufferSize < byteCount)
+    {
+         return DEFS_STATUS_INVALID_PARAMETER;
+    }
+
+    memcpy(ESPI_OOB_mctpInfo_L.buffer.bufferPtr, msg, byteCount);
+
+    EXECUTE_FUNC(ESPI_OOB_MCTP_callback_L, (ESPI_INT_OOB_DATA_RCV, byteCount));
+
+    return DEFS_STATUS_OK;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        ESPI_OOB_ReceiveMessage_l                                                              */
 /*                                                                                                         */
 /* Parameters:      none                                                                                   */
@@ -10606,7 +10949,7 @@ static void ESPI_HandleEspiRst_l (void)
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        ESPI_EnableEspiRstMiwuInterrupt_l                                                      */
 /*                                                                                                         */
-/* Parameters:      enable  - TRUE to enable Espi Reset MIWU interrupt; FALSE otherwise                    */
+/* Parameters:      enable  - TRUE to enable espi Reset MIWU interrupt; FALSE otherwise                    */
 /* Returns:         None                                                                                   */
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */

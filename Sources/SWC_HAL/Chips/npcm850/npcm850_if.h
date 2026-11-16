@@ -511,8 +511,8 @@ void CHIP_MuxPWM (PWM_MODULE_T pwm_module);
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine selects the TXn function to the corresponding pin, where:                 */
-/*                  · 'X' is the MFT timer number  (A/B).                                                  */
-/*                  · 'n' is the MFT module number (1/2/etc').                                             */
+/*                  - 'X' is the MFT timer number  (A/B).                                                  */
+/*                  - 'n' is the MFT module number (1/2/etc').                                             */
 /*---------------------------------------------------------------------------------------------------------*/
 void CHIP_MuxMFT (MFT_MODULE_T mft_module, MFT_TIMER_T mft_timer);
 #endif

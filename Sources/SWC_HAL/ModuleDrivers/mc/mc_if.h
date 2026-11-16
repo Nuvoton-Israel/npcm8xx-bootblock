@@ -26,35 +26,35 @@
 
 typedef struct MC_INIT_VALUES_tag
 {
-	UINT32 DQS_input;
-	UINT32 DQS_output;
-	UINT8  DQS_start_enh_sweep;       // 0x16C
-	UINT8  DQS_end_enh_sweep;         // 0x16D
+        UINT32 DQS_input;
+        UINT32 DQS_output;
+        UINT8  DQS_start_enh_sweep;       // 0x16C
+        UINT8  DQS_end_enh_sweep;         // 0x16D
 
 } MC_INIT_VALUES;
 
 
 typedef enum ENUM_MR6_TRAINING_tag
 {
-	MR6_ENABLE_TRAINING_OFF,
-	MR6_ENABLE_TRAINING_1,
-	MR6_ENABLE_TRAINING_ON,
+        MR6_ENABLE_TRAINING_OFF,
+        MR6_ENABLE_TRAINING_1,
+        MR6_ENABLE_TRAINING_ON,
 
 } ENUM_MR6_TRAINING;
 
 typedef enum ENUM_BIT_LEVEL_SAMPLE_TYPE_tag
 {
-	BIT_LEVEL_SAMPLE_NEGATIVE_ONLY = 0,
-	BIT_LEVEL_SAMPLE_POSITIVE_ONLY = 1,
-	BIT_LEVEL_SAMPLE_BOTH = 3,
+        BIT_LEVEL_SAMPLE_NEGATIVE_ONLY = 0,
+        BIT_LEVEL_SAMPLE_POSITIVE_ONLY = 1,
+        BIT_LEVEL_SAMPLE_BOTH = 3,
 
 } ENUM_BIT_LEVEL_SAMPLE_TYPE;
 
 //Keep the order of the enums according to frequency
 typedef enum ENUM_DRAM_CLK_TYPE_tag
 {
-	DRAM_CLK_TYPE_1600 = 0,
-	DRAM_CLK_TYPE_2133 = 1,
+        DRAM_CLK_TYPE_1600 = 0,
+        DRAM_CLK_TYPE_2133 = 1,
 } ENUM_DRAM_CLK_TYPE;
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -62,85 +62,85 @@ typedef enum ENUM_DRAM_CLK_TYPE_tag
 /*---------------------------------------------------------------------------------------------------------*/
 typedef struct DDR_Setup_tag
 {
-	UINT32   cpu_clk;
-	UINT32   mc_clk;
-	ENUM_DRAM_CLK_TYPE  dram_type_clk;
-	int      soc_drive;
-	int      dram_odt;
-	int      dram_drive;
-	int      soc_odt ;
-	UINT8    mc_config;
-	UINT32   MR2_DATA;
-	UINT32   MR6_DATA;
-	UINT32   MR1_DATA;
-	UINT32	 MR0_DATA;
-	UINT64   ddr_size;
-	UINT64   max_ddr_size;
-	BOOLEAN  ddr_ddp;
-	UINT8    ECC_enable;
-	UINT32   NonECC_Region_Start[8];  // in 1M alignment
-	UINT32   NonECC_Region_End[8];    // in 1M alignment
-	
-	int      SaveDRAMVref;
-	ENUM_MR6_TRAINING mr6_training_state;
-	int      dll_recalib_trim_adrctrl_ma;
-	BOOLEAN  dll_recalib_trim_increment_ma;
-	int      dlls_trim_adrctrl;
-	BOOLEAN  dlls_trim_adrctrl_incr;
-	int      dlls_trim_clk;
-	BOOLEAN  dlls_trim_clk_incr;
-	UINT8    phy_c2d;
-	UINT8    phy_additive_latency;
-	UINT8    cas_latency;
-	UINT8    cas_write_latency;
-	UINT8    read_latency_adjust;
-	UINT8    write_latency_adjust;
-	UINT8    phy_tRTP;
-	UINT8    phy_tCCD_L;
-	UINT8    phy_cal_npu_offset;
-	UINT8    phy_incr_cal_npu;
-	UINT8    phy_cal_ppu_offset;
-	UINT8    phy_incr_cal_ppu;
-	UINT8    phy_cal_npd_offset;
-	UINT8    phy_incr_cal_npd;
-	UINT8    phy_cal_ppu_op8_offset;
-	UINT8    phy_incr_cal_ppu_op8;
-	UINT8    phy_cal_npd_offset_op8;
-	UINT8    phy_incr_cal_npd_op8;
+        UINT32   cpu_clk;
+        UINT32   mc_clk;
+        ENUM_DRAM_CLK_TYPE  dram_type_clk;
+        int      soc_drive;
+        int      dram_odt;
+        int      dram_drive;
+        int      soc_odt ;
+        UINT8    mc_config;
+        UINT32   MR2_DATA;
+        UINT32   MR6_DATA;
+        UINT32   MR1_DATA;
+        UINT32         MR0_DATA;
+        UINT64   ddr_size;
+        UINT64   max_ddr_size;
+        BOOLEAN  ddr_ddp;
+        UINT8    ECC_enable;
+        UINT32   NonECC_Region_Start[8];  // in 1M alignment
+        UINT32   NonECC_Region_End[8];    // in 1M alignment
 
-	UINT8    dqs_in_lane0;
-	UINT8    dqs_in_lane1;
-	UINT8    dqs_out_lane0;
-	UINT8    dqs_out_lane1;
+        int      SaveDRAMVref;
+        ENUM_MR6_TRAINING mr6_training_state;
+        int      dll_recalib_trim_adrctrl_ma;
+        BOOLEAN  dll_recalib_trim_increment_ma;
+        int      dlls_trim_adrctrl;
+        BOOLEAN  dlls_trim_adrctrl_incr;
+        int      dlls_trim_clk;
+        BOOLEAN  dlls_trim_clk_incr;
+        UINT8    phy_c2d;
+        UINT8    phy_additive_latency;
+        UINT8    cas_latency;
+        UINT8    cas_write_latency;
+        UINT8    read_latency_adjust;
+        UINT8    write_latency_adjust;
+        UINT8    phy_tRTP;
+        UINT8    phy_tCCD_L;
+        UINT8    phy_cal_npu_offset;
+        UINT8    phy_incr_cal_npu;
+        UINT8    phy_cal_ppu_offset;
+        UINT8    phy_incr_cal_ppu;
+        UINT8    phy_cal_npd_offset;
+        UINT8    phy_incr_cal_npd;
+        UINT8    phy_cal_ppu_op8_offset;
+        UINT8    phy_incr_cal_ppu_op8;
+        UINT8    phy_cal_npd_offset_op8;
+        UINT8    phy_incr_cal_npd_op8;
 
-	UINT8    hdr_dlls_trim_adrctl;
-	UINT8    hdr_dlls_trim_adrctrl_ma;
-	UINT8    hdr_dlls_trim_clk;
-	UINT8    hdr_dlls_trim_clk_sqew;
+        UINT8    dqs_in_lane0;
+        UINT8    dqs_in_lane1;
+        UINT8    dqs_out_lane0;
+        UINT8    dqs_out_lane1;
 
-	UINT8    phase1[2];
-	UINT8    phase2[2];
-	UINT8    dlls_trim_1[2];
-	UINT8    dlls_trim_2[2];
-	UINT8    dlls_trim_3[2];
-	UINT8    trim2_init_offset[2];
+        UINT8    hdr_dlls_trim_adrctl;
+        UINT8    hdr_dlls_trim_adrctrl_ma;
+        UINT8    hdr_dlls_trim_clk;
+        UINT8    hdr_dlls_trim_clk_sqew;
 
-	UINT8    vref_soc[2];
-	UINT8    vref_dram;
-	UINT8    gmmap;
+        UINT8    phase1[2];
+        UINT8    phase2[2];
+        UINT8    dlls_trim_1[2];
+        UINT8    dlls_trim_2[2];
+        UINT8    dlls_trim_3[2];
+        UINT8    trim2_init_offset[2];
 
-	UINT8    sweep_debug;   // enable running charectarization sweeps. bitwise.
-	UINT8    sweep_main_flow; // same, but for none debug
-	UINT8    print_enable;
+        UINT8    vref_soc[2];
+        UINT8    vref_dram;
+        UINT8    gmmap;
 
-	UINT16   mc_gpio_test_pass;
-	UINT16   mc_gpio_test_complete;
-	
-	BOOLEAN     mc_gpio_test_pass_active_low;
-	BOOLEAN     mc_gpio_test_complete_active_low;
+        UINT8    sweep_debug;   // enable running charectarization sweeps. bitwise.
+        UINT8    sweep_main_flow; // same, but for none debug
+        UINT8    print_enable;
 
-	BOOLEAN     b_gpio_test_pass;
-	BOOLEAN     b_gpio_test_complete;
+        UINT16   mc_gpio_test_pass;
+        UINT16   mc_gpio_test_complete;
+
+        BOOLEAN     mc_gpio_test_pass_active_low;
+        BOOLEAN     mc_gpio_test_complete_active_low;
+
+        BOOLEAN     b_gpio_test_pass;
+        BOOLEAN     b_gpio_test_complete;
 
 } DDR_Setup;
 

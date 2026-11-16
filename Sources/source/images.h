@@ -29,10 +29,10 @@ typedef union HEADER_GENERAL_tag
 	struct
 	{
 		                                         /* Offset       Size(bytes) Description                                                       */
-		uint8_t   startTag[8];                   /* 0            8           AA55_0850h, 424F_4F54h (‘BOOT’)                                   */
+		uint8_t   startTag[8];                   /* 0            8           AA55_0850h, 424F_4F54h ('BOOT')                                   */
 		uint32_t  reserved;                      /* 8            4                                                                             */
 		uint32_t  img_crc;                       /* 12           4                                                                             */
-		uint8_t   signature[96];                 /* 16           96         Boot Block ECC signature decrypted with Customer’s Private Key     */
+		uint8_t   signature[96];                 /* 16           96         Boot Block ECC signature decrypted with Customer's Private Key     */
 
 		/* Start signed area: */
 		uint8_t   reservedSigned[28];            /* 0x70        0x188        Reserved, signed.                                                 */

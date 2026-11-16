@@ -44,23 +44,25 @@ RMDIR         ?= rm -rf
 
 # OS detection
 ifeq ($(OS),Windows_NT)
-   set ENCLAVE=%1
-   CC = $(CROSS_COMPILE)aarch64-none-elf-gcc.exe
-   LD = $(CROSS_COMPILE)aarch64-none-elf-ld.exe
-   AR = $(CROSS_COMPILE)aarch64-none-elf-ar.exe
-   OBJCOPY = $(CROSS_COMPILE)\aarch64-none-elf-objcopy.exe
-   OBJDUMP = $(CROSS_COMPILE)\aarch64-none-elf-objdump.exe
+   CC = "$(CROSS_COMPILE)aarch64-none-elf-gcc.exe"
+   LD = "$(CROSS_COMPILE)aarch64-none-elf-ld.exe"
+   AR = "$(CROSS_COMPILE)aarch64-none-elf-ar.exe"
+   OBJCOPY = "$(CROSS_COMPILE)aarch64-none-elf-objcopy.exe"
+   OBJDUMP = "$(CROSS_COMPILE)aarch64-none-elf-objdump.exe"
+   # Convert backslashes to forward slashes for bash compatibility
+   OBJDUMP_BASH = $(subst \,/,$(OBJDUMP))
 else
    CC = $(CROSS_COMPILE)gcc
    AR = $(CROSS_COMPILE)ar
    LD = $(CROSS_COMPILE)ld
    OBJCOPY = $(CROSS_COMPILE)objcopy
    OBJDUMP = $(CROSS_COMPILE)objdump
+   OBJDUMP_BASH = $(OBJDUMP)
 endif  
 
 
 CFLAGS = -gdwarf-3 -W -mcmodel=large -std=c11 -DCHIP_NAME=npcm850 -D_ARBEL_Z1_ -D__ARM_ARCH_8__ -D_ARM_ -DNO_INTERNAL_IRQ_HANDLER -ftrack-macro-expansion=0
-CFLAGS += -DEXTERNAL_INCLUDE_FILE=../$(FW_DIR)/hal_cfg.h
+CFLAGS += -DEXTERNAL_INCLUDE_FILE=../../$(FW_DIR)/hal_cfg.h
 CFLAGS += -mcpu=Cortex-A35 -march=armv8-a -mcmodel=large -D__AARCH64__ -D__LP64__
 CFLAGS += -Wno-empty-body -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -lm  -mstrict-align
 CFLAGS += -fno-PIC
@@ -171,6 +173,22 @@ export SourceGroup_arbel_a35_bootblock
 TARGET = arbel
 TargetType = a35_bootblock_$(ENCLAVE)
 
+ifeq ($(TargetType),a35_bootblock_no_tip)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock_no_tip)
+CFLAGS += -D_NOTIP_ -D_BOOTBLOCK_
+endif
+
+ifeq ($(BuildVariant),tip)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock)
+CFLAGS += -DSECURE_DDR
+endif
+
+ifeq ($(BuildVariant),tfa)
+SourceGroup_1 := $(SourceGroup_arbel_a35_bootblock)
+ASFLAGS += -DTFA_BL31_RESET
+CFLAGS += -DTFA_BL31_RESET -D_BOOTBLOCK_
+endif
+
 #
 # Output directories and files
 #
@@ -186,11 +204,11 @@ BUILD_DIR ?= $(OUTDIR_Release)/objects
 Release: $(OUTFILE_Release)
 
 arbel_a35_bootblock:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" CFLAGS+="-DSECURE_DDR"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock BuildVariant=tip
 arbel_a35_bootblock_no_tip:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock_no_tip)" CFLAGS+="-D_NOTIP_ -D_BOOTBLOCK_"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock_no_tip
 arbel_a35_bootblock_tfa:
-	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock  SourceGroup_1+="$(SourceGroup_arbel_a35_bootblock)" ASFLAGS+="-DTFA_BL31_RESET" CFLAGS+="-DTFA_BL31_RESET -D_BOOTBLOCK_"
+	$(MAKE) -f $(THIS_MAKEFILE) Release TargetType=a35_bootblock BuildVariant=tfa
 
 #
 # Clean
@@ -251,10 +269,15 @@ LINKER_FLAGS := --entry=start64 --gc-sections --build-id=none --print-memory-usa
 #
 USRINCS_Release := -I. -I$(HAL_COMMON_DIR) -I$(HAL_CHIP_DIR) -I$(SWC_DEFS_DIR) -I$(HAL_DIR)
 USRINCS_Release += -I$(HAL_MODULES_DIR) -I$(HAL_HL_DRVS_DIR) -I$(HAL_CHIPS_DIR) -I$(FW_DIR)
-USRINCS_Release += -I$(CROSS_COMPILER_INC) -I$(APPS_DIR)
+ifneq ($(strip $(CROSS_COMPILER_INC)),)
+USRINCS_Release += -I"$(subst \,/,$(CROSS_COMPILER_INC))"
+endif
+USRINCS_Release += -I$(APPS_DIR)
 
 # Define the library path
-LDFLAGS := -L$(CROSS_COMPILER)/lib
+ifneq ($(strip $(CROSS_COMPILER)),)
+LDFLAGS := -L"$(subst \,/,$(CROSS_COMPILER))/lib"
+endif
 
 #
 # Output directory
@@ -275,15 +298,14 @@ $(OUTFILE_Release): $(OUTDIR_Release) $(OBJS_Release)
 	@echo .
 	@echo Linking: Create bin file
 	@echo $(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)  $(subst .elf,.bin,$(OUTFILE_Release)) 
-	 $(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)       $(subst .elf,.bin,$(OUTFILE_Release)) 
+	$(OBJCOPY) $(ONLY_SECTIONS) -O binary $(OUTFILE_Release)       $(subst .elf,.bin,$(OUTFILE_Release)) 
 	@echo .
 	@echo Linking: Create dat file
 	@echo $(OBJCOPY) $(ONLY_SECTIONS) -O verilog $(OUTFILE_Release) $(subst .elf,.dat,$(OUTFILE_Release)) 
 	$(OBJCOPY) $(ONLY_SECTIONS) -O verilog $(OUTFILE_Release)       $(subst .elf,.dat,$(OUTFILE_Release)) 
 	@echo .
 	@echo Linking: Create asm file
-	@echo $(OBJDUMP)  -S  $(OUTFILE_Release)   >                    $(subst .elf,.asm,$(OUTFILE_Release))  2>&1
-	$(OBJDUMP)    -h   -S    $(OUTFILE_Release)      >              $(subst .elf,.asm,$(OUTFILE_Release))  2>&1
+	bash -c '$(OBJDUMP_BASH) -h -S $(OUTFILE_Release) > $(subst .elf,.asm,$(OUTFILE_Release))'
 	@echo Linking done
 
 
@@ -292,7 +314,7 @@ $(OUTFILE_Release): $(OUTDIR_Release) $(OBJS_Release)
 #
 BUILD_Release_c = $(CC) -static -ffunction-sections -fdata-sections $(USRINCS_Release) -c $(CFLAGS) -O2 -o $@ $<
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: %.c | $(OUTDIR_Release)
 	@echo .
 	@$(MD) $(dir $@)
 	@echo Compiling C $*.o
@@ -305,7 +327,7 @@ $(BUILD_DIR)/%.o: %.c
 #
 BUILD_Release_s = $(CC) -c $(ASFLAGS) $(DEPEND_FLAGS) -DCORTEXA $(USRINCS_Release) -O2 -o $@ $<
 
-$(BUILD_DIR)/%.o: %.S
+$(BUILD_DIR)/%.o: %.S | $(OUTDIR_Release)
 	@echo .
 	@$(MD) $(dir $@)
 	@echo Compiling S $*.o

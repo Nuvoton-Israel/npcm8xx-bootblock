@@ -278,6 +278,18 @@ void FUSE_Read (FUSE_STORAGE_ARRAY_T arr,
 }
 #endif
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        FUSE_SetBlockAccess                                                                    */
+/*                                                                                                         */
+/* Parameters:      arr     - Storage Array type [input].                                                  */
+/*                  block   - block number, 0 to 63 [input]                                                */
+/*                  lockForRead - set disable read [input]                                                 */
+/*                  lockForWrite- set disable write[input]                                                 */
+/*                  lockRegister- lock the wcurrent settings [input]                                       */
+/* Returns:         void                                                                                   */
+/* Side effects:                                                                                           */
+/* Description:     Change settings for a block in OTP                                                     */
+/*---------------------------------------------------------------------------------------------------------*/
 void FUSE_SetBlockAccess (_UNUSED_ FUSE_STORAGE_ARRAY_T array,
                           UINT32 block,
                           BOOLEAN lockForRead,
@@ -330,13 +342,14 @@ BOOLEAN FUSE_BitIsProgrammed (
 DEFS_STATUS FUSE_ProgramBit (
     FUSE_STORAGE_ARRAY_T arr,
     UINT16               byteNum,
-    UINT8                bitNum
+    UINT8                bitNum,
+    BOOLEAN              CheckIfBitIsProgrammed
 )
 {
     UINT8* virtual_otp = (UINT8*)RAM3_BASE_ADDR;
     //take the block from the byteNum, (=address) , check if its blocked. if so, exit.
     UINT8  block       = FUSE_WRPR_PROP_BLOCK_ADDR(byteNum);
-    HAL_PRINT ("block is %d\n ", block);
+
     //verify first that the block is open to read and not locked
     if (TIP_FCFG_BLOCK_IS_W_LOCKED(block) == TRUE)
     {

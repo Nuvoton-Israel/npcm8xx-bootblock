@@ -176,6 +176,9 @@ void MC_ClearInterrupts(void)
 }
 
 
+#define ddrc_dump_latest_status(x) (void)0
+
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        MC_ConfigureDDR                                                                        */
 /*                                                                                                         */
@@ -204,6 +207,8 @@ DEFS_STATUS MC_ConfigureDDR(DDR_Setup *ddr_setup)
 	bPrint = (BOOLEAN)(ddr_setup->print_enable > 0);
 
 	HAL_PRINT(KGRN "MC init\n" KNRM);
+
+	ddrc_dump_latest_status(FALSE);
 
 	// if memory controller was already initialized do not reinitialize
 	if (MC_IsDDRConfigured_l())
@@ -338,6 +343,8 @@ done:
 
 	HAL_PRINT_DBG(KNRM "\nmc_init done\n");
 	SET_REG_FIELD(INTCR2, INTCR2_MC_INIT, 1);
+
+	ddrc_dump_latest_status(TRUE);
 
 	return DEFS_STATUS_OK;
 }
@@ -1867,9 +1874,9 @@ static void MC_PrintTrim(BOOLEAN bIn, BOOLEAN bOut)
 		trim_clk = READ_VAR_FIELD(tmp, PHY_DLL_TRIM_CLK_dlls_trim_clk);
 		HAL_PRINT_DBG("%c%d (reg=0x%x)\n", sign, trim_clk, tmp);
 
-		// DQSn to CLK skew = dlls_trim_clk – (dlls_trim_2+dlls_trim_1).
+		// DQSn to CLK skew = dlls_trim_clk - (dlls_trim_2+dlls_trim_1).
 
-		HAL_PRINT_DBG("\t*DQSn to CLK skew = dlls_trim_clk – (dlls_trim_2 + dlls_trim_1):\n");
+		HAL_PRINT_DBG("\t*DQSn to CLK skew = dlls_trim_clk - (dlls_trim_2 + dlls_trim_1):\n");
 		for (ilane = 0; ilane < NUM_OF_LANES; ilane++)
 		{
 			sqew = trim_clk - (trim2[ilane] + trim1[ilane]);

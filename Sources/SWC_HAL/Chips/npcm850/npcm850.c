@@ -1177,8 +1177,8 @@ void CHIP_MuxPWM (PWM_MODULE_T pwm_module)
 /* Side effects:                                                                                           */
 /* Description:                                                                                            */
 /*                  This routine selects the TXn function to the corresponding pin, where:                 */
-/*                  · 'X' is the MFT timer number  (A/B).                                                  */
-/*                  · 'n' is the MFT module number (1/2/etc').                                             */
+/*                  - 'X' is the MFT timer number  (A/B).                                                  */
+/*                  - 'n' is the MFT module number (1/2/etc').                                             */
 /*---------------------------------------------------------------------------------------------------------*/
 void CHIP_MuxMFT (MFT_MODULE_T mft_module, MFT_TIMER_T mft_timer)
 {
@@ -2233,7 +2233,7 @@ BOOLEAN CHIP_MuxESPI (UINT driveStrength_mA)
     }
     else if(driveStrength_mA <= 24)
     {
-        // TODO: SET_REG_FIELD(DSCNT, DSCNT_ESPI, 7); // 1 1 1: 24 mA (Should be used for eSPI – requires an external 13.7 ohm series resistor)
+        // TODO: SET_REG_FIELD(DSCNT, DSCNT_ESPI, 7); // 1 1 1: 24 mA (Should be used for eSPI - requires an external 13.7 ohm series resistor)
     }
     else
     {
@@ -2281,7 +2281,7 @@ BOOLEAN CHIP_MuxLPC (_UNUSED_ UINT driveStrength_mA)
     }
     else if(driveStrength_mA <= 24)
     {
-        SET_REG_FIELD(DSCNT, DSCNT_ESPI, 7); // 1 1 1: 24 mA (Should be used for eSPI – requires an external 13.7 ohm series resistor)
+        SET_REG_FIELD(DSCNT, DSCNT_ESPI, 7); // 1 1 1: 24 mA (Should be used for eSPI - requires an external 13.7 ohm series resistor)
     }
     else
     {

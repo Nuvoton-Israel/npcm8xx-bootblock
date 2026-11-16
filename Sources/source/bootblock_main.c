@@ -345,7 +345,7 @@ static void bootblock_ChangeClocks (DDR_Setup *ddr_setup)
 		serial_printf(" MC freq in header %d\n" KNRM, mcFreq);
 	}
 
-	if (ddr_setup->ECC_enable == TRUE)
+	if (ddr_setup->ECC_enable)
 	{
 		UINT32 minimum_frequency = MIN(cpuFreq, mcFreq);
 		cpuFreq = minimum_frequency;
@@ -585,7 +585,7 @@ static void bootblock_set_fiu_cfg_drd (void)
  */
 static void platform_reset()
 {
-	serial_printf(KRED "\n\n==========    RESET BMC %#010lx ==========\n" KNRM);
+	serial_printf(KRED "\n\n========== RESET BMC %#010lx ==========\n" KNRM);
 	/* Reset everything.*/
 	REG_WRITE(SWRSTC3, 0xFFFFFFFF);
 	REG_WRITE(SWRSTC3B, 0xFFFFFFFF);
@@ -599,12 +599,51 @@ static void platform_reset()
 }
 #endif
 
-/*--------------------------------------------------------------------*/
-/* OTP values that bootblock reads and put in scrtachpads for the BMC */
-/*--------------------------------------------------------------------*/
-#define DIE_INFORMATION_ALL             168,        5,          FUSE_ECC_NONE
-#define ADC_CAL_INT_PROPERTY            40,         8,          FUSE_ECC_NIBBLE_PARITY
-#define ADC_CAL_EXT_PROPERTY            48,         8,          FUSE_ECC_NIBBLE_PARITY
+/*----------------------------------------------------------------------------*/
+/* Helper Functions for Device ID Parsing                                     */
+/*----------------------------------------------------------------------------*/
+
+/**
+ * @brief Print DIE Information fields
+ * @param val 40-bit value (bits [31:0] = low word, bits [39:32] = high byte)
+ */
+static void print_die_information(UINT64 val)
+{
+	UINT32 lot     = (UINT32)(val >>  0) & 0x3FF;                          /* [00:09] */
+	UINT32 week    = (UINT32)(val >> 10) & 0x3F;                           /* [10:15] */
+	UINT32 wafer   = (UINT32)(val >> 16) & 0x1F;                           /* [16:20] */
+	UINT32 x_coord = (UINT32)(val >> 24) & 0x3F;                           /* [24:29] */
+	UINT32 y_coord = (UINT32)(val >> 30) & 0x3F;                           /* [30:35] */
+	UINT32 year    = (UINT32)(val >> 36) & 0xF;                            /* [36:39] */
+
+	serial_printf(KCYN "Die Information:\n" KNRM);
+	serial_printf("  LOT:        %03lu\n", lot);
+	serial_printf("  Week:       %02lu\n", week);
+	serial_printf("  Wafer:      %02lu\n", wafer);
+	serial_printf("  X Coord:    %02lu\n", x_coord);
+	serial_printf("  Y Coord:    %02lu\n", y_coord);
+	serial_printf("  Year:       %lu\n", year);
+}
+
+/**
+ * @brief Print Timestamp Information fields
+ * @param val 40-bit value (bits [31:0] = low word, bits [39:32] = high byte)
+ */
+static void print_timestamp_information(UINT64 val)
+{
+	UINT32 machine_id  = (UINT32)(val >>  0) & 0xFF;                       /* [00:07] */
+	UINT32 mfg_id      = (UINT32)(val >>  8) & 0x3;                        /* [08:09] */
+	UINT32 seconds_lsb = (UINT32)(val >> 10) & 0xFFF;                      /* [10:21] */
+	UINT32 seconds_msb = (UINT32)(val >> 23) & 0x1FFF;                     /* [23:35] */
+	UINT32 year        = (UINT32)(val >> 36) & 0xF;                        /* [36:39] */
+	UINT32 seconds     = (seconds_msb << 12) | seconds_lsb;
+
+	serial_printf(KCYN "Timestamp Information:\n" KNRM);
+	serial_printf("  Machine ID: %lu\n", machine_id);
+	serial_printf("  Mfg ID:     %lu\n", mfg_id);
+	serial_printf("  Seconds:    %lu\n", seconds);
+	serial_printf("  Year:       %lu\n", year);
+}
 
 /*----------------------------------------------------------------------------*/
 /* Function:        bootblock_main                                            */
@@ -618,6 +657,8 @@ static void platform_reset()
 __attribute__((noreturn)) void bootblock_main (void)
 {
 	DEFS_STATUS status;
+	UINT64 device_id = 0;
+	BOOLEAN device_id_is_die = FALSE;
 	UINT32 t;
 	UINT32 error = 0;
 	UINT32 bb_src_flash_addr = 0;
@@ -629,7 +670,11 @@ __attribute__((noreturn)) void bootblock_main (void)
 	int resetNum;
 	uint64_t addr64 = 0;
 	UINT32 scrpad = 0;
-	UINT8 buff[8]     __attribute__((aligned(32)));
+	union {
+		UINT64 u64;
+		UINT32 u32[2];
+		UINT8  u8[8];
+	} buff __attribute__((aligned(32)));
 	extern unsigned long _ram_start;
 	extern unsigned long _stack_start;
 
@@ -653,29 +698,103 @@ __attribute__((noreturn)) void bootblock_main (void)
 	TMC_StopWatchDog(2);
 
 	/*--------------------------------------------------------------------*/
-	/* Read Die information and send to OPTEE (HUK)                       */
+	/* Read Device ID information and send to OPTEE (HUK)                 */
+	/*                                                                    */
+	/* DEVICE_ID_PROPERTY (OTP offset 168, 5 bytes, no ECC) is a 40-bit  */
+	/* field used as the Hardware Unique Key (HUK) for OP-TEE. It is      */
+	/* written by the chip production process and encodes either DIE info   */
+	/* or a Timestamp, discriminated by bit 22:                           */
+	/*   bit 22 == 0 => DIE Information (lot/week/wafer/X/Y/year)        */
+	/*   bit 22 == 1 => Timestamp (machineID/mfgID/seconds/year)         */
+	/* The raw 40-bit value is stored in SCRATCHPADs 30/31 regardless of */
+	/* read success, so OP-TEE can always retrieve it.                   */
 	/*--------------------------------------------------------------------*/
-	*(UINT32 *)buff = 0;
-	*(UINT32 *)(buff + 4) = 0;
-	status = FUSE_WRPR_get(DIE_INFORMATION_ALL, buff);
+	buff.u64 = 0;
+	status = FUSE_WRPR_get(DEVICE_ID_PROPERTY, buff.u8);
 
-	REG_WRITE(SCRPAD_32_63(30), *(UINT32 *)buff);
-	REG_WRITE(SCRPAD_32_63(31), *(UINT32 *)(buff + 4));
+	/* Always write to SCRATCHPADs 30/31 (OP-TEE reads these for HUK) */
+	REG_WRITE(SCRPAD_32_63(30), buff.u32[0]);
+	REG_WRITE(SCRPAD_32_63(31), buff.u32[1]);
 
 	if (status == DEFS_STATUS_OK)
 	{
-		serial_printf(KCYN "DIE LOCATION: %#010lx %#010lx \n" KNRM,
-					  REG_READ(SCRPAD_32_63(30)), REG_READ(SCRPAD_32_63(31)));
+		device_id = buff.u64;
+
+		/* Bit 22 selects the encoding format of the 40-bit Device ID */
+		UINT32 type_bit = ((UINT32)device_id >> 22) & 0x1;
+
+		/* Print raw value: high byte first, then low 32-bit word */
+		serial_printf(KCYN "Device ID (offset 168): %#012lx \n" KNRM, device_id);
+
+		if (type_bit == 0)
+		{
+			/* bit 22 == 0: field was programmed as DIE information.
+			 * Record this so the DIE_INFORMATION_PROPERTY block below
+			 * can print offset-187 raw and attempt a timestamp fallback. */
+			device_id_is_die = TRUE;
+			print_die_information(device_id);
+		}
+		else
+		{
+			/* bit 22 == 1: field was programmed as a Timestamp */
+			print_timestamp_information(device_id);
+		}
+	}
+
+	/*--------------------------------------------------------------------*/
+	/* Read DIE Information Property (OTP offset 187, 5 bytes, no ECC)   */
+	/*                                                                    */
+	/* DIE_INFORMATION_PROPERTY is programmed by the CP (chip probe) step */
+	/* and always contains DIE information (lot/week/wafer/X/Y/year).    */
+	/*                                                                    */
+	/* If non-zero: decode and print as DIE info.                        */
+	/* If zero (not programmed): the device was programmed before the CP  */
+	/* step was introduced. In that case DEVICE_ID_PROPERTY holds the    */
+	/* Timestamp, but due to a hardware bug bit 22 may have been written  */
+	/* as 0 (DIE format) instead of 1 (Timestamp format). We therefore   */
+	/* unconditionally re-parse DEVICE_ID_PROPERTY as Timestamp.         */
+	/*                                                                    */
+	/* The raw value is printed only when DEVICE_ID_PROPERTY was DIE     */
+	/* (device_id_is_die == TRUE), since in the Timestamp case offset 187 */
+	/* is expected to be zero and printing it would be misleading.       */
+	/*--------------------------------------------------------------------*/
+	buff.u64 = 0;
+	status = FUSE_WRPR_get(DIE_INFORMATION_PROPERTY, buff.u8);
+
+	if (status == DEFS_STATUS_OK)
+	{
+		/* Print raw value only when DEVICE_ID_PROPERTY was DIE format.
+		 * (device_id_is_die is TRUE iff type_bit was 0                 */
+		if (device_id_is_die)
+		{
+			serial_printf(KCYN "DIE info (offset 187): %#012lx \n" KNRM, buff.u64);
+		}
+
+		if (buff.u64 != 0)
+		{
+			/* Offset 187 is programmed: decode and print DIE fields */
+			print_die_information(buff.u64);
+		}
+		else
+		{
+			/* Offset 187 is zero (not programmed by CP step).
+			 * Fall back to interpreting DEVICE_ID_PROPERTY as Timestamp,
+			 * ignoring bit 22 (hardware bug workaround). */
+			if (device_id_is_die)
+			{
+				serial_printf(KCYN "parsing Device ID (offset 168) also as timestamp:\n" KNRM);
+				print_timestamp_information(device_id);
+			}
+		}
 	}
 
 	/*--------------------------------------------------------------------*/
 	/* Read ADC int Calibration data for Linux ADC driver                 */
 	/*--------------------------------------------------------------------*/
 	scrpad = 60 - 32;
-	*(UINT32 *)buff = 0;
-	*(UINT32 *)(buff + 4) = 0;
-	status = FUSE_WRPR_get(ADC_CAL_INT_PROPERTY, buff);
-	REG_WRITE(SCRPAD_32_63(scrpad), *(UINT32 *)buff);
+	buff.u64 = 0;
+	status = FUSE_WRPR_get(ADC_CAL_INT_PROPERTY, buff.u8);
+	REG_WRITE(SCRPAD_32_63(scrpad), buff.u32[0]);
 	if (status == DEFS_STATUS_OK)
 	{
 		serial_printf(KCYN "ADC int calib: %#010lx (%#010lx)\n" KNRM,
@@ -686,10 +805,9 @@ __attribute__((noreturn)) void bootblock_main (void)
 	/* Read ADC ext Calibration data for Linux ADC driver                 */
 	/*--------------------------------------------------------------------*/
 	scrpad = 61 - 32;
-	*(UINT32 *)buff = 0;
-	*(UINT32 *)(buff + 4) = 0;
-	status = FUSE_WRPR_get(ADC_CAL_EXT_PROPERTY, buff);
-	REG_WRITE(SCRPAD_32_63(scrpad), *(UINT32 *)buff);
+	buff.u64 = 0;
+	status = FUSE_WRPR_get(ADC_CAL_EXT_PROPERTY, buff.u8);
+	REG_WRITE(SCRPAD_32_63(scrpad), buff.u32[0]);
 	if (status == DEFS_STATUS_OK)
 	{
 		serial_printf(KCYN "ADC ext calib: %#010lx (%#010lx)\n" KNRM,

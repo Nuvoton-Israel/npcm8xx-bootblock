@@ -77,7 +77,7 @@ static UINT32 calc_mr1_val (DDR_Setup *ddr_setup)
 
 	UINT32 reg_read_val = 1; //A0 is DLL enable
 
-// 2, 1 Output driver impedance (ODI) – Output driver impedance setting
+// 2, 1 Output driver impedance (ODI) - Output driver impedance setting
 // 00 = RZQ/7 (34 ohm)
 // 01 = RZQ/5 (48 ohm)
 // 10 = Reserved (Although not JEDEC-defined and not tested, this setting will provide RZQ/6 or 40 ohm)
@@ -99,7 +99,7 @@ static UINT32 calc_mr1_val (DDR_Setup *ddr_setup)
 		ddr_setup->dram_drive = 48;
 	}
 
-// 10, 9, 8 Nominal ODT (RTT(NOM) – Data bus termination setting
+// 10, 9, 8 Nominal ODT (RTT(NOM) - Data bus termination setting
 // 000 = RTT(NOM) disabled
 // 001 = RZQ/4 (60 ohm)
 // 010 = RZQ/2 (120 ohm)
@@ -280,7 +280,7 @@ DEFS_STATUS MC_Init_DDR_Setup (DDR_Setup *ddr_setup)
 DEFS_STATUS MC_Init_DDR_Setup_re_calc (DDR_Setup *ddr_setup)
 {
 
-	// Round_up ((AL + CL)/2) – C2D – (HALF_PERIOD ? 3:1) Assume working in HALF Period
+	// Round_up ((AL + CL)/2) - C2D - (HALF_PERIOD ? 3:1) Assume working in HALF Period
 	ddr_setup->read_latency_adjust = ((ddr_setup->phy_additive_latency + ddr_setup->cas_latency) >> 1) +
 					 ((ddr_setup->phy_additive_latency + ddr_setup->cas_latency) % 2) -
 					   ddr_setup->phy_c2d - 1;
@@ -290,7 +290,7 @@ DEFS_STATUS MC_Init_DDR_Setup_re_calc (DDR_Setup *ddr_setup)
 	ddr_setup->read_latency_adjust -= 2;
 	HAL_PRINT_DBG("read_latency_adjust dfi  0x%X\n", ddr_setup->read_latency_adjust);
 #endif
-	// Formula: round_up((AL+CWL+1)/2.0) – 2– ((AL+CWL)%2 == 0 && PHASE0 ? 1:0) – C2D
+	// Formula: round_up((AL+CWL+1)/2.0) - 2- ((AL+CWL)%2 == 0 && PHASE0 ? 1:0) - C2D
 
 	// round_up((AL+CWL+1)/2.0)
 	ddr_setup->write_latency_adjust = ((ddr_setup->phy_additive_latency + ddr_setup->cas_write_latency + 1) >> 1) +
@@ -826,7 +826,7 @@ DEFS_STATUS ddr_phy_cfg1 (DDR_Setup  *ddr_setup)
 	REG_WRITE( UNIQUIFY_IO_1 ,  UNQ_IO_1_MASK);
 	CLK_Delay_MicroSec( 100 );
 
-	// Do update Set to force the calibrated settings to  be pushed to all the other I / Oâ€™s.If  not set, PHY periodically performs  updates every recalib_cnt interval,
+	// Do update Set to force the calibrated settings to  be pushed to all the other I / O''s.If  not set, PHY periodically performs  updates every recalib_cnt interval,
 	//   when dfi_phyupd_req is asserted    with dfi_phyupd_type set to 1.
 	SET_REG_BIT( UNIQUIFY_IO_1   , 4 );
 	CLEAR_REG_BIT( UNIQUIFY_IO_1 , 4 );

@@ -18,6 +18,11 @@
 
 #include "defs.h"
 
+#define DAC_CAL_PROPERTY                32,         8,          FUSE_ECC_NIBBLE_PARITY
+#define ADC_CAL_INT_PROPERTY            40,         8,          FUSE_ECC_NIBBLE_PARITY
+#define ADC_CAL_EXT_PROPERTY            48,         8,          FUSE_ECC_NIBBLE_PARITY
+#define DEVICE_ID_PROPERTY              168,        5,          FUSE_ECC_NONE
+#define DIE_INFORMATION_PROPERTY        187,        5,          FUSE_ECC_NONE
 
 DEFS_STATUS FUSE_WRPR_get            (UINT16 fuse_address, UINT16 fuse_length, FUSE_ECC_TYPE_T fuse_ecc, UINT8* value);
 

@@ -91,8 +91,8 @@ typedef union BOOTBLOCK_HEADER_tag
 	struct
 	{
 		                                       // Offset       Size(bytes) Description
-		UINT8   startTag[8];                   // 0            8           AA55_0850h, 424F_4F54h (‘BOOT’)
-		UINT8   signature[96];                 // 8            256         Boot Block ECC signature decrypted with Customer’s Private Key
+		UINT8   startTag[8];                   // 0            8           AA55_0850h, 424F_4F54h ('BOOT')
+		UINT8   signature[96];                 // 8            256         Boot Block ECC signature decrypted with Customer's Private Key
 
 		UINT8   reserved[152];                 // 0x68         152         Reserved for future use, signed.
 		//  Start signed area:

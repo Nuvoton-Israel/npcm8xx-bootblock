@@ -5,7 +5,8 @@ Arbel NPCM8XX A35 Bootblock
 The Arbel NPCM8XX requires a bootblock image that will initiate the DRAM and basic HW settings.
 
 ## Notes
-First release contrains only binaries. Sources release is WIP.
+The `Sources` directory and the prebuilt images in `Images` are from the
+0.5.7 release.
 
 ## Usage
 Bootblock full image build requires the use of IGPS:

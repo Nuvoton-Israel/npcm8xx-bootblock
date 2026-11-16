@@ -1,0 +1,203 @@
+v1.95
+-------
+- defs_core_arm.h                       - Fixed INTERRUPTS_SAVE_DISABLE/INTERRUPTS_RESTORE for __ARM_ARCH_7EM__
+
+v1.94
+-------
+- defs_secured.h                        - Added DEFS_SEC_COND_DELAY_LOOP_AND_CHECK and DEFS_SEC_COND_FLOW_2 macros
+- defs_utils.h                          - Fixed LE16/LE32 macros for __GNUC__
+
+v1.93
+-------
+- defs_core_arm.h                       - Fixed ENABLE_INTERRUPTS/DISABLE_INTERRUPTS macros warnings for __ARMCC_VERSION
+- defs_internal.h                       - Fixed _READ_FIELD/_SET_REG_FIELD/_SET_VAR_FIELD macros warnings
+
+v1.92
+-------
+- defs_core_arm.h                       - Fixed INTERRUPTS_SAVE_DISABLE/INTERRUPTS_RESTORE for __GNUC__ __ARM_ARCH_7J__
+                                        - Added _UNUSED_ macro for __GNUC__
+- defs_core_default.h                   - Added _UNUSED_ macro
+- defs_utils.h                          - Allow MAX/Min macros redefinition
+
+v1.91
+-------
+- defs_secured.h                        - Added Flow monitoring and duplicated result to HAL_SEC_memcmp
+                                        - Added random flow monitor offset
+
+v1.90
+-------
+- defs_core_arm.h                       - Added SET_CR, ISB, DSB and NOP macros under __ARMCC_VERSION
+- defs_os_linux.h                       - Added ARRAY_SIZE macro
+                                        - Fixed MEMR/MEMW macros
+- defs_internal.h                       - Modified _SET_REG_FIELD_SIZE macro
+- defs_utils.h                          - Added SWAP32_BYTE() and LOG() macros
+- defs_types.h                          - Fixed UINT32 and INT32 types
+                                        - Added __LINUX_KERNEL_ONLY__ under !defined(__UBOOT__)
+- defs_secured.h                        - Added DEFS_SEC_RUN_TWICE macro
+                                        - Modified DEFS_SEC_BRANCH_ADDRESS_CHECK / DEFS_SEC_BRANCH_ADDRESS_SET macros
+- defs_secured.c                        - Moved functions to hal_secured.c
+
+v1.89
+-------
+- defs_core_arm.h
+- defs_core_default.h                   - Added CPU_WAIT_FOR_EVENT macro
+- defs_secured.c
+- defs_secured.h                        - Added DEFS_SEC_BRANCH_ADDRESS_CHECK / DEFS_SEC_BRANCH_ADDRESS_SET macros
+                                          to protect against PC manipulation attacks
+
+v1.88
+-------
+- defs_core_arm.h                       - Added TYPEDEF_ISR_PTR macro
+- defs_errors.h                         - Added custom error codes
+- defs_secured.h                        - Added DEFS_SEC_COMPARE_RET_POSITIVE / DEFS_SEC_COND_CHECK_RET_POSITIVE macros
+                                        - Modified existing security macros
+- defs_secured.c                        - Initial secured compare (memcmp) implementation
+
+v1.87
+-------
+- defs_errors.h                         - Added DEFS_STATUS_ERR_CHECK macro
+- defs_secured.h                        - Added DEFS_SEC_COND_FLOW_1 macro
+
+v1.86
+-------
+- defs_core_cr16.h
+- defs_core_default.h
+- defs_secured.h                        - Added ICACHE_INVALIDATE / DCACHE_INVALIDATE macros
+- defs_types.h                          - Coding standard alignment
+- defs_utils.h                          - Added ARRAY_8_T structure
+
+v1.85
+-------
+- defs_utils.h                          - Fixed LSN macro
+                                        - Added BCD_TO_BIN macro
+
+v1.84
+-------
+- defs_errors.h                         - Added DEFS_STATUS_ABORTED error
+- defs_secured.h                        - Added Secured integer comparison utilities
+- defs_utils.h                          - Fixed SWAP64 macro
+
+v1.83
+-------
+- defs_core_arm.h                       - Added _ISR_ macro
+                                        - Fixed ICACHE_SAVE_DISABLE/ENABLE macros under __ARMCC_VERSION
+                                          (__TARGET_ARCH_THUMB > 3)
+
+v1.44
+-------
+- defs_internal.h                       - New file: Isolated internal auxiliary macros from defs.h into
+                                          a dedicated file
+                                        - Fixed issue: Use correct register and variable size in casting in
+                                          field manipulation macros
+                                        - Fixed issue: Removed *_BIT_FIELD macros. added optimized code for
+                                          1-bit fields incorporated into the usual *_FIELD macros
+- defs_core_cr16.h                      - Fixed INTERRUPTS_SAVE_DISABLE/INTERRUPTS_RESTORE issue:
+                                          Added cache macros implementation
+- defs_core_8051.h                      - Consolidated all 8051 and Keil-specific definitions into this file
+- defs.h                                - Isolated remaining 8051-specific definitions under dedicated ifdef
+                                        - Added cosmetics and indentation improvements
+
+v1.43
+-------
+- defs.h                                - New time units definitions
+- defs_os_linux_app.h                   - New file: Linux application OS-specific definitions
+- defs_os_windows.h                     - Added new time units and Windows application definitions
+
+v1.42
+-------
+- defs.h                                - Fixed issue: With GCC v4.4 compiler warning is issued about
+                                          unknown __TID__ definition; Warning removal
+
+v1.41
+-------
+- defs.h                                - Replace WIN32 with compiler predefinition _WIN32
+                                        - Fix typo in __WATCOMC__ usage (missing underscore)
+                                        - ATOMIC_OP: initialize variable to zero to avoid compiler warning
+- defs_core_cr16.h                      - Fix INTERRUPTS_SAVE_DISABLE/INTERRUPTS_RESTORE macros to preserve
+                                          the E bit state before disabling and restore accordingly
+                                        - Remove redundant PSR_I definition
+
+v1.40
+-------
+- defs.h                                - Added nibble operations macros
+- defs_os_wdf.h                         - Removed definitions that already exist in WDF framework
+                                          (BOOLEAN, ASSERT)
+
+v1.38
+-------
+- defs.h                                - Fixed issue: Values in SET_REG_FIELD and SET_VAR_FIELD macros
+                                          are not truncated to the field size
+
+v1.37
+-------
+- defs.h                                - Organized parentheses use in macros across the file
+- defs_os_testec.h                      - Organized parentheses use in macros
+- defs_os_wdf.h                         - Organized parentheses and removed unneeded parentheses
+- defs_core_x86.h                       - Organized parentheses use in macros
+- defs_core_arm.h                       - Organized parentheses use in macros
+- defs_core_cr16.h                      - Organized parentheses and removed unneeded parentheses
+- defs_core_8051.h                      - Organized parentheses use in macros
+- defs_os_linux.h                       - Organized parentheses use in macros
+- defs_core_cop8.h                      - Organized parentheses and removed unneeded parentheses
+                                          Fixes were tested on: National tools 4.1 (CR16C), Keil 8051,
+                                          RealView Development Suite 3.0 (ARM)
+
+v1.36
+-------
+- defs.h                                - Typo fix
+- defs_os_linux.h                       - Added stubs for cache macros in Linux
+
+v1.35
+-------
+- defs.h                                - Added Windows OS application support
+                                        - Deprecated OPTIMAL_INDEX and STATUS basic types (replaced by
+                                          native UINT/INT types of each core)
+                                        - Defined BOOLEAN as UINT for all platforms (except 8051 which
+                                          optimizes to single bit)
+                                        - Generalize type definitions: [U]INT32/[U]INT64 defined only for
+                                          non-Windows platforms
+- defs_os_windows.h                     - New file: Windows OS application-specific definitions (for
+                                          user-mode development with MSVC/Watcom)
+                                        - Fixed __WATCOMC_ to __WATCOMC__ for Watcom compiler
+                                        - Added _WIN32 to include defs_os_windows.h for MS Visual Studio
+- defs_core_cr16.h                      - Deprecated BOOLEAN_FUNCTION type
+- All core/OS files                     - Deprecated OPTIMAL_INDEX and STATUS basic types
+
+v1.34
+-------
+- defs.h                                - Partitioned into per-core and per-OS separate files
+                                        - Added BUILD_FIELD_VAL macro
+                                        - Support register/variable dependent casting in _READ_FIELD
+                                          (removed casting; _MASK_FIELD and _BUILD_FIELD_VAL use 1L for
+                                          correct code on CR and Keil 8051)
+- defs_core_arm.h                       - New file: ARM architecture-specific definitions
+- defs_core_8051.h                      - New file: 8051 architecture-specific definitions
+- defs_core_cop8.h                      - New file: COP8 architecture-specific definitions
+- defs_core_cr16.h                      - New file: CR16 architecture-specific definitions
+                                        - Conditioned __far keyword for CR3.1 only
+- defs_core_x86.h                       - New file: x86 architecture-specific definitions
+- defs_os_linux.h                       - New file: Linux OS-specific definitions
+- defs_os_testec.h                      - New file: TestEC OS-specific definitions
+                                        - Added stub definitions for interrupt macros redirected to
+                                          __UNDEFINED__ string
+- defs_os_wdf.h                         - New file: WDF OS-specific definitions
+
+v1.33
+-------
+- defs.h                                - Modify ARM compiler pre-definitions list
+
+v1.32
+-------
+- defs.h                                - Bugfix in frequency definitions
+
+v1.31
+-------
+- defs.h                                - Added in-file versioning
+                                        - Changed frequency basic units from KHz to Hz
+                                          (backward-incompatible change)
+
+v1.30
+-------
+- defs.h                                - Initial SWC_DEFS import with single monolithic defs.h
+                                          containing all type definitions, register access macros,
+                                          utility macros, core and OS specific definitions

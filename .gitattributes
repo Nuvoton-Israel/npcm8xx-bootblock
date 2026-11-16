@@ -1,0 +1,22 @@
+# Automatically detect text files and normalize them
+* text=auto
+
+# Source files: always store as LF
+*.c       text eol=lf
+*.h       text eol=lf
+*.cpp     text eol=lf
+*.hpp     text eol=lf
+*.S       text eol=lf
+*.s       text eol=lf
+
+# Scripts/config
+*.sh      text eol=lf
+*.py      text eol=lf
+*.yaml    text eol=lf
+*.yml     text eol=lf
+*.json    text eol=lf
+*.md      text eol=lf
+
+# Windows-specific scripts
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
